@@ -1,0 +1,41 @@
+---
+title: "Combine GEE Fire Severity Outputs"
+author: "Shive Lab (K. Shive, B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(sf)
+library(terra)
+library(here)
+
+```
+
+```{r}
+case <- rast(here("data/spatial_data/needSeverity_state-of-segi/CASE_1987_rdnbr.tif"))
+
+circle <- rast(here("data/spatial_data/needSeverity_state-of-segi/CIRCLE_2002_rdnbr.tif"))
+
+deer <- rast(here("data/spatial_data/needSeverity_state-of-segi/DEER-CREE_1991_rdnbr.tif"))
+
+panther <- rast(here("data/spatial_data/needSeverity_state-of-segi/PANTHER_1994_rdnbr.tif"))
+
+tharp <- rast(here("data/spatial_data/needSeverity_state-of-segi/THARPS_2018_rdnbr.tif"))
+
+```
+
+```{r}
+## make spatial raster collection
+s <- sprc(case, circle, deer, panther, tharp)
+
+## merge rasters
+needSeverity_rdnbr <- merge(s)
+
+writeRaster(needSeverity_rdnbr, here("data/spatial_data/needSeverity_rdnbr.tif"))
+
+```
+
