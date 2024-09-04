@@ -69,24 +69,39 @@ RdNBR = a + b ⁎ ASIN(SQRT(PctBA / 100)) where a = 166.5, b = 389.0
 
 ```{r}
 #define breaks
-
+category_names <- c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%")
 
 breaks <- tibble(
-  ba_from = c(0, 0.00001, 10.00001, 25.00001, 50.00001, 75.00001, 90.00001),
-  ba_to = c(0.00001, 10, 25, 50, 75, 90, 100), #breaks in BA
-  rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)),
-  rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)),
-  becomes = c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%"))
-
+  ba_from = c(0, 0, 10, 25, 50, 75, 90), #lefthand breaks BA
+  ba_to = c(0, 10, 25, 50, 75, 90, 100), #righthand breaks in BA
+  rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)), #converted to rdnbr
+  rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)), #converted to rdnbr
+  becomes =  c(1, 2, 3, 4, 5, 6, 7)) %>% #name of categories
+  select(!contains("ba")) #removes unneeded columns
+  
+breaks[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
+breaks[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 
 ```
 
 
 
 ```{r}
-#convert breaks
+#classify raster
 
+severity_ba <- classify(severity_rdnbr, breaks, 
+                        right = F, # include "from" value in category
+                        include.lowest = T) %>% #include max value 
+  as.factor() #make factor
 
+x <- levels(severity_ba)[[1]] %>% #pull levels of raster
+  rename(ba_category = rdnbr) # rename level
+
+x$class <- category_names #add categories as a level
+
+levels(severity_ba) <- x #save new levels back
+
+#writeRaster(severity_ba, here("data/spatial_data/needSeverity_baClass7.tif"))
 
 ```
 
