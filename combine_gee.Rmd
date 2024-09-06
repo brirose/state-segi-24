@@ -17,6 +17,8 @@ library(here)
 
 #Combine Rasters from GEE
 
+Run fire severity in google earth engine (!https://code.earthengine.google.com/6b457bd07887865287c58b2b83e44dad)
+
 ```{r}
 # #Load seperate rdmbr rasters -- maybe automate later
 # case <- rast(here("data/spatial_data/needSeverity_state-of-segi/CASE_1987_rdnbr.tif"))
@@ -101,7 +103,7 @@ x$class <- category_names #add categories as a level
 
 levels(severity_ba) <- x #save new levels back
 
-#writeRaster(severity_ba, here("data/spatial_data/needSeverity_baClass7.tif"))
+writeRaster(severity_ba, here("data/spatial_data/needSeverity_baClass7.tif"))
 
 ```
 
