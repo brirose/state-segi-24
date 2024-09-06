@@ -1,0 +1,75 @@
+---
+title: "Create Complete Severity Layers"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(sf)
+library(terra)
+library(janitor)
+
+```
+
+*USFS data (1984 to 2017): R5 Basal Area %, 4 class severity
+  -in NAD_1983_Albers
+  -clip to groves
+
+*Grove boundaries
+  -NAD83 / UTM zone 11N
+
+
+*Calfire perimeters
+  -NAD83 / California Albers
+  -find fires missing from R5 assessment
+  -bind those that we have, check that they fill full perimeters
+  
+*Outputs: 2 fire severity layers
+  -classified BA severity: 1984 to 2023
+  -RdNbr for fires with high severity, include year ranges
+  
+  
+
+```{r}
+
+#check layers in gdb
+st_layers("data/spatial_data/inputs/fire/fire22_1.gdb")
+
+ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
+
+perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
+  clean_names() %>% 
+  st_transform(crs(ba2017)) %>%  #make consistent crs
+  st_cast("MULTIPOLYGON")
+
+groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>% 
+  clean_names() %>% 
+  st_transform(crs(ba2017)) %>% #uniform crs
+  st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
+
+
+```
+
+
+```{r}
+#select only perimeters where they intersect with groves
+
+groves <- groves %>% 
+  select(grove_name, land_steward_list)
+
+perimeters <- perimeters %>% 
+  select(year, fire_name, inc_num) %>% 
+  filter(year >= 1984)
+
+perimeters_segi <- st_intersection(groves, perimeters)
+
+
+plot(perimeters_segi)
+
+```
+
