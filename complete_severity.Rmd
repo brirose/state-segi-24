@@ -73,18 +73,17 @@ groves <- groves %>%
 
 perimeters <- perimeters %>% 
   select(year, fire_name, inc_num) %>% 
-  filter(year >= 1984)
-
-#create layer that is all fire area in sequoia groves since 1984
-perimeters_segi <- st_intersection(groves, perimeters)
-
-perimeters_segi <- perimeters_segi %>% 
+  filter(year >= 1984) %>% 
   mutate(
     fire_name = case_when(is.na(fire_name) ~ inc_num, T ~ fire_name), #replace na fire names
     fire_name = str_replace(fire_name," ","_"),
     vb_id = paste(year,fire_name, sep = ""), #create ID found in severity data
-    id = str_trunc(vb_id, 7, ellipsis = "")
+    id = str_trunc(vb_id, 12, ellipsis = "")
     )
+
+#create layer that is all fire area in sequoia groves since 1984
+perimeters_segi <- st_intersection(groves, perimeters)
+
 
 perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001 
 
@@ -104,7 +103,7 @@ ba_segi_17 <- ba_segi_17 %>%
     T ~ "extended"
   )) %>% 
   select(vb_id, grove_name, burnsev, assess_type, fire_year) %>% 
-  mutate(id = str_trunc(vb_id, 7, ellipsis = ""))
+  mutate(id = str_trunc(vb_id, 12, ellipsis = ""))
 
 ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
 
@@ -159,7 +158,7 @@ fires_needed_list <- unique(fire_list$id)
 ```{r}
 #make shapefile with only perimeters that still need info
 
-fires_needed <- perimeters_segi %>% 
+fires_needed <- perimeters %>% 
   filter(id %in% fires_needed_list) %>% 
   rename(
     Fire_Year = year,
@@ -168,9 +167,10 @@ fires_needed <- perimeters_segi %>%
   mutate(
     Start_Day = 152,
     End_Day = 258
-  )
+  ) %>% 
+  filter(inc_num != "00007043") ##in futre could do a spatial check to get rid of this guy
 
-dir.create("data/spatial_data/outputs/fires_needed")
+#dir.create("data/spatial_data/outputs/fires_needed")
 st_write(fires_needed, "data/spatial_data/outputs/fires_needed/fires_needed.shp", append = F)
 
 ```
