@@ -39,21 +39,30 @@ library(janitor)
 
 #check layers in gdb
 st_layers("data/spatial_data/inputs/fire/fire22_1.gdb")
-
-ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
-
-perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
-  clean_names() %>% 
-  st_transform(crs(ba2017)) %>%  #make consistent crs
-  st_cast("MULTIPOLYGON")
-
-groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>% 
-  clean_names() %>% 
-  st_transform(crs(ba2017)) %>% #uniform crs
-  st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
+# 
+# ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
+# 
+# perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
+#   clean_names() %>% 
+#   st_transform(crs(ba2017)) %>%  #make consistent crs
+#   st_cast("MULTIPOLYGON")
+# 
+# groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>% 
+#   clean_names() %>% 
+#   st_transform(crs(ba2017)) %>% #uniform crs
+#   st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
 
 
 ```
+
+```{r}
+#derived inputs
+
+perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp")
+ba_segi_17 <- st_read("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp")
+
+```
+
 
 
 ```{r}
@@ -66,10 +75,103 @@ perimeters <- perimeters %>%
   select(year, fire_name, inc_num) %>% 
   filter(year >= 1984)
 
+#create layer that is all fire area in sequoia groves since 1984
 perimeters_segi <- st_intersection(groves, perimeters)
 
+perimeters_segi <- perimeters_segi %>% 
+  mutate(
+    fire_name = case_when(is.na(fire_name) ~ inc_num, T ~ fire_name), #replace na fire names
+    fire_name = str_replace(fire_name," ","_"),
+    vb_id = paste(year,fire_name, sep = ""), #create ID found in severity data
+    id = str_trunc(vb_id, 7, ellipsis = "")
+    )
 
-plot(perimeters_segi)
+perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001 
+
+#dir.create("data/spatial_data/outputs/perimeters_segi")
+st_write(perimeters_segi, "data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp", append = F)
+
+```
+
+```{r}
+#select classified fires to 2017 that fall within grove boundaries
+#create layer that is all fire area in sequoia groves since 1984
+ba_segi_17 <- st_intersection(groves, ba2017) 
+
+ba_segi_17 <- ba_segi_17 %>% 
+  mutate(assess_type = case_when(
+    assess_type == "a" ~ "immediate",
+    T ~ "extended"
+  )) %>% 
+  select(vb_id, grove_name, burnsev, assess_type, fire_year) %>% 
+  mutate(id = str_trunc(vb_id, 7, ellipsis = ""))
+
+ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
+
+#dir.create("data/spatial_data/outputs/ba_segi_17")
+st_write(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F)
+
+```
+
+# Identify data needed
+
+```{r}
+
+firenames <- perimeters_segi %>% 
+  st_drop_geometry() %>% 
+  select(id, fire_name) %>% 
+  unique()
+
+fire_list <- perimeters_segi %>% 
+  st_drop_geometry() %>% 
+  group_by(id) %>% 
+  summarise(area_ha = sum(area_ha)) %>% 
+  left_join(firenames)
+  
+
+need_ba <- tibble(id = unique(ba_segi_17$id), need_ba = "N")
+
+need_rdnbr <- ba_segi_17 %>% 
+  st_drop_geometry() %>% 
+  filter(burnsev == 4) %>% 
+  group_by(id) %>% 
+  summarise(highsev_area = sum(area_ha)) %>% 
+  mutate(need_rdnbr = "Y")
+
+
+fire_list <- fire_list %>% 
+  left_join(need_ba) %>% 
+  left_join(need_rdnbr) %>% 
+  mutate(
+    year = as.numeric(regmatches(id, gregexpr("[[:digit:]]+", id))),
+    area_ha = round(area_ha, 1),
+    need_ba = case_when(is.na(need_ba) ~ "Y", T ~ need_ba),
+    need_rdnbr = case_when(year > 2017 ~ "Y", is.na(need_rdnbr) ~ "N", T ~ need_rdnbr),
+    highsev_area = round(case_when(is.na(highsev_area) ~ 0, T ~ highsev_area),2)
+  ) %>% 
+  filter(!(need_ba == "N" & need_rdnbr == "N"))
+
+fires_needed_list <- unique(fire_list$id)
+
+
+```
+
+```{r}
+#make shapefile with only perimeters that still need info
+
+fires_needed <- perimeters_segi %>% 
+  filter(id %in% fires_needed_list) %>% 
+  rename(
+    Fire_Year = year,
+    Fire_ID = id
+  ) %>% 
+  mutate(
+    Start_Day = 152,
+    End_Day = 258
+  )
+
+dir.create("data/spatial_data/outputs/fires_needed")
+st_write(fires_needed, "data/spatial_data/outputs/fires_needed/fires_needed.shp", append = F)
 
 ```
 
