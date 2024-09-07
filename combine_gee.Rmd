@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-library(mgsub)
 library(sf)
 library(terra)
 library(here)
@@ -23,30 +22,34 @@ Run fire severity in google earth engine (!https://code.earthengine.google.com/6
 ```{r}
 # #Load seperate rdmbr rasters -- maybe automate later
 
-rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T)
+rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T) #define files
 
-rasnames <- mgsub(rasfiles, c("data/spatial_data/inputs/fire/fires_needed",".tiff"), c("","")) 
+rasnames <- rasfiles%>% #define names
+ str_replace_all(c("C:/Users/bri.baker/State_SEGI/state-segi-24/data/spatial_data/inputs/fire/fires_needed/" = "", "_rdnbr.tif" = "")) %>% 
+  tolower()
 
-dat <- rasfiles %>%
+rasnames <- paste("rdnbr", rasnames, sep="_")
+
+dat <- rasfiles %>% #read in files
   map(rast) %>%
   set_names(rasnames) 
 
-invisible(list2env(dat ,.GlobalEnv)) 
-
+invisible(list2env(dat ,.GlobalEnv)) #remove from list (dont actually need to do this)
 
 ```
 
 ```{r}
 ## make spatial raster collection
-s <- sprc(rasnames)
+s <- sprc(dat)
 
 ## merge rasters
 severity_rdnbr <- merge(s)
 
 #output new combined raster
-writeRaster(severity_rdnbr, here("data/spatial_data/needFires_rdnbr.tif"))
+#dir.create("data/spatial_data/inputs/fire/needFires_rdnbr")
+writeRaster(severity_rdnbr, here("data/spatial_data/inputs/fire/needFires_rdnbr.tif"))
 
-severity_rdnbr <- rast(here("data/spatial_data/needFires_rdnbr.tif"))
+#severity_rdnbr <- rast(here("data/spatial_data/inputs/needFires_rdnbr.tif"))
 
 ```
 
@@ -74,19 +77,19 @@ To classify the rdnbr raster using these breaks, we will need to determine the c
 RdNBR = a + b ⁎ ASIN(SQRT(PctBA / 100)) where a = 166.5, b = 389.0
 
 ```{r}
-#define breaks
-category_names7 <- c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%")
-
-breaks7 <- tibble(
-  ba_from = c(0, 0, 10, 25, 50, 75, 90), #lefthand breaks BA
-  ba_to = c(0, 10, 25, 50, 75, 90, 100), #righthand breaks in BA
-  rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)), #converted to rdnbr
-  rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)), #converted to rdnbr
-  becomes =  c(1, 2, 3, 4, 5, 6, 7)) %>% #name of categories
-  select(!contains("ba")) #removes unneeded columns
-  
-breaks7[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
-breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
+# #define breaks
+# category_names7 <- c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%")
+# 
+# breaks7 <- tibble(
+#   ba_from = c(0, 0, 10, 25, 50, 75, 90), #lefthand breaks BA
+#   ba_to = c(0, 10, 25, 50, 75, 90, 100), #righthand breaks in BA
+#   rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)), #converted to rdnbr
+#   rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)), #converted to rdnbr
+#   becomes =  c(1, 2, 3, 4, 5, 6, 7)) %>% #name of categories
+#   select(!contains("ba")) #removes unneeded columns
+#   
+# breaks7[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
+# breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 
 ```
 
@@ -95,17 +98,17 @@ breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 ```{r}
 #classify raster
 
-severity_ba7 <- classify(severity_rdnbr, breaks7, 
-                        right = F, # include "from" value in category
-                        include.lowest = T) %>% #include max value 
-  as.factor() #make factor
-
-x <- levels(severity_ba7)[[1]] %>% #pull levels of raster
-  rename(ba_category = rdnbr) # rename level
-
-x$class <- category_names7 #add categories as a level
-
-levels(severity_ba7) <- x #save new levels back
+# severity_ba7 <- classify(severity_rdnbr, breaks7, 
+#                         right = F, # include "from" value in category
+#                         include.lowest = T) %>% #include max value 
+#   as.factor() #make factor
+# 
+# x <- levels(severity_ba7)[[1]] %>% #pull levels of raster
+#   rename(ba_category = rdnbr) # rename level
+# 
+# x$class <- category_names7 #add categories as a level
+# 
+# levels(severity_ba7) <- x #save new levels back
 
 #writeRaster(severity_ba7, here("data/spatial_data/needSeverity_baClass7.tif"))
 
@@ -158,9 +161,9 @@ x$class <- category_ranges4 #add categories as a level
 
 levels(severity_ba4) <- x #save new levels back
 
-dir.create("data/spatial_data/needSeverity_baClass4")
+dir.create("data/spatial_data/inputs/fire/needFires_baClass4")
 
-writeRaster(severity_ba4, here("data/spatial_data/needSeverity_baClass4/needSeverity_baClass4.tif"))
+writeRaster(severity_ba4, here("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif"))
 
 plot(severity_ba4)
 
