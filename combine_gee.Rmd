@@ -34,9 +34,16 @@ dat <- rasfiles %>% #read in files
   map(rast) %>%
   set_names(rasnames) 
 
-invisible(list2env(dat ,.GlobalEnv)) #remove from list (dont actually need to do this)
+#invisible(list2env(dat ,.GlobalEnv)) #remove from list (dont actually need to do this)
 
 ```
+
+```{r}
+#convert to multipolygons
+
+dat_poly <- lapply(dat, as.polygons)
+```
+
 
 ```{r}
 ## make spatial raster collection
@@ -56,6 +63,8 @@ writeRaster(severity_rdnbr, here("data/spatial_data/inputs/fire/needFires_rdnbr.
 ```{r}
 #view to visualize
 plot(severity_rdnbr)
+
+#decided to do classification and conversion to polygons before combining BA
 
 ```
 
@@ -168,3 +177,30 @@ writeRaster(severity_ba4, here("data/spatial_data/inputs/fire/needFires_baClass4
 plot(severity_ba4)
 
 ```
+
+```{r}
+#classify rasters in list (similar to above)
+
+dat_class <- lapply(dat, classify, rcl = breaks4, right = F, include.lowest = T)
+
+#make factors
+lapply(dat_class, as.factor)
+
+#convert to multipolygons
+dat_poly <- lapply(dat_class, as.polygons)
+dat_sf <- lapply(dat_poly, st_as_sf)
+
+#Combine to single dataframe with name of fire
+dat_sf <- map_df(dat_sf, data.frame, .id = 'name') 
+
+ba_sf <- dat_sf %>% 
+  rename("burnsev" = "rdnbr") %>% 
+  mutate(assss_t = "GEE")
+
+```
+
+
+```{r}
+plot(severity_ba4full)
+```
+

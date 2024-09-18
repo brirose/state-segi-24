@@ -59,7 +59,13 @@ st_layers("data/spatial_data/inputs/fire/fire22_1.gdb")
 #derived inputs
 
 perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp")
+
 ba_segi_17 <- st_read("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp")
+
+#NEED TO CONVERT TO POLYGONS
+ba_additional_rast <- rast("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif")
+
+rdnbr_segi_rast <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif")
 
 ```
 
@@ -172,6 +178,27 @@ fires_needed <- perimeters %>%
 
 #dir.create("data/spatial_data/outputs/fires_needed")
 st_write(fires_needed, "data/spatial_data/outputs/fires_needed/fires_needed.shp", append = F)
+
+```
+```{r}
+plot(ba_additional_rast)
+
+plot(ba_additional_poly)
+
+plot(ba_segi_17)
+
+
+```
+```{r}
+#clip new fire info to segi groves
+
+ba_additional_poly <- extract(ba_additional_rast, perimeters_segi)
+
+```
+
+```{r}
+#combine older with new fires
+
 
 ```
 
