@@ -14,6 +14,8 @@ library(janitor)
 library(terra)
 library(sf)
 library(readxl)
+library(leaflet)
+library(RColorBrewer)
 
 ```
 
@@ -58,6 +60,7 @@ mortality_rates_fires <- tibble(
 
 ```{r}
 #Meyer input
+#these points are all ~15m off from the monarch. unclear whether this was done in a consistent direction
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   mutate(source = "Meyer", fire = "castle", year = "2020") %>% 
@@ -115,7 +118,7 @@ monarchs_binary <- monarchs_combined %>%
 
 #pull severity info 
 monarchs_severity <- monarchs_binary %>% 
-  st_join(sev_ba)
+  st_join(sev_ba) #need to make sure only keeps more recent fire
 
 #calculate mortality
 monarchs_mortality_fire <- monarchs_severity %>% 
@@ -127,5 +130,33 @@ monarchs_mortality_fire <- monarchs_severity %>%
 ```
 ```{r}
 #not aligning properly; need to plot and see what is happening
+ggplot()+
+  geom_sf(monarchs_binary, mapping = aes())
+
+monarchs_wgs84 <- st_transform(monarchs_binary, 4326)
+sev_ba_wgs84 <- st_transform(sev_ba, 4326)
+perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp") %>% 
+  st_transform(4326)
+groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
+  clean_names() %>%
+  st_transform(4326) %>% #uniform crs
+  st_cast("MULTIPOLYGON")
+ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
+  st_transform(4324)
+
+
+debug_map <- leaflet() %>% 
+  addTiles() %>% 
+  setView(lng = -118.5, lat = 36.5, zoom = 10) %>% 
+  #  addPolygons(data = ba_additional, opacity = 1) %>% 
+  #addPolygons(data = groves, color = "black", opacity = 1, fillOpacity = 0) %>% 
+    # addPolygons(data = sev_ba_wgs84, 
+    #           color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, 
+    #           fillOpacity = 0.5, fillColor = ~colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev)(burnsev))%>% 
+  addCircleMarkers(data = monarchs_wgs84, stroke = F, fillOpacity = 0.8, radius = 3, color = "black") %>% 
+  addLegend(pal = colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev), values = sev_ba_wgs84$burnsev)
+
+debug_map
+
 ```
 
