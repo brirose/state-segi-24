@@ -1,0 +1,131 @@
+---
+title: "state-segi-analysis"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(janitor)
+library(terra)
+library(sf)
+library(readxl)
+
+```
+
+```{r}
+#read in severity data
+
+sev_ba <- st_read("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp")
+
+# will need to reproject to use
+sev_rdnbr <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif") 
+
+```
+
+#Large Tree Mortality
+
+##Calculate mortality rates
+
+
+Mortality rates observed by Shive et al. (in review) for the Rough and Pier Fire, rates for the Railroad Fire from Stephenson and Brigham (2021). Survey area 	Low 	Moderate 	High
+*2015 Rough Fire (Evans, Kennedy and Lockwood Groves) 	0.0% 	14.0% 	75.0%
+*2017 Railroad Fire (Nelder Grove) 	5.9% 	22.2% 	100.0%
+*2017 Pier Fire (Black Mountain Grove) 	11.9% 	24.5% 	74.6%
+
+
+
+
+```{r}
+
+#initialize dataframe of mortality rates by fire
+
+mortality_rates_fires <- tibble(
+  fire_year = c(2015, 2017, 2017),
+  fire_name = c("rough", "railroad", "pier"),
+  survey_area = c("evans, kennedy, lockwood", "nelder", "black_mountain"),
+  low = c(0.0, 0.059, 0.119),
+  med = c(0.14, 0.222, 0.245),
+  high = c(0.75, 1.0, 0.746),
+  source = c("Shive et al.", "Shive et al.", "Stephenson and Brigham (2021)")
+)
+
+```
+
+```{r}
+#Meyer input
+castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
+  clean_names() %>% 
+  mutate(source = "Meyer", fire = "castle", year = "2020") %>% 
+  rename("survey_area" = "grove") %>% 
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+
+knp_meyer <- read_excel(here("data/plot_data/meyer/PostfireSequoiaGroveData_2024_FreemanCrk&REMO.v2.reduced.xlsx"), sheet = "Monarchs") %>% 
+  clean_names() %>% 
+  mutate(source = "Meyer", fire = "knp", year = "2021")%>% 
+  rename("survey_area" = "grove") %>% 
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+
+windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.reduced.v2.xlsx"), sheet = "Monarchs") %>% 
+  clean_names() %>% 
+  mutate(source = "Meyer", fire = "windy", year = "2021",
+         prefire_status = case_when(!is.na(dead_before_fire) ~ "Dead",
+                              TRUE ~ "Live"))%>% 
+  rename("survey_area" = "grove",
+         "postfire_status" = "status") %>% 
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+
+#combine into one and make spatial
+meyers_combined <- castle_meyer %>% 
+  rbind(knp_meyer) %>% 
+  rbind(windy_meyer) %>% 
+  drop_na(easting, northing) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
+  st_transform(crs(ba2017))
+
+```
+```{r}
+#combine inputs
+monarchs_combined <- meyers_combined
+
+```
+
+```{r}
+
+monarchs_binary <- monarchs_combined %>% 
+  mutate(
+    postfire_status = case_when(
+      postfire_status == "Live" | postfire_status == "1" ~ 1,
+      postfire_status == "Dead" | postfire_status == "0" ~ 0,
+      T ~ -999
+    ),
+    prefire_status = case_when(
+      prefire_status == "Live" | prefire_status == "1"~ 1,
+      prefire_status == "Dead" | prefire_status == "0" ~ 0,
+      T ~ -999
+    )
+  ) %>% 
+  # filter for trees of known status known alive before fire
+  filter(prefire_status == 1 , postfire_status >= 0) 
+
+
+#pull severity info 
+monarchs_severity <- monarchs_binary %>% 
+  st_join(sev_ba)
+
+#calculate mortality
+monarchs_mortality_fire <- monarchs_severity %>% 
+  st_drop_geometry() %>% 
+  group_by(fire, burnsev) %>% 
+  summarise(mortality = 1-(sum(postfire_status)/sum(prefire_status)))
+  
+
+```
+```{r}
+#not aligning properly; need to plot and see what is happening
+```
+

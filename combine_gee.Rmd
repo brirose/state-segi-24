@@ -195,7 +195,13 @@ dat_sf <- map_df(dat_sf, data.frame, .id = 'name')
 
 ba_sf <- dat_sf %>% 
   rename("burnsev" = "rdnbr") %>% 
-  mutate(assss_t = "GEE")
+  mutate(assss_t = "GEE",
+         year = str_extract(name, "\\d+"),
+         id = str_to_upper(str_remove(name, "rdnbr_"))
+         )
+
+dir.create("data/spatial_data/outputs/ba_missing")
+st_write(ba_sf, "data/spatial_data/outputs/ba_missing/ba_missing.shp", append = F)
 
 ```
 

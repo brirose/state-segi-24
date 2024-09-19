@@ -40,17 +40,17 @@ library(janitor)
 #check layers in gdb
 st_layers("data/spatial_data/inputs/fire/fire22_1.gdb")
 # 
-# ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
+ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
 # 
 # perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
 #   clean_names() %>% 
 #   st_transform(crs(ba2017)) %>%  #make consistent crs
 #   st_cast("MULTIPOLYGON")
 # 
-# groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>% 
-#   clean_names() %>% 
-#   st_transform(crs(ba2017)) %>% #uniform crs
-#   st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
+groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
+  clean_names() %>%
+  st_transform(crs(ba2017)) %>% #uniform crs
+  st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
 
 
 ```
@@ -62,8 +62,8 @@ perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters
 
 ba_segi_17 <- st_read("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp")
 
-#NEED TO CONVERT TO POLYGONS
-ba_additional_rast <- rast("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif")
+ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
+  st_transform(crs(ba2017))
 
 rdnbr_segi_rast <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif")
 
@@ -192,13 +192,41 @@ plot(ba_segi_17)
 ```{r}
 #clip new fire info to segi groves
 
-ba_additional_poly <- extract(ba_additional_rast, perimeters_segi)
+ba_segi_additional <- st_intersection(groves, ba_additional)
+
+ba_segi_additional <- ba_segi_additional %>% 
+  rename("grov_nm" = "grove_name",
+         "fire_yr" = "year") %>% 
+  select(grov_nm, id, burnsev, fire_yr, assss_t) 
+
+ba_segi_additional$area_ha <- as.numeric(st_area(ba_segi_additional))*0.0001 
 
 ```
 
 ```{r}
 #combine older with new fires
 
+ba_segi_17 <- ba_segi_17 %>% 
+  select(!vb_id)
+
+#ID which are duplicated
+in_new <- unique(ba_segi_additional$id)
+in_old <- unique(ba_segi_17$id)
+in_both <- c(in_new, in_old)
+in_both <- in_both[duplicated(in_both)]
+
+#combine together
+ba_segi_all <- ba_segi_additional %>% 
+  filter(!id %in% in_both) %>% 
+  rename("geometry" = "Shape") %>% 
+  rbind(ba_segi_17)
+
+#check
+plot(ba_segi_all)
+
+
+dir.create("data/spatial_data/outputs/ba_segi_all")
+st_write(ba_segi_all, "data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp", append = F)
 
 ```
 
