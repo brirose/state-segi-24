@@ -58,16 +58,48 @@ groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb
 ```{r}
 #derived inputs
 
+#fire pereimeters within groves
 perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp")
 
+#BA severity up to 2017
 ba_segi_17 <- st_read("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp")
 
+#BA that we did not yet have, is missing a little window of Windy Fire
 ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
   st_transform(crs(ba2017))
 
-rdnbr_segi_rast <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif")
+#rdnbr for fires that intersect with groves AND that have high severity, also missing window of Windy Fire, but is cat 1 & 2 so will not be used
+rdnbr_segi_rast <- rast("data/spatial_data/outputs/needFires_rdnbr/needFires_rdnbr.tif")
 
 ```
+
+```{r}
+#fix where derived inputs are missing windy fire severity
+
+#BA for Windy Fire, raster from ravg
+ba_windy <- rast("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_ba4.tif") %>% 
+  project(crs(ba2017))
+
+ba_windy_missing <- mask(ba_windy, ba_additional, inverse = T) %>%  
+  clamp(lower = 1, upper = 4, values = F) %>% 
+  as.polygons() %>% 
+  st_as_sf()
+  
+ba_windy_missing <- ba_windy_missing %>%   
+  #rename("burnsev" = "Layer_1") %>% 
+  mutate(
+    name = "2021windy",
+    asssss_t = "ravg",
+    year = "2021",
+    id = "2021WINDY"
+  )
+
+
+#need to see if this does what we want
+ba_additional <- st_union(ba_additional, ba_windy_missing)
+
+```
+
 
 
 
@@ -90,7 +122,7 @@ perimeters <- perimeters %>%
 #create layer that is all fire area in sequoia groves since 1984
 perimeters_segi <- st_intersection(groves, perimeters)
 
-
+#calculate polygon area
 perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001 
 
 #dir.create("data/spatial_data/outputs/perimeters_segi")
@@ -100,7 +132,7 @@ st_write(perimeters_segi, "data/spatial_data/outputs/perimeters_segi/perimeters_
 
 ```{r}
 #select classified fires to 2017 that fall within grove boundaries
-#create layer that is all fire area in sequoia groves since 1984
+#create layer that is classified fire area in sequoia groves 1984-2017
 ba_segi_17 <- st_intersection(groves, ba2017) 
 
 ba_segi_17 <- ba_segi_17 %>% 
@@ -111,6 +143,7 @@ ba_segi_17 <- ba_segi_17 %>%
   select(vb_id, grove_name, burnsev, assess_type, fire_year) %>% 
   mutate(id = str_trunc(vb_id, 12, ellipsis = ""))
 
+#calc poly area
 ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
 
 #dir.create("data/spatial_data/outputs/ba_segi_17")
@@ -133,9 +166,11 @@ fire_list <- perimeters_segi %>%
   summarise(area_ha = sum(area_ha)) %>% 
   left_join(firenames)
   
-
+#will not need BA for fires in usfs layer
 need_ba <- tibble(id = unique(ba_segi_17$id), need_ba = "N")
 
+
+#will need rdnbr for fires that have high severity (==4)
 need_rdnbr <- ba_segi_17 %>% 
   st_drop_geometry() %>% 
   filter(burnsev == 4) %>% 
@@ -205,9 +240,8 @@ ba_segi_additional$area_ha <- as.numeric(st_area(ba_segi_additional))*0.0001
 
 ```{r}
 #combine older with new fires
-
-ba_segi_17 <- ba_segi_17 %>% 
-  select(!vb_id)
+# ba_segi_17 <- ba_segi_17 %>% 
+#   select(!vb_id)
 
 #ID which are duplicated
 in_new <- unique(ba_segi_additional$id)
@@ -228,5 +262,31 @@ plot(ba_segi_all)
 dir.create("data/spatial_data/outputs/ba_segi_all")
 st_write(ba_segi_all, "data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp", append = F)
 
+```
+```{r}
+
+ba_2017_full <- ba2017 %>% 
+  mutate(assess_type = case_when(
+    assess_type == "a" ~ "immediate",
+    T ~ "extended"),
+  id = str_trunc(vb_id, 12, ellipsis = "")) %>% 
+  select(id, burnsev, assess_type, fire_year)
+
+ba_additional <- ba_additional %>% 
+  #select(!name) %>% 
+  rename(
+    "assess_type" = "assss_t",
+    "fire_year" = "year"
+  )
+
+ba_full <- ba_2017_full %>% 
+  filter(!id %in% in_both) %>% 
+  rename(
+    "geometry" = "Shape"
+        ) %>% 
+  rbind(ba_additional)
+
+#dir.create("data/spatial_data/outputs/ba_full_all")
+st_write(ba_full, "data/spatial_data/outputs/ba_full_all/ba_full_all.shp", append = F)
 ```
 

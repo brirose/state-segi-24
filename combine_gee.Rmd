@@ -20,7 +20,7 @@ library(here)
 Run fire severity in google earth engine (!https://code.earthengine.google.com/6b457bd07887865287c58b2b83e44dad)
 
 ```{r}
-# #Load seperate rdmbr rasters -- maybe automate later
+# #Load seperate rdnbr rasters -- maybe automate later
 
 rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T) #define files
 
@@ -53,8 +53,8 @@ s <- sprc(dat)
 severity_rdnbr <- merge(s)
 
 #output new combined raster
-#dir.create("data/spatial_data/inputs/fire/needFires_rdnbr")
-writeRaster(severity_rdnbr, here("data/spatial_data/inputs/fire/needFires_rdnbr.tif"))
+#dir.create("data/spatial_data/outputs/fire/needFires_rdnbr")
+writeRaster(severity_rdnbr, here("data/spatial_data/outputs/fire/needFires_rdnbr.tif"))
 
 #severity_rdnbr <- rast(here("data/spatial_data/inputs/needFires_rdnbr.tif"))
 
@@ -156,32 +156,32 @@ breaks4[4,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 ```{r}
 #classify raster
 
-severity_ba4 <- classify(severity_rdnbr, breaks4, 
-                        right = F, # include "from" value in category
-                        include.lowest = T) %>% #include max value 
-  as.factor() #make factor
-
-x <- levels(severity_ba4)[[1]] %>% #pull levels of raster
-  rename(ba_category = rdnbr) # rename level
-
-x$class <- category_names4 #add categories as a level
-x$class <- category_ranges4 #add categories as a level
-
-
-levels(severity_ba4) <- x #save new levels back
-
-dir.create("data/spatial_data/inputs/fire/needFires_baClass4")
-
-writeRaster(severity_ba4, here("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif"))
-
-plot(severity_ba4)
+# severity_ba4 <- classify(severity_rdnbr, breaks4, 
+#                         right = F, # include "from" value in category
+#                         include.lowest = T) %>% #include max value 
+#   as.factor() #make factor
+# 
+# x <- levels(severity_ba4)[[1]] %>% #pull levels of raster
+#   rename(ba_category = rdnbr) # rename level
+# 
+# x$class <- category_names4 #add categories as a level
+# x$class <- category_ranges4 #add categories as a level
+# 
+# 
+# levels(severity_ba4) <- x #save new levels back
+# 
+# dir.create("data/spatial_data/inputs/fire/needFires_baClass4")
+# 
+# writeRaster(severity_ba4, here("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif"))
+# 
+# plot(severity_ba4)
 
 ```
 
 ```{r}
-#classify rasters in list (similar to above)
+#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
 
-dat_class <- lapply(dat, classify, rcl = breaks4, right = F, include.lowest = T)
+dat_class <- lapply(dat, classify, rcl = breaks4, right = F, include.lowest = T) #include max value 
 
 #make factors
 lapply(dat_class, as.factor)

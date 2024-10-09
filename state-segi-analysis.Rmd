@@ -22,7 +22,9 @@ library(RColorBrewer)
 ```{r}
 #read in severity data
 
-sev_ba <- st_read("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp")
+
+sev_ba_all_sierra <- st_read("data/spatial_data/outputs/ba_full_all/ba_full_all.shp")
+sev_ba_segi <- st_read("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp")
 
 # will need to reproject to use
 sev_rdnbr <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif") 
@@ -60,7 +62,7 @@ mortality_rates_fires <- tibble(
 
 ```{r}
 #Meyer input
-#these points are all ~15m off from the monarch. unclear whether this was done in a consistent direction
+#these points are all ~15m off from the monarch. unclear whether this was done in a consistent direction. likely N, so move 15m south (need to calc the lat amount this is)
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   mutate(source = "Meyer", fire = "castle", year = "2020") %>% 
@@ -118,7 +120,7 @@ monarchs_binary <- monarchs_combined %>%
 
 #pull severity info 
 monarchs_severity <- monarchs_binary %>% 
-  st_join(sev_ba) #need to make sure only keeps more recent fire
+  st_join(sev_ba_all_sierra) #need to make sure only keeps more recent fire (for this one)
 
 #calculate mortality
 monarchs_mortality_fire <- monarchs_severity %>% 
