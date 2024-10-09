@@ -22,12 +22,11 @@ library(RColorBrewer)
 ```{r}
 #read in severity data
 
+sev_ba_all_sierra <- st_read("data/spatial_data/outputs/ba_all-sierra/ba_full_all.shp")
 
-sev_ba_all_sierra <- st_read("data/spatial_data/outputs/ba_full_all/ba_full_all.shp")
-sev_ba_segi <- st_read("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp")
+sev_ba_segi <- st_read("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp")
 
-# will need to reproject to use
-sev_rdnbr <- rast("data/spatial_data/inputs/fire/needFires_rdnbr/needFires_rdnbr.tif") 
+highsev_rdnbr <- rast("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif") %>% project(crs(sev_ba_all_sierra))
 
 ```
 
@@ -62,18 +61,19 @@ mortality_rates_fires <- tibble(
 
 ```{r}
 #Meyer input
-#these points are all ~15m off from the monarch. unclear whether this was done in a consistent direction. likely N, so move 15m south (need to calc the lat amount this is)
+
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   mutate(source = "Meyer", fire = "castle", year = "2020") %>% 
   rename("survey_area" = "grove") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
 knp_meyer <- read_excel(here("data/plot_data/meyer/PostfireSequoiaGroveData_2024_FreemanCrk&REMO.v2.reduced.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
+  filter(removed == "no") %>% 
   mutate(source = "Meyer", fire = "knp", year = "2021")%>% 
   rename("survey_area" = "grove") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
 windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.reduced.v2.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
@@ -82,13 +82,32 @@ windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.r
                               TRUE ~ "Live"))%>% 
   rename("survey_area" = "grove",
          "postfire_status" = "status") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire)
+  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
-#combine into one and make spatial
+#combine into one
 meyers_combined <- castle_meyer %>% 
   rbind(knp_meyer) %>% 
   rbind(windy_meyer) %>% 
-  drop_na(easting, northing) %>% 
+  drop_na(easting, northing)
+
+#correct points
+#these points are mostly ~15m off from the monarch. most points to N, so move 15m south (need to calc the lat amount this is)
+meyers_corrected <- meyers_combined %>% 
+  mutate(
+    gps_reset_radians = -1 *((gps_offset_deg * pi) / (180)),  #convert offset to radians and invert 
+    new_easting = easting + (sin(gps_reset_radians) * gps_offset_m), #use trig to offset x
+    new_northing = northing + (cos(gps_reset_radians) * gps_offset_m)#use trig to offset y
+  ) %>% 
+  rename(
+    "old_easting" = "easting",
+    "old_northing" = "northing",
+    "easting" = "new_easting",
+    "northing" = "new_northing"
+  )
+  
+  
+#make spatial 
+meyers_corrected <- meyers_corrected %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
   st_transform(crs(ba2017))
 
@@ -130,8 +149,10 @@ monarchs_mortality_fire <- monarchs_severity %>%
   
 
 ```
+
+
 ```{r}
-#not aligning properly; need to plot and see what is happening
+
 ggplot()+
   geom_sf(monarchs_binary, mapping = aes())
 
