@@ -50,7 +50,7 @@ Mortality rates observed by Shive et al. (in review) for the Rough and Pier Fire
 mortality_rates_fires <- tibble(
   fire_year = c(2015, 2017, 2017),
   fire_name = c("rough", "railroad", "pier"),
-  survey_area = c("evans, kennedy, lockwood", "nelder", "black_mountain"),
+  grove = c("evans, kennedy, lockwood", "nelder", "black_mountain"),
   low = c(0.0, 0.059, 0.119),
   med = c(0.14, 0.222, 0.245),
   high = c(0.75, 1.0, 0.746),
@@ -64,25 +64,25 @@ mortality_rates_fires <- tibble(
 
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
-  mutate(source = "Meyer", fire = "castle", year = "2020") %>% 
-  rename("survey_area" = "grove") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+  mutate(source = "Meyer", fire = "castle", year = "2020",
+         id = paste(grove, plot_no_nearby, monarch_no, sep = "")) %>% 
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
 knp_meyer <- read_excel(here("data/plot_data/meyer/PostfireSequoiaGroveData_2024_FreemanCrk&REMO.v2.reduced.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   filter(removed == "no") %>% 
-  mutate(source = "Meyer", fire = "knp", year = "2021")%>% 
-  rename("survey_area" = "grove") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+  mutate(source = "Meyer", fire = "knp", year = "2021",
+         id = paste(grove, plot_no_nearby, monarch_no, sep = ""))%>% 
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
 windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.reduced.v2.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   mutate(source = "Meyer", fire = "windy", year = "2021",
          prefire_status = case_when(!is.na(dead_before_fire) ~ "Dead",
-                              TRUE ~ "Live"))%>% 
-  rename("survey_area" = "grove",
-         "postfire_status" = "status") %>% 
-  select(survey_area, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+                              TRUE ~ "Live"),
+         id = monarch_no)%>% 
+  rename("postfire_status" = "status") %>% 
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
 #combine into one
 meyers_combined <- castle_meyer %>% 
@@ -95,7 +95,7 @@ meyers_combined <- castle_meyer %>%
 meyers_corrected <- meyers_combined %>% 
   mutate(
     gps_reset_radians = -1 *((gps_offset_deg * pi) / (180)),  #convert offset to radians and invert 
-    new_easting = easting + (sin(gps_reset_radians) * gps_offset_m), #use trig to offset x
+    new_easting = easting + base::round((sin(gps_reset_radians) * gps_offset_m), digits = 0), #use trig to offset x
     new_northing = northing + (cos(gps_reset_radians) * gps_offset_m)#use trig to offset y
   ) %>% 
   rename(
@@ -105,16 +105,16 @@ meyers_corrected <- meyers_combined %>%
     "northing" = "new_northing"
   )
   
-  
 #make spatial 
 meyers_corrected <- meyers_corrected %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
-  st_transform(crs(ba2017))
+  st_transform(crs(sev_ba_segi))
 
 ```
+
 ```{r}
 #combine inputs
-monarchs_combined <- meyers_combined
+monarchs_combined <- meyers_corrected
 
 ```
 
@@ -139,13 +139,26 @@ monarchs_binary <- monarchs_combined %>%
 
 #pull severity info 
 monarchs_severity <- monarchs_binary %>% 
-  st_join(sev_ba_all_sierra) #need to make sure only keeps more recent fire (for this one)
+  st_join(sev_ba_all_sierra)  #pull severity info
 
-#calculate mortality
+monarch_severity_duplicated <- monarchs_severity %>% 
+  mutate(dups = duplicated(id.x)) %>% 
+  filter(dups == T)
+
+monarchs_severity <- monarchs_severity %>% 
+  filter(!id.x %in% monarch_severity_duplicated$id.x) %>% 
+  bind_rows(monarch_severity_duplicated) #can bind this back because takes the second obs which after the join is the more recent fire
+
+
+#calculate mortality by fire
 monarchs_mortality_fire <- monarchs_severity %>% 
   st_drop_geometry() %>% 
-  group_by(fire, burnsev) %>% 
-  summarise(mortality = 1-(sum(postfire_status)/sum(prefire_status)))
+  summarise(.by = c(fire, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
+
+#calculate mortality by year
+monarchs_mortality_year <- monarchs_severity %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(fire_yr, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
   
 
 ```
