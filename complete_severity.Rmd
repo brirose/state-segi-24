@@ -86,17 +86,18 @@ ba_windy_missing <- mask(ba_windy, ba_additional, inverse = T) %>%
   st_as_sf()
   
 ba_windy_missing <- ba_windy_missing %>%   
-  #rename("burnsev" = "Layer_1") %>% 
+  rename("burnsev" = "Layer_1") %>% 
   mutate(
     name = "2021windy",
-    asssss_t = "ravg",
+    assss_t = "ravg",
     year = "2021",
     id = "2021WINDY"
   )
 
 
 #need to see if this does what we want
-ba_additional <- st_union(ba_additional, ba_windy_missing)
+ba_additional <- bind_rows(ba_additional, ba_windy_missing)
+
 
 ```
 
@@ -147,7 +148,7 @@ ba_segi_17 <- ba_segi_17 %>%
 ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
 
 #dir.create("data/spatial_data/outputs/ba_segi_17")
-st_write(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F)
+##st_write(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F)
 
 ```
 
@@ -224,6 +225,41 @@ plot(ba_segi_17)
 
 
 ```
+
+# Combine to make full layers
+
+```{r}
+#Complete perimeters (not grove filtered)
+
+#combine older with new fires
+ba_segi_17 <- ba_segi_17 %>%
+  #select(!vb_id) %>% 
+  rename("grov_nm" = "grove_name",
+         "fire_yr" = "fire_year",
+         "assss_t" = "assess_type",
+         "geometry" = "Shape")
+
+#ID which are duplicated
+in_new <- unique(ba_segi_additional$id)
+in_old <- unique(ba_segi_17$id)
+in_both <- c(in_new, in_old)
+in_both <- in_both[duplicated(in_both)]
+
+#combine together
+ba_segi_all <- ba_segi_additional %>% 
+  filter(!id %in% in_both) %>% 
+  rename( "geometry" = "Shape") %>% 
+  bind_rows(ba_segi_17)
+
+#check
+#plot(ba_segi_all)
+
+#layer is all fires to 2017, relevant fires to present
+#dir.create("data/spatial_data/outputs/ba_segi_all")
+st_write(ba_segi_all, "data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp", append = F)
+
+```
+
 ```{r}
 #clip new fire info to segi groves
 
@@ -238,32 +274,12 @@ ba_segi_additional$area_ha <- as.numeric(st_area(ba_segi_additional))*0.0001
 
 ```
 
+
 ```{r}
-#combine older with new fires
-# ba_segi_17 <- ba_segi_17 %>% 
-#   select(!vb_id)
 
-#ID which are duplicated
-in_new <- unique(ba_segi_additional$id)
-in_old <- unique(ba_segi_17$id)
-in_both <- c(in_new, in_old)
-in_both <- in_both[duplicated(in_both)]
-
-#combine together
-ba_segi_all <- ba_segi_additional %>% 
-  filter(!id %in% in_both) %>% 
-  rename("geometry" = "Shape") %>% 
-  rbind(ba_segi_17)
-
-#check
-plot(ba_segi_all)
-
-
-dir.create("data/spatial_data/outputs/ba_segi_all")
-st_write(ba_segi_all, "data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp", append = F)
-
-```
-```{r}
+range_segi <- st_read("data/spatial_data/inputs/forest/groves_extent.shp") %>% 
+  rename("range" = "Id") %>% 
+  mutate(range = "yes")
 
 ba_2017_full <- ba2017 %>% 
   mutate(assess_type = case_when(
@@ -272,19 +288,22 @@ ba_2017_full <- ba2017 %>%
   id = str_trunc(vb_id, 12, ellipsis = "")) %>% 
   select(id, burnsev, assess_type, fire_year)
 
+ba_2017_range <- st_join(ba_2017_full, range_segi) %>% 
+  filter(range == "yes")
+
 ba_additional <- ba_additional %>% 
-  #select(!name) %>% 
+  select(!name) %>% 
   rename(
     "assess_type" = "assss_t",
     "fire_year" = "year"
   )
 
-ba_full <- ba_2017_full %>% 
+ba_full <- ba_2017_range %>% 
   filter(!id %in% in_both) %>% 
   rename(
     "geometry" = "Shape"
         ) %>% 
-  rbind(ba_additional)
+  bind_rows(ba_additional)
 
 #dir.create("data/spatial_data/outputs/ba_full_all")
 st_write(ba_full, "data/spatial_data/outputs/ba_full_all/ba_full_all.shp", append = F)
