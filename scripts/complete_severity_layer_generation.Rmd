@@ -38,16 +38,16 @@ library(janitor)
 ```{r}
 
 #check layers in gdb
-st_layers("data/spatial_data/inputs/fire/fire22_1.gdb")
+st_layers(here("data/spatial_data/inputs/fire/fire22_1.gdb"))
 # 
-ba2017 <- st_read("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") %>% clean_names()
+ba2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") )%>% clean_names()
 # 
 # perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
 #   clean_names() %>% 
 #   st_transform(crs(ba2017)) %>%  #make consistent crs
 #   st_cast("MULTIPOLYGON")
 # 
-groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
+groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public")) %>%
   clean_names() %>%
   st_transform(crs(ba2017)) %>% #uniform crs
   st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
@@ -59,17 +59,17 @@ groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb
 #derived inputs
 
 #fire pereimeters within groves
-perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp")
+perimeters_segi <- st_read(here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp"))
 
 #BA severity up to 2017
-ba_segi_17 <- st_read("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp")
+ba_segi_17 <- st_read(here("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp"))
 
 #BA that we did not yet have, is missing a little window of Windy Fire
-ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
+ba_additional <- st_read(here("data/spatial_data/outputs/ba_missing/ba_missing.shp")) %>% 
   st_transform(crs(ba2017))
 
 #rdnbr for fires that intersect with groves AND that have high severity, also missing window of Windy Fire, but is cat 1 & 2 so will not be used
-rdnbr_segi_rast <- rast("data/spatial_data/outputs/needFires_rdnbr/needFires_rdnbr.tif")
+rdnbr_segi_rast <- rast(here("data/spatial_data/outputs/needFires_rdnbr/needFires_rdnbr.tif"))
 
 ```
 
@@ -77,7 +77,7 @@ rdnbr_segi_rast <- rast("data/spatial_data/outputs/needFires_rdnbr/needFires_rdn
 #fix where derived inputs are missing windy fire severity
 
 #BA for Windy Fire, raster from ravg
-ba_windy <- rast("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_ba4.tif") %>% 
+ba_windy <- rast(here("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_ba4.tif") )%>% 
   project(crs(ba2017))
 
 ba_windy_missing <- mask(ba_windy, ba_additional, inverse = T) %>%  
@@ -126,8 +126,8 @@ perimeters_segi <- st_intersection(groves, perimeters)
 #calculate polygon area
 perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001 
 
-#dir.create("data/spatial_data/outputs/perimeters_segi")
-st_write(perimeters_segi, "data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp", append = F)
+#dir.create(here("data/spatial_data/outputs/perimeters_segi"))
+st_write(perimeters_segi, here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp", append = F))
 
 ```
 
@@ -147,8 +147,8 @@ ba_segi_17 <- ba_segi_17 %>%
 #calc poly area
 ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
 
-#dir.create("data/spatial_data/outputs/ba_segi_17")
-##st_write(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F)
+#dir.create(here("data/spatial_data/outputs/ba_segi_17"))
+##st_write(here(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F))
 
 ```
 
@@ -212,8 +212,8 @@ fires_needed <- perimeters %>%
   ) %>% 
   filter(inc_num != "00007043") ##in futre could do a spatial check to get rid of this guy
 
-#dir.create("data/spatial_data/outputs/fires_needed")
-st_write(fires_needed, "data/spatial_data/outputs/fires_needed/fires_needed.shp", append = F)
+#dir.create(here("data/spatial_data/outputs/fires_needed"))
+st_write(fires_needed, here("data/spatial_data/outputs/fires_needed/fires_needed.shp"), append = F)
 
 ```
 ```{r}
@@ -255,8 +255,8 @@ ba_segi_all <- ba_segi_additional %>%
 #plot(ba_segi_all)
 
 #layer is all fires to 2017, relevant fires to present
-#dir.create("data/spatial_data/outputs/ba_segi_all")
-st_write(ba_segi_all, "data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp", append = F)
+#dir.create(here("data/spatial_data/outputs/ba_segi_all"))
+st_write(ba_segi_all, here("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp"), append = F)
 
 ```
 
@@ -277,7 +277,7 @@ ba_segi_additional$area_ha <- as.numeric(st_area(ba_segi_additional))*0.0001
 
 ```{r}
 
-range_segi <- st_read("data/spatial_data/inputs/forest/groves_extent.shp") %>% 
+range_segi <- st_read(here("data/spatial_data/inputs/forest/groves_extent.shp")) %>% 
   rename("range" = "Id") %>% 
   mutate(range = "yes")
 
@@ -305,7 +305,7 @@ ba_full <- ba_2017_range %>%
         ) %>% 
   bind_rows(ba_additional)
 
-#dir.create("data/spatial_data/outputs/ba_full_all")
-st_write(ba_full, "data/spatial_data/outputs/ba_full_all/ba_full_all.shp", append = F)
+#dir.create(here("data/spatial_data/outputs/ba_full_all"))
+st_write(ba_full, here("data/spatial_data/outputs/ba_full_all/ba_full_all.shp"), append = F)
 ```
 

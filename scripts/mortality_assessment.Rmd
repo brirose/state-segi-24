@@ -16,17 +16,18 @@ library(sf)
 library(readxl)
 library(leaflet)
 library(RColorBrewer)
+library(kableExtra)
 
 ```
 
 ```{r}
 #read in severity data
 
-sev_ba_all_sierra <- st_read("data/spatial_data/outputs/ba_all-sierra/ba_full_all.shp")
+sev_ba_all_sierra <- st_read(here("data/spatial_data/outputs/ba_all-sierra/ba_full_all.shp"))
 
-sev_ba_segi <- st_read("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp")
+sev_ba_segi <- st_read(here("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp"))
 
-highsev_rdnbr <- rast("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif") %>% project(crs(sev_ba_all_sierra))
+highsev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif")) %>% project(crs(sev_ba_all_sierra))
 
 ```
 
@@ -80,7 +81,7 @@ windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.r
   mutate(source = "Meyer", fire = "windy", year = "2021",
          prefire_status = case_when(!is.na(dead_before_fire) ~ "Dead",
                               TRUE ~ "Live"),
-         id = monarch_no)%>% 
+         id = paste(monarch_no, plot_no, sep = ""))%>% 
   rename("postfire_status" = "status") %>% 
   select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
 
@@ -96,7 +97,7 @@ meyers_corrected <- meyers_combined %>%
   mutate(
     gps_reset_radians = -1 *((gps_offset_deg * pi) / (180)),  #convert offset to radians and invert 
     new_easting = easting + base::round((sin(gps_reset_radians) * gps_offset_m), digits = 0), #use trig to offset x
-    new_northing = northing + (cos(gps_reset_radians) * gps_offset_m)#use trig to offset y
+    new_northing = northing + (cos(gps_reset_radians) * gps_offset_m) #use trig to offset y
   ) %>% 
   rename(
     "old_easting" = "easting",
@@ -109,6 +110,9 @@ meyers_corrected <- meyers_combined %>%
 meyers_corrected <- meyers_corrected %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
   st_transform(crs(sev_ba_segi))
+
+
+
 
 ```
 
@@ -139,7 +143,7 @@ monarchs_binary <- monarchs_combined %>%
 
 #pull severity info 
 monarchs_severity <- monarchs_binary %>% 
-  st_join(sev_ba_all_sierra)  #pull severity info
+  st_join(sev_ba_all_sierra)  #pull severity info; i am using the all-sierra layer here to ensure that trees that fall slightly outside of the mapped grove boundaries based on field or mapping errors are still included in the analysis
 
 monarch_severity_duplicated <- monarchs_severity %>% 
   mutate(dups = duplicated(id.x)) %>% 
@@ -147,52 +151,161 @@ monarch_severity_duplicated <- monarchs_severity %>%
 
 monarchs_severity <- monarchs_severity %>% 
   filter(!id.x %in% monarch_severity_duplicated$id.x) %>% 
-  bind_rows(monarch_severity_duplicated) #can bind this back because takes the second obs which after the join is the more recent fire
+  bind_rows(monarch_severity_duplicated) %>% #can bind this back because takes the second obs which after the join is the more recent fire
+  rename("tree_id" = "id.x",
+         "measured_yr" = "year",
+         "measured_fire" = "fire",
+         "fire_id" = "id.y") %>% 
+  select(tree_id, grove, postfire_status, prefire_status,measured_yr, measured_fire, fire_id, fire_yr, burnsev, source)
+
+#need to do more checking about the NA monarchs after join
+#also some of them are out of the fire footprint on the spatial data, but have field severity written in; replace with field severity there or remove from dataset?
+
+#dir.create(here("data/spatial_data/outputs/monarchs_severity"))
+st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity.shp"), append = F)
+
+```
+
+Currently the following mortality rate calculation is off because some of the trees we have points for are outside the spatial extent of the fires they were measured for. Ground data suggest that these may still have seen some fire. Need to decide whether these trees should be included, with their field severity used, or excluded. they do still have severities here because they are within the footprint of a different fire, but those are not the correct burnsev. samesame question for trees that show up as NA because they are outside the mapped footprint of fires
 
 
-#calculate mortality by fire
+### Mortality rate by fire
+
+This is the aggregation level that is typically used in the literature.
+
+```{r}
+
+#calculate mortality rates by fire
 monarchs_mortality_fire <- monarchs_severity %>% 
   st_drop_geometry() %>% 
-  summarise(.by = c(fire, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
+  summarise(.by = c(measured_fire, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
 
-#calculate mortality by year
+#determine range of mortality when aggregated by fire
+mortality_fire <- monarchs_mortality_fire %>% 
+  summarize(.by = burnsev,
+            min_fire = min(mortality),
+            max_fire = max(mortality),
+            avg_fire = mean(mortality))
+
+kable(mortality_fire,
+      digits = 3,
+      caption = "SEGI estimated mortality rates when aggregated by fire")
+```
+
+### Mortality by year
+
+Out of interest, we also tried an aggregation by year.
+
+```{r}
+#calculate mortality rates by year
 monarchs_mortality_year <- monarchs_severity %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(fire_yr, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
-  
+
+#determine range of mortality when aggregated by year
+mortality_year <- monarchs_mortality_year %>% 
+  summarize(.by = burnsev,
+            min_yr = min(mortality),
+            max_yr = max(mortality),
+            avg_yr = mean(mortality))
+
+kable(mortality_year,
+      digits = 3,
+      caption = "SEGI estimated mortality rates when aggregated by year")
 
 ```
 
 
 ```{r}
 
-ggplot()+
-  geom_sf(monarchs_binary, mapping = aes())
+# plot to check and debug
 
-monarchs_wgs84 <- st_transform(monarchs_binary, 4326)
-sev_ba_wgs84 <- st_transform(sev_ba, 4326)
-perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp") %>% 
-  st_transform(4326)
-groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
-  clean_names() %>%
-  st_transform(4326) %>% #uniform crs
-  st_cast("MULTIPOLYGON")
-ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
-  st_transform(4324)
-
-
-debug_map <- leaflet() %>% 
-  addTiles() %>% 
-  setView(lng = -118.5, lat = 36.5, zoom = 10) %>% 
-  #  addPolygons(data = ba_additional, opacity = 1) %>% 
-  #addPolygons(data = groves, color = "black", opacity = 1, fillOpacity = 0) %>% 
-    # addPolygons(data = sev_ba_wgs84, 
-    #           color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, 
-    #           fillOpacity = 0.5, fillColor = ~colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev)(burnsev))%>% 
-  addCircleMarkers(data = monarchs_wgs84, stroke = F, fillOpacity = 0.8, radius = 3, color = "black") %>% 
-  addLegend(pal = colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev), values = sev_ba_wgs84$burnsev)
-
-debug_map
+# ggplot()+
+#   geom_sf(monarchs_binary, mapping = aes())
+# 
+# monarchs_wgs84 <- st_transform(monarchs_binary, 4326)
+# sev_ba_wgs84 <- st_transform(sev_ba, 4326)
+# perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp") %>% 
+#   st_transform(4326)
+# groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
+#   clean_names() %>%
+#   st_transform(4326) %>% #uniform crs
+#   st_cast("MULTIPOLYGON")
+# ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
+#   st_transform(4324)
+# 
+# 
+# debug_map <- leaflet() %>% 
+#   addTiles() %>% 
+#   setView(lng = -118.5, lat = 36.5, zoom = 10) %>% 
+#   #  addPolygons(data = ba_additional, opacity = 1) %>% 
+#   #addPolygons(data = groves, color = "black", opacity = 1, fillOpacity = 0) %>% 
+#     # addPolygons(data = sev_ba_wgs84, 
+#     #           color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, 
+#     #           fillOpacity = 0.5, fillColor = ~colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev)(burnsev))%>% 
+#   addCircleMarkers(data = monarchs_wgs84, stroke = F, fillOpacity = 0.8, radius = 3, color = "black") %>% 
+#   addLegend(pal = colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev), values = sev_ba_wgs84$burnsev)
+# 
+# debug_map
 
 ```
 
+
+## Estimate SEGI mortality from fires
+
+First, I put together some quick mortality estimates that utilize the `trees_ha` trees/ha value only.
+
+I did this as annual estimates. 
+
+```{r}
+#annual mortality (without removal of SEKI areas that have counts)
+
+trees_ha = 6.4 #there are an estimated 6.4 segi trees per acre
+
+annual_mort_estfire <- sev_ba_segi %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
+ left_join(mortality_fire, mortality_year) %>% 
+  mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
+         mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
+         mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
+         mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
+         mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
+         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1)) %>% 
+  select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
+  arrange(fire_yr, burnsev)
+
+kable(annual_mort_estfire, 
+      digits = 2,
+      caption = "SEGI annual mortality from fire estimates using only trees per ha")
+
+```
+
+...and as total mortality by severity class
+
+
+```{r}
+#total mortality (without removal of SEKI areas that have counts)
+
+total_mort_estfire <- sev_ba_segi %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
+ left_join(mortality_fire, mortality_year) %>% 
+  mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
+         mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
+         mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
+         mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
+         mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
+         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1)) %>% 
+  select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
+  arrange(burnsev)
+
+kable(annual_mort_estfire, 
+      digits = 2,
+      caption = "SEGI total mortality from fire estimates using only trees per ha")
+```
+
+
+## Break down into two-fold methods
+
+Ultimately, we wanted to try and increase precision of our estimates. In some groves, we have exact maps of tree locations (STI). So, I will remove those groves from the estimates that use the average value and instead use the exact tree count per severity. Then I will use the average t/ha to calculate the remaining area. 
