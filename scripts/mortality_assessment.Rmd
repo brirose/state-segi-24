@@ -253,6 +253,24 @@ kable(mortality_year,
 
 ## Estimate SEGI mortality from fires
 
+Here i calculate severity proportions
+
+```{r}
+
+total_area_ha = 28958*0.404686
+
+severity_annual <- sev_ba_segi %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
+  mutate(proportion_groves = total_ha/total_area_ha)
+
+severity_total <- sev_ba_segi %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
+  mutate(proportion_groves = total_ha/total_area_ha) 
+```
+
+
 First, I put together some quick mortality estimates that utilize the `trees_ha` trees/ha value only.
 
 I did this as annual estimates. 
@@ -260,22 +278,29 @@ I did this as annual estimates.
 ```{r}
 #annual mortality (without removal of SEKI areas that have counts)
 
-trees_ha = 6.4 #there are an estimated 6.4 segi trees per acre
+trees_ha = 2.61 *0.404686 #there are an estimated 2.61 segi trees per acre, converted to ha
 
-annual_mort_estfire <- sev_ba_segi %>% 
-  st_drop_geometry() %>% 
-  summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
- left_join(mortality_fire, mortality_year) %>% 
+trees_total = total_area_ha*trees_ha
+
+annual_mort_est <- severity_annual %>% 
+  left_join(mortality_fire) %>% 
+  left_join(mortality_year) %>% 
   mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
+         mort_min_perc_fire = proportion_groves*min_fire,
          mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
+         mort_max_perc_fire = proportion_groves*max_fire,
          mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
+         mort_avg_perc_fire = proportion_groves*avg_fire,
          mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
+         mort_min_perc_yr = proportion_groves*min_yr,
          mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
-         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1)) %>% 
+         mort_max_perc_yr = proportion_groves*max_yr,
+         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1),
+         mort_avg_perc_yr = proportion_groves*avg_yr) %>% 
   select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
   arrange(fire_yr, burnsev)
 
-kable(annual_mort_estfire, 
+kable(annual_mort_est, 
       digits = 2,
       caption = "SEGI annual mortality from fire estimates using only trees per ha")
 
@@ -287,25 +312,90 @@ kable(annual_mort_estfire,
 ```{r}
 #total mortality (without removal of SEKI areas that have counts)
 
-total_mort_estfire <- sev_ba_segi %>% 
+total_mort_est <- severity_total %>% 
   st_drop_geometry() %>% 
-  summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
- left_join(mortality_fire, mortality_year) %>% 
+  left_join(mortality_fire) %>% 
+  left_join(mortality_year) %>% 
   mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
+         mort_min_perc_fire = proportion_groves*min_fire,
          mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
+         mort_max_perc_fire = proportion_groves*max_fire,
          mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
+         mort_avg_perc_fire = proportion_groves*avg_fire,
          mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
+         mort_min_perc_yr = proportion_groves*min_yr,
          mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
-         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1)) %>% 
+         mort_max_perc_yr = proportion_groves*max_yr,
+         mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1),
+         mort_avg_perc_yr = proportion_groves*avg_yr) %>% 
   select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
   arrange(burnsev)
 
-kable(annual_mort_estfire, 
+kable(total_mort_est, 
       digits = 2,
       caption = "SEGI total mortality from fire estimates using only trees per ha")
 ```
 
 
-## Break down into two-fold methods
+## Compare STI vs average per ha at grove level
 
-Ultimately, we wanted to try and increase precision of our estimates. In some groves, we have exact maps of tree locations (STI). So, I will remove those groves from the estimates that use the average value and instead use the exact tree count per severity. Then I will use the average t/ha to calculate the remaining area. 
+Here i look at how the estimates change if I use the sti in SEKI to make the estimates. I estimate by grove and do the estimates by sti and by average trees. We expect that in some groves the sti will be an undercount since it does not cover entire grove area (list here)
+
+
+```{r}
+
+sti <- st_read(here("data/spatial_data/inputs/forest/SEKI_STI_20211021.gdb"),layer = "SEKI_STI_pt") %>% 
+  clean_names() %>%
+  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  filter(diameter >= 121.92) %>% 
+  mutate(case_when(
+    grove == "Grant" ~ "General Grant",
+    grove == "Oriole" ~ "Oriole Lake",
+    grove == "Devils Canyon" ~ "Devil's Canyon",
+    T ~ grove
+  )
+  )
+
+sti_sev <- sti %>% 
+  st_join(sev_ba_all_sierra) %>%  # here i am leaving the multiple fires
+  st_drop_geometry() %>% 
+  drop_na(burnsev) %>%  # drop trees that did not experience fire
+  summarise(.by = c(grove, burnsev), tree_ct = n())
+
+grove_sev_area <- sev_ba_segi %>% 
+  filter(grov_nm %in% sti_sev$grove) %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(grov_nm, burnsev), area_ha = sum(area_ha))
+
+grove_area <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
+  clean_names() %>%
+  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  st_cast("MULTIPOLYGON") %>% #convert multisurface to multipolygon
+  filter(grove_name %in% sti_sev$grove) %>% 
+  st_drop_geometry() %>% 
+  select(grove_name, acres) %>% 
+  mutate(grove_ha = acres*0.404686) %>% select(!acres) %>% 
+  left_join(grove_sev_area, join_by(grove_name == grov_nm))
+
+sti_mortality_est <- sti_sev %>% 
+  left_join(mortality_fire) %>% 
+  left_join(mortality_year) %>% 
+  left_join(grove_area_sti, join_by(grove == grov_nm, burnsev == burnsev))
+
+
+
+  mutate(sti_min_fire = round(tree_ct*min_fire, 1),
+        sti_min_perha_fire = mort_min_fire/,
+         sti_max_fire = round(tree_ct*max_fire, 1),
+         sti_max_perc_fire = proportion_groves*max_fire,
+         sti_avg_fire = round(tree_ct*avg_fire, 1),
+         sti_avg_perc_fire = proportion_groves*avg_fire,
+         sti_min_yr = round(tree_ct*min_yr, 1),
+         sti_min_perc_yr = proportion_groves*min_yr,
+         sti_max_yr = round(tree_ct*max_yr, 1),
+         sti_max_perc_yr = proportion_groves*max_yr,
+         sti_avg_yr = round(tree_ct*avg_yr, 1),
+         sti_avg_perc_yr = proportion_groves*avg_yr)
+
+```
+
