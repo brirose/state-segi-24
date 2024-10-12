@@ -40,16 +40,17 @@ library(janitor)
 #check layers in gdb
 st_layers(here("data/spatial_data/inputs/fire/fire22_1.gdb"))
 # 
-ba2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb", layer = "VegBurnSeverity_BestAssessment") )%>% clean_names()
-# 
+ba2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb"), layer = "VegBurnSeverity_BestAssessment")%>% clean_names()
+
+sev_ba_segi <- st_read(here("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp"))
 # perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
 #   clean_names() %>% 
 #   st_transform(crs(ba2017)) %>%  #make consistent crs
 #   st_cast("MULTIPOLYGON")
 # 
-groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public")) %>%
+groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
-  st_transform(crs(ba2017)) %>% #uniform crs
+  st_transform(crs(sev_ba_segi)) %>% #uniform crs
   st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
 
 
@@ -64,12 +65,17 @@ perimeters_segi <- st_read(here("data/spatial_data/outputs/perimeters_segi/perim
 #BA severity up to 2017
 ba_segi_17 <- st_read(here("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp"))
 
-#BA that we did not yet have, is missing a little window of Windy Fire
+#BA that we did not yet have, is missing a little window of Windy Fire, layer made in combine_gee
 ba_additional <- st_read(here("data/spatial_data/outputs/ba_missing/ba_missing.shp")) %>% 
-  st_transform(crs(ba2017))
+  st_transform(crs(sev_ba_segi))
 
 #rdnbr for fires that intersect with groves AND that have high severity, also missing window of Windy Fire, but is cat 1 & 2 so will not be used
 rdnbr_segi_rast <- rast(here("data/spatial_data/outputs/needFires_rdnbr/needFires_rdnbr.tif"))
+
+
+#BA 7-class fires that have had high sev and are in groves 1984-2024 
+sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp")) %>% 
+  st_transform(crs(sev_ba_segi))
 
 ```
 
@@ -127,7 +133,7 @@ perimeters_segi <- st_intersection(groves, perimeters)
 perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001 
 
 #dir.create(here("data/spatial_data/outputs/perimeters_segi"))
-st_write(perimeters_segi, here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp", append = F))
+# st_write(perimeters_segi, here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp", append = F))
 
 ```
 
@@ -307,5 +313,23 @@ ba_full <- ba_2017_range %>%
 
 #dir.create(here("data/spatial_data/outputs/ba_full_all"))
 st_write(ba_full, here("data/spatial_data/outputs/ba_full_all/ba_full_all.shp"), append = F)
+```
+
+
+```{r}
+#grove filtered 7-class
+
+ba_class7_segi <- st_intersection(groves, sev_class7)
+
+ba_class7_segi <- ba_class7_segi %>% 
+  rename("grov_nm" = "grove_name",
+         "fire_yr" = "year") %>% 
+  select(grov_nm, id, burnsev, fire_yr) 
+
+ba_class7_segi$area_ha <- as.numeric(st_area(ba_class7_segi))*0.0001 
+
+#dir.create(here("data/spatial_data/outputs/ba_class7_poly"))
+st_write(ba_class7_segi, here("data/spatial_data/outputs/ba_class7_poly/ba_class7_poly.shp"), append = F)
+
 ```
 

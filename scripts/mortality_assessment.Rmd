@@ -20,25 +20,28 @@ library(kableExtra)
 
 ```
 
-```{r include=FALSE}
+This document contains code for a mortality assessment based on inputs of observed monarch tree mortality after a series of fires and fire severity as mapped through remote sensing of rdnbr on GEE (see complete_severity_layer_generation and combine_gee).
+
+```{r import_data, include=FALSE}
 #read in severity data
 
+#four-class basal area severity for all fires that intersect groves, not clipped to groves
 sev_ba_all_sierra <- st_read(here("data/spatial_data/outputs/ba_all-sierra/ba_full_all.shp"))
 
+#four-class BA severity for fires that intersect groves, clipped to groves
 sev_ba_segi <- st_read(here("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp"))
 
-highsev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif")) %>% 
-  project(crs(sev_ba_all_sierra))
-
+#inventory of SEGI in SEKI, point data
 sti <- st_read(here("data/spatial_data/inputs/forest/SEKI_STI_20211021.gdb"),layer = "SEKI_STI_pt") %>% 
   clean_names() %>%
   st_transform(crs(sev_ba_segi)) %>% #uniform crs
-  filter(diameter >= 121.92) %>% 
+  filter(diameter >= 121.92) %>% # filter for monarch trees >=4ft
   mutate(grove = case_when(
     grove == "Grant" ~ "General Grant",
     grove == "Oriole" ~ "Oriole Lake",
     T ~ grove))
 
+#polygons of SEGI groves, "skinny"
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
   st_transform(crs(sev_ba_segi)) %>% #uniform crs
@@ -46,8 +49,9 @@ groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_publi
 
 ```
 
-## Calculate mortality rates
+We used field data collected from XXX fires
 
+this set will be replaced once I have the field data for these. in this doc currently as a reminder. 
 
 Mortality rates observed by Shive et al. (in review) for the Rough and Pier Fire, rates for the Railroad Fire from Stephenson and Brigham (2021). 
 Survey area 	Low 	Moderate 	High
@@ -56,11 +60,9 @@ Survey area 	Low 	Moderate 	High
 -2017 Pier Fire (Black Mountain Grove) 	11.9% 	24.5% 	74.6%
 
 
+```{r mortality_examples}
 
-
-```{r}
-
-#initialize dataframe of mortality rates by fire
+#initialize dataframe of mortality rates by fire,
 
 mortality_rates_fires <- tibble(
   fire_year = c(2015, 2017, 2017),
@@ -74,22 +76,30 @@ mortality_rates_fires <- tibble(
 
 ```
 
-```{r}
+## Load and clean data
+
+Each dataset is slightly different, so I am loading each separately, cleaning them and then combining them. I then make them a spatial feature so that we can plot them on the map and find the severity.
+
+```{r usfs_input}
 #Meyer input
 
+#usfs data on castle fire
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
-  mutate(source = "Meyer", fire = "castle", year = "2020",
+  mutate(source = "Meyer", fire = "castle", year = "2020", #include relevant info
          id = paste(grove, plot_no_nearby, monarch_no, sep = "")) %>% 
-  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, dbh_cm, gps_offset_deg)
 
+
+#USFS data on KNP complex
 knp_meyer <- read_excel(here("data/plot_data/meyer/PostfireSequoiaGroveData_2024_FreemanCrk&REMO.v2.reduced.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   filter(removed == "no") %>% 
   mutate(source = "Meyer", fire = "knp", year = "2021",
          id = paste(grove, plot_no_nearby, monarch_no, sep = ""))%>% 
-  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, dbh_cm, gps_offset_deg)
 
+#usfs data on windy fire
 windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.reduced.v2.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   mutate(source = "Meyer", fire = "windy", year = "2021",
@@ -97,7 +107,7 @@ windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.r
                               TRUE ~ "Live"),
          id = paste(monarch_no, plot_no, sep = ""))%>% 
   rename("postfire_status" = "status") %>% 
-  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, gps_offset_deg)
+  select(id, grove, easting, northing, postfire_status, prefire_status, source, year, fire, gps_offset_m, dbh_cm, gps_offset_deg)
 
 #combine into one
 meyers_combined <- castle_meyer %>% 
@@ -105,13 +115,17 @@ meyers_combined <- castle_meyer %>%
   rbind(windy_meyer) %>% 
   drop_na(easting, northing)
 
-#correct points
-#these points are mostly ~15m off from the monarch. most points to N, so move 15m south (need to calc the lat amount this is)
+#correct points; points were taken away from the location of the SEGI
+#the following is trig to move them to the correct spot
+#requires that we know distance and degrees offset from tree and dbh
+
 meyers_corrected <- meyers_combined %>% 
   mutate(
-    gps_reset_radians = -1 *((gps_offset_deg * pi) / (180)),  #convert offset to radians and invert 
-    new_easting = easting + base::round((sin(gps_reset_radians) * gps_offset_m), digits = 0), #use trig to offset x
-    new_northing = northing + (cos(gps_reset_radians) * gps_offset_m) #use trig to offset y
+    dbh_cm = replace_na(dbh_cm, 0), #fill NA dbh with 0
+    total_offset_m = gps_offset_m + dbh_cm/100/2, #add radius to offset to put point on center
+    gps_reset_radians = -1 *((gps_offset_deg * pi) / (180)),# convert offset to radians & invert 
+    new_easting = easting + (sin(gps_reset_radians) * total_offset_m), #use trig to offset x
+    new_northing = northing + (cos(gps_reset_radians) * total_offset_m) #use trig to offset y
   ) %>% 
   rename(
     "old_easting" = "easting",
@@ -125,18 +139,19 @@ meyers_corrected <- meyers_corrected %>%
   st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
   st_transform(crs(sev_ba_segi))
 
-
-
-
 ```
 
-```{r}
+
+```{r combine_inputs}
 #combine inputs
 monarchs_combined <- meyers_corrected
 
 ```
 
-```{r}
+##Calculate Mortality Rates
+Now, i calculate mortality rate based on trees prefire vs postfire status.
+
+```{r binary_severity}
 
 monarchs_binary <- monarchs_combined %>% 
   mutate(
@@ -159,13 +174,14 @@ monarchs_binary <- monarchs_combined %>%
 monarchs_severity <- monarchs_binary %>% 
   st_join(sev_ba_all_sierra)  #pull severity info; i am using the all-sierra layer here to ensure that trees that fall slightly outside of the mapped grove boundaries based on field or mapping errors are still included in the analysis
 
+#the sev_ba_all_sierra layer has all fires, but the observation data only are for recent fires, so remove duplicates
 monarch_severity_duplicated <- monarchs_severity %>% 
   mutate(dups = duplicated(id.x)) %>% 
-  filter(dups == T)
+  filter(dups == T) #makes df of second time a tree ID is in the initial df
 
 monarchs_severity <- monarchs_severity %>% 
-  filter(!id.x %in% monarch_severity_duplicated$id.x) %>% 
-  bind_rows(monarch_severity_duplicated) %>% #can bind this back because takes the second obs which after the join is the more recent fire
+  filter(!id.x %in% monarch_severity_duplicated$id.x) %>% # remove all duplicated IDs
+  bind_rows(monarch_severity_duplicated) %>% #bind this back bc contains the second obs which after the join is the more recent fire
   rename("tree_id" = "id.x",
          "measured_yr" = "year",
          "measured_fire" = "fire",
@@ -187,7 +203,7 @@ Currently the following mortality rate calculation is off because some of the tr
 
 This is the aggregation level that is typically used in the literature.
 
-```{r}
+```{r mortality_fire}
 
 #calculate mortality rates by fire
 monarchs_mortality_fire <- monarchs_severity %>% 
@@ -210,11 +226,12 @@ kable(mortality_fire,
 
 Out of interest, we also tried an aggregation by year.
 
-```{r}
+```{r mortality_year}
 #calculate mortality rates by year
 monarchs_mortality_year <- monarchs_severity %>% 
   st_drop_geometry() %>% 
-  summarise(.by = c(fire_yr, burnsev), mortality = 1-(sum(postfire_status)/sum(prefire_status)))
+  summarise(.by = c(fire_yr, burnsev), 
+            mortality = 1-(sum(postfire_status)/sum(prefire_status)))
 
 #determine range of mortality when aggregated by year
 mortality_year <- monarchs_mortality_year %>% 
@@ -232,7 +249,7 @@ kable(mortality_year,
 Decision needed: which aggregation will we want to use? Likely should wait until we have enough actual data, rather than just the USFS
 
 
-```{r}
+```{r check_debug}
 
 # plot to check and debug
 
@@ -269,21 +286,33 @@ Decision needed: which aggregation will we want to use? Likely should wait until
 
 ## Estimate SEGI mortality from fires
 
-Here i calculate severity proportions
+Now that we have ranges of mortality for each severity level, we can use these to estimate mortality. 
 
-```{r}
+Here i calculate the proportion of area that experienced each severity of fire
+
+```{r severity_area}
 
 total_area_ha = 28958*0.404686
 
+#here i calculate ha of each severity in each year
 severity_annual <- sev_ba_segi %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
-  mutate(proportion_groves = total_ha/total_area_ha)
+  mutate(prop_grove_area = total_ha/total_area_ha)
 
+kable(severity_annual, 
+      digits = 2,
+      caption = "Area and proportion of grove area experiencing fire severity annually 1984-2023")
+
+#here i calculate ha of each severity since 1984
 severity_total <- sev_ba_segi %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
-  mutate(proportion_groves = total_ha/total_area_ha) 
+  mutate(prop_grove_area = total_ha/total_area_ha) 
+
+kable(severity_total, 
+      digits = 2,
+      caption = "Area and proportion of grove area experiencing fire severity 1984-2023")
 ```
 
 
@@ -291,7 +320,7 @@ First, I put together some quick mortality estimates that utilize the `trees_ha`
 
 I did this as annual estimates. 
 
-```{r}
+```{r annual_mort}
 #annual mortality (without removal of SEKI areas that have counts)
 
 trees_ha = 2.61 *0.404686 #there are an estimated 2.61 segi trees per acre, converted to ha
@@ -302,17 +331,17 @@ annual_mort_est <- severity_annual %>%
   left_join(mortality_fire) %>% 
   left_join(mortality_year) %>% 
   mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
-         mort_min_perc_fire = proportion_groves*min_fire,
+         mort_min_perc_fire = prop_grove_area*min_fire,
          mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
-         mort_max_perc_fire = proportion_groves*max_fire,
+         mort_max_perc_fire = prop_grove_area*max_fire,
          mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
-         mort_avg_perc_fire = proportion_groves*avg_fire,
+         mort_avg_perc_fire = prop_grove_area*avg_fire,
          mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
-         mort_min_perc_yr = proportion_groves*min_yr,
+         mort_min_perc_yr = prop_grove_area*min_yr,
          mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
-         mort_max_perc_yr = proportion_groves*max_yr,
+         mort_max_perc_yr = prop_grove_area*max_yr,
          mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1),
-         mort_avg_perc_yr = proportion_groves*avg_yr) %>% 
+         mort_avg_perc_yr = prop_grove_area*avg_yr) %>% 
   select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
   arrange(fire_yr, burnsev)
 
@@ -325,7 +354,7 @@ kable(annual_mort_est,
 ...and as total mortality by severity class
 
 
-```{r}
+```{r total_mort}
 #total mortality (without removal of SEKI areas that have counts)
 
 total_mort_est <- severity_total %>% 
@@ -333,17 +362,17 @@ total_mort_est <- severity_total %>%
   left_join(mortality_fire) %>% 
   left_join(mortality_year) %>% 
   mutate(mort_min_fire = round(total_ha*trees_ha*min_fire, 1),
-         mort_min_perc_fire = proportion_groves*min_fire,
+         mort_min_perc_fire = prop_grove_area*min_fire,
          mort_max_fire = round(total_ha*trees_ha*max_fire, 1),
-         mort_max_perc_fire = proportion_groves*max_fire,
+         mort_max_perc_fire = prop_grove_area*max_fire,
          mort_avg_fire = round(total_ha*trees_ha*avg_fire, 1),
-         mort_avg_perc_fire = proportion_groves*avg_fire,
+         mort_avg_perc_fire = prop_grove_area*avg_fire,
          mort_min_yr = round(total_ha*trees_ha*min_yr, 1),
-         mort_min_perc_yr = proportion_groves*min_yr,
+         mort_min_perc_yr = prop_grove_area*min_yr,
          mort_max_yr = round(total_ha*trees_ha*max_yr, 1),
-         mort_max_perc_yr = proportion_groves*max_yr,
+         mort_max_perc_yr = prop_grove_area*max_yr,
          mort_avg_yr = round(total_ha*trees_ha*avg_yr, 1),
-         mort_avg_perc_yr = proportion_groves*avg_yr) %>% 
+         mort_avg_perc_yr = prop_grove_area*avg_yr) %>% 
   select(!c(min_fire, max_fire, avg_fire, min_yr, max_yr, avg_yr)) %>% 
   arrange(burnsev)
 
@@ -355,22 +384,27 @@ kable(total_mort_est,
 
 ## Compare STI vs average per ha at grove level
 
-Here i look at how the estimates change if I use the sti in SEKI to make the estimates. I estimate by grove and do the estimates by sti and by average trees. We expect that in some groves the sti will be an undercount since it does not cover entire grove area (list here)
+Here i look at how the estimates change if I use the sti in SEKI to make the estimates. I estimate by grove and do the estimates by sti and by average trees mortality ranges. 
+
+We expect that in some groves the sti should be an undercount since it does not cover entire grove area (list here)
 
 
-```{r}
+```{r sti_mort}
 
+#severity experienced by each tree in the STI
 sti_sev <- sti %>% 
-  st_join(sev_ba_all_sierra) %>%  # here i am leaving observations where trees experienced multiple fires
+  st_join(sev_ba_all_sierra) %>%#here i include all times a tree experienced fire
   st_drop_geometry() %>% 
-  drop_na(burnsev) %>%  # drop trees that did not experience fire
+  drop_na(burnsev) %>%  #drop trees that did not experience fire
   summarise(.by = c(grove, burnsev), tree_ct = n())
 
+#severity area in each grove
 grove_sev_area <- sev_ba_segi %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(grov_nm, burnsev), area_ha = sum(area_ha)) %>% 
   mutate(grov_nm = case_when(grov_nm == "Devil's Canyon" ~ "Devils Canyon", T ~ grov_nm))
 
+#total grove area
 grove_area <- groves %>% #convert multisurface to multipolygon
   st_drop_geometry() %>% 
   select(grove_name, acres) %>% 
@@ -382,47 +416,56 @@ grove_area <- groves %>% #convert multisurface to multipolygon
   left_join(grove_sev_area, join_by(grove_name == grov_nm)) %>% 
   drop_na(burnsev)
 
+#combine to have count of trees in each grove that experienced each severity
+#calculate count of trees that died in each, and trees that died per acre in each grove
+#use both mortality ranges and calculate corresponding values by average density
 sti_mortality_est <- sti_sev %>% 
   left_join(mortality_fire) %>% 
   left_join(mortality_year) %>% 
   left_join(grove_area, join_by(grove == grove_name, burnsev == burnsev)) %>% 
-  mutate(sti_min_ct_fire = round(tree_ct*min_fire, 1),
-         sti_min_perha_fire = sti_min_ct_fire/grove_ha,
-         sti_max_ct_fire = round(tree_ct*max_fire, 1),
-         sti_max_perha_fire = sti_max_ct_fire/grove_ha,
-         sti_avg_ct_fire = round(tree_ct*avg_fire, 1),
-         sti_avg_perha_fire = sti_avg_ct_fire/grove_ha,
-         sti_min_ct_yr = round(tree_ct*min_yr, 1),
-         sti_min_perha_yr = sti_min_ct_yr/grove_ha,
-         sti_max_ct_yr = round(tree_ct*max_yr, 1),
-         sti_max_perha_yr = sti_max_ct_yr/grove_ha,
-         sti_avg_ct_yr = round(tree_ct*avg_yr, 1),
-         sti_avg_perha_yr = sti_avg_ct_yr/grove_ha,
-         est_min_ct_fire = round(area_ha*trees_ha*min_fire, 1),
-         est_min_perha_fire = est_min_ct_fire/grove_ha,
-         est_max_ct_fire = round(area_ha*trees_ha*max_fire, 1),
-         est_max_perha_fire = est_max_ct_fire/grove_ha,
-         est_avg_ct_fire = round(area_ha*trees_ha*avg_fire, 1),
-         est_avg_perha_fire = est_avg_ct_fire/grove_ha,
-         est_min_ct_yr = round(area_ha*trees_ha*min_yr, 1),
-         est_min_perha_yr = est_min_ct_yr/grove_ha,
-         est_max_ct_yr = round(area_ha*trees_ha*max_yr, 1),
-         est_max_perha_yr = est_max_ct_yr/grove_ha,
-         est_avg_ct_yr = round(area_ha*trees_ha*avg_yr, 1),
-         est_avg_perha_yr = est_avg_ct_yr/grove_ha)%>% 
+  mutate(
+    #calculate based on STI counts
+    sti_min_ct_fire = round(tree_ct*min_fire, 1),
+    sti_min_perha_fire = sti_min_ct_fire/grove_ha,
+    sti_max_ct_fire = round(tree_ct*max_fire, 1),
+    sti_max_perha_fire = sti_max_ct_fire/grove_ha,
+    sti_avg_ct_fire = round(tree_ct*avg_fire, 1),
+    sti_avg_perha_fire = sti_avg_ct_fire/grove_ha,
+    sti_min_ct_yr = round(tree_ct*min_yr, 1),
+    sti_min_perha_yr = sti_min_ct_yr/grove_ha,
+    sti_max_ct_yr = round(tree_ct*max_yr, 1),
+    sti_max_perha_yr = sti_max_ct_yr/grove_ha,
+    sti_avg_ct_yr = round(tree_ct*avg_yr, 1),
+    sti_avg_perha_yr = sti_avg_ct_yr/grove_ha,
+    #estimates based on trees/ha
+    est_min_ct_fire = round(area_ha*trees_ha*min_fire, 1),
+    est_min_perha_fire = est_min_ct_fire/grove_ha,
+    est_max_ct_fire = round(area_ha*trees_ha*max_fire, 1),
+    est_max_perha_fire = est_max_ct_fire/grove_ha,
+    est_avg_ct_fire = round(area_ha*trees_ha*avg_fire, 1),
+    est_avg_perha_fire = est_avg_ct_fire/grove_ha,
+    est_min_ct_yr = round(area_ha*trees_ha*min_yr, 1),
+    est_min_perha_yr = est_min_ct_yr/grove_ha,
+    est_max_ct_yr = round(area_ha*trees_ha*max_yr, 1),
+    est_max_perha_yr = est_max_ct_yr/grove_ha,
+    est_avg_ct_yr = round(area_ha*trees_ha*avg_yr, 1),
+    est_avg_perha_yr = est_avg_ct_yr/grove_ha)%>% 
   select(!tree_ct:area_ha) %>% 
   pivot_longer(sti_min_ct_fire:est_avg_perha_yr) %>% 
-  separate_wider_delim(name, "_", names = c("method", "statistic", "measure", "aggregation"))
+  separate_wider_delim(name, "_", 
+                       names = c("method", "statistic", "measure", "aggregation"))
 
 ```
 
-```{r fig.width=10,fig.height=14}
+The following are some visuals to compare some of these values. I have yet to do any actual statistical analysis. 
+
+```{r compare_sti_scatter, fig.width=10, fig.height=14}
 
 method_comparison_fire <- sti_mortality_est %>% 
   filter(aggregation == "fire", measure == "perha") %>% 
   as.data.frame()
   
-
+#plot values for fire aggregated mortality rates
 ggplot(method_comparison_fire, aes(x = grove, y = value)) +
   geom_point(aes(color = method))+
   facet_wrap(vars(burnsev))+
@@ -434,19 +477,22 @@ ggplot(method_comparison_fire, aes(x = grove, y = value)) +
 
 ```
 
-```{r}
-# difference between measures
+Seems to be a fair amount of disagreement between methods. Overall see higher estimates by using STI. As far as I can see, there are no cases of the STI estimates being lower than their corresponding estimate (see boxplots below).
 
+```{r compare_sti_box}
+
+# difference between measures
 difference_mortality <- sti_mortality_est %>% 
   pivot_wider(names_from = method, values_from = value) %>% 
   mutate(diff = sti-est,
          burnsev = as.factor(burnsev)) %>% 
   filter(measure == "perha")
 
+#boxplot showing the variance in differences between estimates
 ggplot(difference_mortality, aes(burnsev, diff))+
   facet_wrap(vars(aggregation, statistic))+
   geom_boxplot()+
-  labs(title = "Difference between trees/ha mortality based on STI counts and average trees per ha")
+  labs(title = "Difference between trees/ha mortality based on STI counts and average\ntrees per ha in SEKI SEGI groves")
 
 
 ```

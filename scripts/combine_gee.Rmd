@@ -25,7 +25,7 @@ Run fire severity in google earth engine (!https://code.earthengine.google.com/6
 rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T) #define files
 
 rasnames <- rasfiles%>% #define names
- str_replace_all(c(here("data/spatial_data/inputs/fire/fires_needed/") = "", "_rdnbr.tif" = "")) %>% 
+ str_replace_all(c("C:/Users/bri.baker/State_SEGI/state-segi-24/data/spatial_data/inputs/fire/fires_needed/" = "", "_rdnbr.tif" = "")) %>% 
   tolower()
 
 rasnames <- paste("rdnbr", rasnames, sep="_")
@@ -86,19 +86,19 @@ To classify the rdnbr raster using these breaks, we will need to determine the c
 RdNBR = a + b ⁎ ASIN(SQRT(PctBA / 100)) where a = 166.5, b = 389.0
 
 ```{r}
-# #define breaks
-# category_names7 <- c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%")
-# 
-# breaks7 <- tibble(
-#   ba_from = c(0, 0, 10, 25, 50, 75, 90), #lefthand breaks BA
-#   ba_to = c(0, 10, 25, 50, 75, 90, 100), #righthand breaks in BA
-#   rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)), #converted to rdnbr
-#   rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)), #converted to rdnbr
-#   becomes =  c(1, 2, 3, 4, 5, 6, 7)) %>% #name of categories
-#   select(!contains("ba")) #removes unneeded columns
-#   
-# breaks7[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
-# breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
+#define breaks
+category_names7 <- c("0% Change", "0% < Change < 10%", "10% <= Change < 25%", "25% <= Change < 50%","50% <= Change < 75%", "75% <= Change < 90%", "Change > 90%")
+
+breaks7 <- tibble(
+  ba_from = c(0, 0, 10, 25, 50, 75, 90), #lefthand breaks BA
+  ba_to = c(0, 10, 25, 50, 75, 90, 100), #righthand breaks in BA
+  rdnbr_from = 166.5 + 389 * asin(sqrt(ba_from/100)), #converted to rdnbr
+  rdnbr_to = 166.5 + 389 * asin(sqrt(ba_to/100)), #converted to rdnbr
+  becomes =  c(1, 2, 3, 4, 5, 6, 7)) %>% #name of categories
+  select(!contains("ba")) #removes unneeded columns
+
+breaks7[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
+breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 
 ```
 
@@ -120,6 +120,34 @@ RdNBR = a + b ⁎ ASIN(SQRT(PctBA / 100)) where a = 166.5, b = 389.0
 # levels(severity_ba7) <- x #save new levels back
 
 #writeRaster(severity_ba7, here("data/spatial_data/needSeverity_baClass7.tif"))
+
+```
+
+
+```{r}
+#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
+
+dat_class <- lapply(dat, classify, rcl = breaks7, right = F, include.lowest = T) #include max value 
+
+#make factors
+lapply(dat_class, as.factor)
+
+#convert to multipolygons
+dat_poly <- lapply(dat_class, as.polygons)
+dat_sf <- lapply(dat_poly, st_as_sf)
+
+#Combine to single dataframe with name of fire
+dat_sf <- map_df(dat_sf, data.frame, .id = 'name') 
+
+ba_sf <- dat_sf %>% 
+  rename("burnsev" = "rdnbr") %>% 
+  mutate(assss_t = "GEE",
+         year = str_extract(name, "\\d+"),
+         id = str_to_upper(str_remove(name, "rdnbr_"))
+         )
+
+dir.create(here("data/spatial_data/outputs/ba_highsev_7"))
+st_write(ba_sf, here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp"), append = F)
 
 ```
 
