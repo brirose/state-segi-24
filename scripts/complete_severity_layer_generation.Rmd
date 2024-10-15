@@ -16,13 +16,11 @@ library(janitor)
 
 ```
 
-*USFS data (1984 to 2017): R5 Basal Area %, 4 class severity
+*CBI severity (1984 to 2017): R5 Basal Area %, 4 class severity
   -in NAD_1983_Albers
-  -clip to groves
 
 *Grove boundaries
   -NAD83 / UTM zone 11N
-
 
 *Calfire perimeters
   -NAD83 / California Albers
@@ -39,22 +37,51 @@ library(janitor)
 
 #check layers in gdb
 st_layers(here("data/spatial_data/inputs/fire/fire22_1.gdb"))
-# 
-ba2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb"), layer = "VegBurnSeverity_BestAssessment")%>% clean_names()
 
-sev_ba_segi <- st_read(here("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp"))
+#input assessments we have , initially from GDB, now made to a shapefile
+# cbi2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb"), layer = "VegBurnSeverity_BestAssessment")%>% clean_names()
+
+cbi2017 <- st_read(here("data/spatial_data/outputs/cbi_2017/cbi_2017.shp"))
+
+
 # perimeters <- st_read("data/spatial_data/inputs/fire/fire22_1.gdb", layer = "firep22_1") %>% 
 #   clean_names() %>% 
-#   st_transform(crs(ba2017)) %>%  #make consistent crs
+#   st_transform(crs(cbi2017)) %>%  #make consistent crs
 #   st_cast("MULTIPOLYGON")
 # 
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
-  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  st_transform(crs(cbi2017)) %>% #uniform crs
   st_cast("MULTIPOLYGON") #convert multisurface to multipolygon
 
 
 ```
+
+```{r}
+#reduce size of full severity layer by masking to include only aprox range of SEGI
+
+# range_segi <- st_read(here("data/spatial_data/inputs/forest/groves_extent.shp")) %>% 
+#   st_transform(crs(cbi2017)) %>% 
+#   rename("range" = "Id") %>% 
+#   mutate(range = "yes")
+# 
+# cbi_2017_full <- cbi2017 %>% 
+#   mutate(assess_type = case_when(
+#     assess_type == "a" ~ "immediate",
+#     T ~ "extended"),
+#   id = str_trunc(vb_id, 12, ellipsis = "")) %>% 
+#   select(id, burnsev, assess_type, fire_year)
+# 
+# cbi_2017_range <- st_join(cbi_2017_full, range_segi) %>% 
+#   filter(range == "yes")
+# 
+# dir.create(here("data/spatial_data/outputs/cbi_2017"))
+# st_write(cbi_2017_range, here("data/spatial_data/outputs/cbi_2017/cbi_2017.shp"), append = F)
+
+
+```
+
+
 
 ```{r}
 #derived inputs
@@ -62,36 +89,34 @@ groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_publi
 #fire pereimeters within groves
 perimeters_segi <- st_read(here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp"))
 
-#BA severity up to 2017
-ba_segi_17 <- st_read(here("data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp"))
-
 #BA that we did not yet have, is missing a little window of Windy Fire, layer made in combine_gee
 ba_additional <- st_read(here("data/spatial_data/outputs/ba_missing/ba_missing.shp")) %>% 
-  st_transform(crs(sev_ba_segi))
+  st_transform(crs(cbi2017))
 
 #rdnbr for fires that intersect with groves AND that have high severity, also missing window of Windy Fire, but is cat 1 & 2 so will not be used
 rdnbr_segi_rast <- rast(here("data/spatial_data/outputs/needFires_rdnbr/needFires_rdnbr.tif"))
 
 
-#BA 7-class fires that have had high sev and are in groves 1984-2024 
-sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp")) %>% 
-  st_transform(crs(sev_ba_segi))
+#CBI that we did not yet have, is missing a little window of Windy Fire, layer made in combine_gee
+cbi_missing <- st_read(here("data/spatial_data/outputs/CBI_missing/CBI_missing.shp")) %>% 
+  st_transform(crs(cbi2017))
 
 ```
+
 
 ```{r}
 #fix where derived inputs are missing windy fire severity
 
 #BA for Windy Fire, raster from ravg
-ba_windy <- rast(here("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_ba4.tif") )%>% 
-  project(crs(ba2017))
+cbi_windy <- rast(here("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_cbi4.tif"))%>% 
+  project(crs(cbi2017))
 
-ba_windy_missing <- mask(ba_windy, ba_additional, inverse = T) %>%  
+cbi_windy_missing <- mask(cbi_windy, cbi_missing, inverse = T) %>%  
   clamp(lower = 1, upper = 4, values = F) %>% 
   as.polygons() %>% 
   st_as_sf()
   
-ba_windy_missing <- ba_windy_missing %>%   
+cbi_windy_missing <- cbi_windy_missing %>%   
   rename("burnsev" = "Layer_1") %>% 
   mutate(
     name = "2021windy",
@@ -101,12 +126,10 @@ ba_windy_missing <- ba_windy_missing %>%
   )
 
 
-#need to see if this does what we want
-ba_additional <- bind_rows(ba_additional, ba_windy_missing)
+cbi_additional <- bind_rows(cbi_missing, cbi_windy_missing)
 
 
 ```
-
 
 
 
@@ -140,21 +163,21 @@ perimeters_segi$area_ha <- as.numeric(st_area(perimeters_segi))*0.0001
 ```{r}
 #select classified fires to 2017 that fall within grove boundaries
 #create layer that is classified fire area in sequoia groves 1984-2017
-ba_segi_17 <- st_intersection(groves, ba2017) 
+segi_17 <- st_intersection(groves, cbi2017) 
 
-ba_segi_17 <- ba_segi_17 %>% 
-  mutate(assess_type = case_when(
-    assess_type == "a" ~ "immediate",
+segi_17 <- segi_17 %>% 
+  mutate(assss_type = case_when(
+    assss_type == "a" ~ "immediate",
     T ~ "extended"
   )) %>% 
-  select(vb_id, grove_name, burnsev, assess_type, fire_year) %>% 
+  select(vb_id, grove_name, burnsev, assss_type, fire_year) %>% 
   mutate(id = str_trunc(vb_id, 12, ellipsis = ""))
 
 #calc poly area
-ba_segi_17$area_ha <- as.numeric(st_area(ba_segi_17))*0.0001 
+segi_17$area_ha <- as.numeric(st_area(segi_17))*0.0001 
 
-#dir.create(here("data/spatial_data/outputs/ba_segi_17"))
-##st_write(here(ba_segi_17, "data/spatial_data/outputs/ba_segi_17/ba_segi_17.shp", append = F))
+#dir.create(here("data/spatial_data/outputs/segi_17"))
+##st_write(segi_17, here("data/spatial_data/outputs/segi_17/segi_17.shp"), append = F))
 
 ```
 
@@ -174,11 +197,11 @@ fire_list <- perimeters_segi %>%
   left_join(firenames)
   
 #will not need BA for fires in usfs layer
-need_ba <- tibble(id = unique(ba_segi_17$id), need_ba = "N")
+need_ba <- tibble(id = unique(segi_17$id), need_ba = "N")
 
 
 #will need rdnbr for fires that have high severity (==4)
-need_rdnbr <- ba_segi_17 %>% 
+need_rdnbr <- segi_17 %>% 
   st_drop_geometry() %>% 
   filter(burnsev == 4) %>% 
   group_by(id) %>% 
@@ -222,15 +245,7 @@ fires_needed <- perimeters %>%
 st_write(fires_needed, here("data/spatial_data/outputs/fires_needed/fires_needed.shp"), append = F)
 
 ```
-```{r}
-plot(ba_additional_rast)
 
-plot(ba_additional_poly)
-
-plot(ba_segi_17)
-
-
-```
 
 # Combine to make full layers
 
@@ -238,98 +253,29 @@ plot(ba_segi_17)
 #Complete perimeters (not grove filtered)
 
 #combine older with new fires
-ba_segi_17 <- ba_segi_17 %>%
-  #select(!vb_id) %>% 
-  rename("grov_nm" = "grove_name",
-         "fire_yr" = "fire_year",
-         "assss_t" = "assess_type",
-         "geometry" = "Shape")
+segi_17 <- segi_17 %>%
+  rename("geometry" = "Shape")
 
 #ID which are duplicated
-in_new <- unique(ba_segi_additional$id)
-in_old <- unique(ba_segi_17$id)
+in_new <- unique(cbi_additional$id)
+in_old <- unique(cbi2017$id)
 in_both <- c(in_new, in_old)
 in_both <- in_both[duplicated(in_both)]
 
 #combine together
-ba_segi_all <- ba_segi_additional %>% 
+cbi_all <- cbi_additional %>% 
   filter(!id %in% in_both) %>% 
-  rename( "geometry" = "Shape") %>% 
-  bind_rows(ba_segi_17)
+  bind_rows(cbi2017)
+
+cbi_all <- cbi_all %>% select(id,year, burnsev, assss_t, geometry)
 
 #check
 #plot(ba_segi_all)
 
 #layer is all fires to 2017, relevant fires to present
-#dir.create(here("data/spatial_data/outputs/ba_segi_all"))
-st_write(ba_segi_all, here("data/spatial_data/outputs/ba_segi_all/ba_segi_all.shp"), append = F)
+#dir.create(here("data/spatial_data/outputs/cbi_all"))
+st_write(cbi_all, here("data/spatial_data/outputs/cbi_all/cbi_all.shp"), append = F)
 
 ```
 
-```{r}
-#clip new fire info to segi groves
-
-ba_segi_additional <- st_intersection(groves, ba_additional)
-
-ba_segi_additional <- ba_segi_additional %>% 
-  rename("grov_nm" = "grove_name",
-         "fire_yr" = "year") %>% 
-  select(grov_nm, id, burnsev, fire_yr, assss_t) 
-
-ba_segi_additional$area_ha <- as.numeric(st_area(ba_segi_additional))*0.0001 
-
-```
-
-
-```{r}
-
-range_segi <- st_read(here("data/spatial_data/inputs/forest/groves_extent.shp")) %>% 
-  rename("range" = "Id") %>% 
-  mutate(range = "yes")
-
-ba_2017_full <- ba2017 %>% 
-  mutate(assess_type = case_when(
-    assess_type == "a" ~ "immediate",
-    T ~ "extended"),
-  id = str_trunc(vb_id, 12, ellipsis = "")) %>% 
-  select(id, burnsev, assess_type, fire_year)
-
-ba_2017_range <- st_join(ba_2017_full, range_segi) %>% 
-  filter(range == "yes")
-
-ba_additional <- ba_additional %>% 
-  select(!name) %>% 
-  rename(
-    "assess_type" = "assss_t",
-    "fire_year" = "year"
-  )
-
-ba_full <- ba_2017_range %>% 
-  filter(!id %in% in_both) %>% 
-  rename(
-    "geometry" = "Shape"
-        ) %>% 
-  bind_rows(ba_additional)
-
-#dir.create(here("data/spatial_data/outputs/ba_full_all"))
-st_write(ba_full, here("data/spatial_data/outputs/ba_full_all/ba_full_all.shp"), append = F)
-```
-
-
-```{r}
-#grove filtered 7-class
-
-ba_class7_segi <- st_intersection(groves, sev_class7)
-
-ba_class7_segi <- ba_class7_segi %>% 
-  rename("grov_nm" = "grove_name",
-         "fire_yr" = "year") %>% 
-  select(grov_nm, id, burnsev, fire_yr) 
-
-ba_class7_segi$area_ha <- as.numeric(st_area(ba_class7_segi))*0.0001 
-
-#dir.create(here("data/spatial_data/outputs/ba_class7_poly"))
-st_write(ba_class7_segi, here("data/spatial_data/outputs/ba_class7_poly/ba_class7_poly.shp"), append = F)
-
-```
 

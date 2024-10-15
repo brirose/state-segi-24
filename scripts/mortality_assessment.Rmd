@@ -25,16 +25,13 @@ This document contains code for a mortality assessment based on inputs of observ
 ```{r import_data, include=FALSE}
 #read in severity data
 
-#four-class basal area severity for all fires that intersect groves, not clipped to groves
-sev_ba_all_sierra <- st_read(here("data/spatial_data/outputs/ba_all-sierra/ba_full_all.shp"))
-
-#four-class BA severity for fires that intersect groves, clipped to groves
-sev_ba_segi <- st_read(here("data/spatial_data/outputs/ba_cropped-groves/ba_segi_all.shp"))
+#four-class CBI severity for all fires that intersect groves, not clipped to groves
+cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
 
 #inventory of SEGI in SEKI, point data
 sti <- st_read(here("data/spatial_data/inputs/forest/SEKI_STI_20211021.gdb"),layer = "SEKI_STI_pt") %>% 
   clean_names() %>%
-  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  st_transform(crs(cbi_all)) %>% #uniform crs
   filter(diameter >= 121.92) %>% # filter for monarch trees >=4ft
   mutate(grove = case_when(
     grove == "Grant" ~ "General Grant",
@@ -44,10 +41,23 @@ sti <- st_read(here("data/spatial_data/inputs/forest/SEKI_STI_20211021.gdb"),lay
 #polygons of SEGI groves, "skinny"
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
-  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  st_transform(crs(cbi_all)) %>% #uniform crs
   st_cast("MULTIPOLYGON") 
 
 ```
+
+```{r}
+#CBI severity for fires that intersect groves, clipped to groves
+
+cbi_clipped <- st_intersection(cbi_all, groves)
+cbi_clipped <- cbi_clipped %>% 
+  rename("grov_nm" = "grove_name") %>% 
+  select(grov_nm, id, burnsev, fire_yr) 
+
+cbi_clipped$area_ha <- as.numeric(st_area(cbi_clipped))*0.0001 
+
+```
+
 
 We used field data collected from XXX fires
 
@@ -137,7 +147,7 @@ meyers_corrected <- meyers_combined %>%
 #make spatial 
 meyers_corrected <- meyers_corrected %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
-  st_transform(crs(sev_ba_segi))
+  st_transform(crs(cbi_all))
 
 ```
 
@@ -172,9 +182,9 @@ monarchs_binary <- monarchs_combined %>%
 
 #pull severity info 
 monarchs_severity <- monarchs_binary %>% 
-  st_join(sev_ba_all_sierra)  #pull severity info; i am using the all-sierra layer here to ensure that trees that fall slightly outside of the mapped grove boundaries based on field or mapping errors are still included in the analysis
+  st_join(cbi_all)  #pull severity info; i am using the all-sierra layer here to ensure that trees that fall slightly outside of the mapped grove boundaries based on field or mapping errors are still included in the analysis
 
-#the sev_ba_all_sierra layer has all fires, but the observation data only are for recent fires, so remove duplicates
+#the cbi_all layer has all fires, but the observation data only are for recent fires, so remove duplicates
 monarch_severity_duplicated <- monarchs_severity %>% 
   mutate(dups = duplicated(id.x)) %>% 
   filter(dups == T) #makes df of second time a tree ID is in the initial df
@@ -186,13 +196,15 @@ monarchs_severity <- monarchs_severity %>%
          "measured_yr" = "year",
          "measured_fire" = "fire",
          "fire_id" = "id.y") %>% 
-  select(tree_id, grove, postfire_status, prefire_status,measured_yr, measured_fire, fire_id, fire_yr, burnsev, source)
+  mutate(in_perim = case_when(!is.na(burnsev) ~ "yes",
+                              TRUE ~ "no")) %>% 
+  select(tree_id, grove, postfire_status, prefire_status,measured_yr, measured_fire, fire_id, fire_yr, burnsev, source, in_perim)
 
 #need to do more checking about the NA monarchs after join
 #also some of them are out of the fire footprint on the spatial data, but have field severity written in; replace with field severity there or remove from dataset?
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
-# st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity.shp"), append = F)
+st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity.shp"), append = F)
 
 ```
 
@@ -257,27 +269,21 @@ Decision needed: which aggregation will we want to use? Likely should wait until
 #   geom_sf(monarchs_binary, mapping = aes())
 # 
 # monarchs_wgs84 <- st_transform(monarchs_binary, 4326)
-# sev_ba_wgs84 <- st_transform(sev_ba, 4326)
+# cbi_wgs84 <- st_transform(cbi_all, 4326)
 # perimeters_segi <- st_read("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp") %>% 
 #   st_transform(4326)
-# groves <- st_read("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb", layer = "OGS_Groves_2023_97_public") %>%
-#   clean_names() %>%
-#   st_transform(4326) %>% #uniform crs
-#   st_cast("MULTIPOLYGON")
-# ba_additional <- st_read("data/spatial_data/outputs/ba_missing/ba_missing.shp") %>% 
-#   st_transform(4324)
-# 
+
 # 
 # debug_map <- leaflet() %>% 
 #   addTiles() %>% 
 #   setView(lng = -118.5, lat = 36.5, zoom = 10) %>% 
 #   #  addPolygons(data = ba_additional, opacity = 1) %>% 
 #   #addPolygons(data = groves, color = "black", opacity = 1, fillOpacity = 0) %>% 
-#     # addPolygons(data = sev_ba_wgs84, 
+#     # addPolygons(data = cbi_wgs84, 
 #     #           color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, 
-#     #           fillOpacity = 0.5, fillColor = ~colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev)(burnsev))%>% 
+#     #           fillOpacity = 0.5, fillColor = ~colorFactor("YlOrRd", domain = cbi_wgs84$burnsev)(burnsev))%>% 
 #   addCircleMarkers(data = monarchs_wgs84, stroke = F, fillOpacity = 0.8, radius = 3, color = "black") %>% 
-#   addLegend(pal = colorFactor("YlOrRd", domain = sev_ba_wgs84$burnsev), values = sev_ba_wgs84$burnsev)
+#   addLegend(pal = colorFactor("YlOrRd", domain = cbi_wgs84$burnsev), values = cbi_wgs84$burnsev)
 # 
 # debug_map
 
@@ -292,10 +298,10 @@ Here i calculate the proportion of area that experienced each severity of fire
 
 ```{r severity_area}
 
-total_area_ha = 28958*0.404686
+total_area_ha = sum(groves$acres)/0.404686
 
 #here i calculate ha of each severity in each year
-severity_annual <- sev_ba_segi %>% 
+severity_annual <- cbi_clipped %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
   mutate(prop_grove_area = total_ha/total_area_ha)
@@ -305,7 +311,7 @@ kable(severity_annual,
       caption = "Area and proportion of grove area experiencing fire severity annually 1984-2023")
 
 #here i calculate ha of each severity since 1984
-severity_total <- sev_ba_segi %>% 
+severity_total <- cbi_clipped %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
   mutate(prop_grove_area = total_ha/total_area_ha) 
@@ -323,7 +329,7 @@ I did this as annual estimates.
 ```{r annual_mort}
 #annual mortality (without removal of SEKI areas that have counts)
 
-trees_ha = 2.61 *0.404686 #there are an estimated 2.61 segi trees per acre, converted to ha
+trees_ha = 2.61/0.404686 #there are an estimated 2.61 segi trees per acre, converted to ha
 
 trees_total = total_area_ha*trees_ha
 
@@ -393,13 +399,13 @@ We expect that in some groves the sti should be an undercount since it does not 
 
 #severity experienced by each tree in the STI
 sti_sev <- sti %>% 
-  st_join(sev_ba_all_sierra) %>%#here i include all times a tree experienced fire
+  st_join(cbi_all) %>%#here i include all times a tree experienced fire
   st_drop_geometry() %>% 
   drop_na(burnsev) %>%  #drop trees that did not experience fire
   summarise(.by = c(grove, burnsev), tree_ct = n())
 
 #severity area in each grove
-grove_sev_area <- sev_ba_segi %>% 
+grove_sev_area <- cbi_clipped %>% 
   st_drop_geometry() %>% 
   summarise(.by = c(grov_nm, burnsev), area_ha = sum(area_ha)) %>% 
   mutate(grov_nm = case_when(grov_nm == "Devil's Canyon" ~ "Devils Canyon", T ~ grov_nm))

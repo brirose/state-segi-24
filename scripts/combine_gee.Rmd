@@ -73,15 +73,15 @@ plot(severity_rdnbr)
 ## Seven Class
 Breaks follow the 7 class % change in Basal Area severity used in the R5:Veg Burn Severity BA.
 
-* 0% Change (0.00001)
-* 0% < Change < 10% (10)
-* 10% <= Change < 25% (25)
-* 25% <= Change < 50% (50)
-* 50% <= Change < 75% (75)
+* 0% Change 
+* 0% < Change < 10%
+* 10% <= Change < 25%
+* 25% <= Change < 50%
+* 50% <= Change < 75%
 * 75% <= Change < 90% (90)
 * Change > 90%
 
-To classify the rdnbr raster using these breaks, we will need to determine the corresponding rdnbr value for the BA perc. This is done using the equation in miller 2009, Table 3 (!https://www.fs.usda.gov/psw/publications/knapp/psw_2009_knapp(miller)001.pdf).
+To classify the rdnbr raster using these breaks, we will need to determine the corresponding rdnbr value for the BA perc. This is done using the equation in miller 2009, Table 3 (!www.fs.usda.gov/psw/publications/knapp/psw_2009_knapp(miller)001.pdf).
 
 RdNBR = a + b ⁎ ASIN(SQRT(PctBA / 100)) where a = 166.5, b = 389.0
 
@@ -124,7 +124,7 @@ breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 ```
 
 
-```{r}
+```{r, results = F}
 #classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
 
 dat_class <- lapply(dat, classify, rcl = breaks7, right = F, include.lowest = T) #include max value 
@@ -233,8 +233,63 @@ st_write(ba_sf, here("data/spatial_data/outputs/ba_missing/ba_missing.shp"), app
 
 ```
 
+#CBI
+
+[breaks from R5 assessment](https://www.fs.usda.gov/detail/r5/landmanagement/gis/?cid=stelprd3805100#5)
+
+* Undetected:  0 <= CBI < 0.1
+* Low severity: 0.1 <= CBI < 1.25
+* Moderate severity: 1.25 <= CBI < 2.25
+* High severity:  2.25 <= CBI <= 3.0
+
+To classify the rdnbr raster using these breaks, we will need to determine the corresponding rdnbr value for CBI. This is done using the equation in [miller 2007](https://www.sciencedirect.com/science/article/abs/pii/S0034425706005128?fr=RR-9&ref=pdf_download&rr=8d31f5e3ca9e2f4b).
+
+RdNBR = a + b ⁎ EXP(SQRT(CBI*c)) where a = -369, b = 421.7, c 0.389
 
 ```{r}
-plot(severity_ba4full)
+#define breaks
+category_rangesCBI <- c("0 <= CBI < 0.1", "0.1 <= CBI < 1.25", "1.25 <= CBI < 2.25", "2.25 <= CBI <= 3.0")
+
+category_namesCBI <- c("Undetected change", "Low severity", "Moderate severity", "High severity")
+
+breaks4CBI <- tibble(
+  CBI_from = c(0, 0.1, 1.25, 2.25), #lefthand breaks CBI
+  CBI_to = c(0.1, 1.25, 2.25, 3), #righthand breaks in CBI
+  rdnbr_from = -369 + 421.7 * exp(sqrt(CBI_from*0.389)), #converted to rdnbr
+  rdnbr_to = -369 + 421.7 * exp(sqrt(CBI_to*0.389)), #converted to rdnbr
+  becomes =  c(1, 2, 3, 4)) %>% #name of categories
+  select(!contains("CBI")) #removes unneeded columns
+  
+breaks4CBI[1,1] = minmax(severity_rdnbr)[1] #make lowest category include minimum in raster
+breaks4CBI[4,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
+
 ```
 
+
+
+```{r}
+#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
+
+dat_class <- lapply(dat, classify, rcl = breaks4CBI, right = F, include.lowest = T) #include max value 
+
+#make factors
+lapply(dat_class, as.factor)
+
+#convert to multipolygons
+dat_poly <- lapply(dat_class, as.polygons)
+dat_sf <- lapply(dat_poly, st_as_sf)
+
+#Combine to single dataframe with name of fire
+dat_sf <- map_df(dat_sf, data.frame, .id = 'name') 
+
+CBI_sf <- dat_sf %>% 
+  rename("burnsev" = "rdnbr") %>% 
+  mutate(assss_t = "GEE",
+         year = str_extract(name, "\\d+"),
+         id = str_to_upper(str_remove(name, "rdnbr_"))
+         )
+
+dir.create(here("data/spatial_data/outputs/CBI_missing"))
+st_write(CBI_sf, here("data/spatial_data/outputs/CBI_missing/CBI_missing.shp"), append = F)
+
+```
