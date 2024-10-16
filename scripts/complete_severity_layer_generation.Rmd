@@ -267,7 +267,10 @@ cbi_all <- cbi_additional %>%
   filter(!id %in% in_both) %>% 
   bind_rows(cbi2017)
 
-cbi_all <- cbi_all %>% select(id,year, burnsev, assss_t, geometry)
+
+cbi_all <- cbi_all %>%
+  mutate(fire_yr = parse_number(id)) %>% 
+  select(id, fire_yr, burnsev, assss_t, geometry)
 
 #check
 #plot(ba_segi_all)

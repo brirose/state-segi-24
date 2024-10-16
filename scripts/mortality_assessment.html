@@ -11,7 +11,7 @@
 
 <meta name="author" content="Shive Lab (B. Baker)" />
 
-<meta name="date" content="2024-10-15" />
+<meta name="date" content="2024-10-16" />
 
 <title>Mortality Assessment</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Mortality Assessment</h1>
 <h4 class="author">Shive Lab (B. Baker)</h4>
-<h4 class="date">2024-10-15</h4>
+<h4 class="date">2024-10-16</h4>
 
 </div>
 
@@ -670,7 +670,7 @@ wait until we have enough actual data, rather than just the USFS</p>
 use these to estimate mortality.</p>
 <p>Here i calculate the proportion of area that experienced each
 severity of fire</p>
-<pre class="r"><code>total_area_ha = sum(groves$acres)/0.404686
+<pre class="r"><code>total_area_ha = sum(groves$acres)*0.404686
 
 #here i calculate ha of each severity in each year
 severity_annual &lt;- cbi_clipped %&gt;% 
@@ -697,79 +697,79 @@ annually 1984-2023</caption>
 <td align="right">2015</td>
 <td align="right">3</td>
 <td align="right">495.93</td>
-<td align="right">0.01</td>
+<td align="right">0.05</td>
 </tr>
 <tr class="even">
 <td align="right">2015</td>
 <td align="right">4</td>
 <td align="right">131.78</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2015</td>
 <td align="right">2</td>
 <td align="right">565.57</td>
-<td align="right">0.01</td>
+<td align="right">0.06</td>
 </tr>
 <tr class="even">
 <td align="right">2020</td>
 <td align="right">1</td>
 <td align="right">901.71</td>
-<td align="right">0.01</td>
+<td align="right">0.09</td>
 </tr>
 <tr class="odd">
 <td align="right">2020</td>
 <td align="right">2</td>
 <td align="right">1295.74</td>
-<td align="right">0.02</td>
+<td align="right">0.13</td>
 </tr>
 <tr class="even">
 <td align="right">2020</td>
 <td align="right">3</td>
 <td align="right">417.43</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 </tr>
 <tr class="odd">
 <td align="right">2020</td>
 <td align="right">4</td>
 <td align="right">938.91</td>
-<td align="right">0.02</td>
+<td align="right">0.09</td>
 </tr>
 <tr class="even">
 <td align="right">2017</td>
 <td align="right">1</td>
 <td align="right">125.35</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2017</td>
 <td align="right">2</td>
 <td align="right">350.43</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 </tr>
 <tr class="even">
 <td align="right">2021</td>
 <td align="right">1</td>
 <td align="right">630.31</td>
-<td align="right">0.01</td>
+<td align="right">0.06</td>
 </tr>
 <tr class="odd">
 <td align="right">2021</td>
 <td align="right">2</td>
 <td align="right">879.40</td>
-<td align="right">0.01</td>
+<td align="right">0.09</td>
 </tr>
 <tr class="even">
 <td align="right">2021</td>
 <td align="right">3</td>
 <td align="right">362.99</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 </tr>
 <tr class="odd">
 <td align="right">2021</td>
 <td align="right">4</td>
 <td align="right">397.62</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 </tr>
 <tr class="even">
 <td align="right">2008</td>
@@ -787,7 +787,7 @@ annually 1984-2023</caption>
 <td align="right">2017</td>
 <td align="right">3</td>
 <td align="right">107.63</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2017</td>
@@ -799,13 +799,13 @@ annually 1984-2023</caption>
 <td align="right">2018</td>
 <td align="right">1</td>
 <td align="right">157.39</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 </tr>
 <tr class="odd">
 <td align="right">2018</td>
 <td align="right">2</td>
 <td align="right">64.29</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">2018</td>
@@ -823,7 +823,7 @@ annually 1984-2023</caption>
 <td align="right">1987</td>
 <td align="right">1</td>
 <td align="right">52.18</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">1987</td>
@@ -853,7 +853,7 @@ annually 1984-2023</caption>
 <td align="right">1995</td>
 <td align="right">2</td>
 <td align="right">55.81</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">1995</td>
@@ -889,7 +889,7 @@ annually 1984-2023</caption>
 <td align="right">2015</td>
 <td align="right">1</td>
 <td align="right">179.25</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 </tr>
 <tr class="even">
 <td align="right">2016</td>
@@ -907,13 +907,13 @@ annually 1984-2023</caption>
 <td align="right">1991</td>
 <td align="right">1</td>
 <td align="right">138.35</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">1991</td>
 <td align="right">2</td>
 <td align="right">66.96</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">1991</td>
@@ -937,13 +937,13 @@ annually 1984-2023</caption>
 <td align="right">1986</td>
 <td align="right">1</td>
 <td align="right">100.56</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">1986</td>
 <td align="right">2</td>
 <td align="right">61.84</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">1986</td>
@@ -997,7 +997,7 @@ annually 1984-2023</caption>
 <td align="right">2003</td>
 <td align="right">2</td>
 <td align="right">58.21</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">2003</td>
@@ -1144,22 +1144,22 @@ kable(severity_total,
 <tr class="odd">
 <td align="right">3</td>
 <td align="right">1414.00</td>
-<td align="right">0.02</td>
+<td align="right">0.14</td>
 </tr>
 <tr class="even">
 <td align="right">4</td>
 <td align="right">1517.68</td>
-<td align="right">0.02</td>
+<td align="right">0.15</td>
 </tr>
 <tr class="odd">
 <td align="right">2</td>
 <td align="right">3512.55</td>
-<td align="right">0.06</td>
+<td align="right">0.35</td>
 </tr>
 <tr class="even">
 <td align="right">1</td>
 <td align="right">2475.56</td>
-<td align="right">0.04</td>
+<td align="right">0.24</td>
 </tr>
 </tbody>
 </table>
@@ -1257,7 +1257,7 @@ ha</caption>
 <td align="right">1986</td>
 <td align="right">1</td>
 <td align="right">100.56</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -1275,7 +1275,7 @@ ha</caption>
 <td align="right">1986</td>
 <td align="right">2</td>
 <td align="right">61.84</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">27.1</td>
 <td align="right">0.00</td>
 <td align="right">31.4</td>
@@ -1311,7 +1311,7 @@ ha</caption>
 <td align="right">1987</td>
 <td align="right">1</td>
 <td align="right">52.18</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -1419,7 +1419,7 @@ ha</caption>
 <td align="right">1991</td>
 <td align="right">1</td>
 <td align="right">138.35</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -1437,7 +1437,7 @@ ha</caption>
 <td align="right">1991</td>
 <td align="right">2</td>
 <td align="right">66.96</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">29.3</td>
 <td align="right">0.00</td>
 <td align="right">34.0</td>
@@ -1527,7 +1527,7 @@ ha</caption>
 <td align="right">1995</td>
 <td align="right">2</td>
 <td align="right">55.81</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">24.4</td>
 <td align="right">0.00</td>
 <td align="right">28.3</td>
@@ -1725,7 +1725,7 @@ ha</caption>
 <td align="right">2003</td>
 <td align="right">2</td>
 <td align="right">58.21</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">25.5</td>
 <td align="right">0.00</td>
 <td align="right">29.5</td>
@@ -2049,7 +2049,7 @@ ha</caption>
 <td align="right">2015</td>
 <td align="right">1</td>
 <td align="right">179.25</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2067,7 +2067,7 @@ ha</caption>
 <td align="right">2015</td>
 <td align="right">2</td>
 <td align="right">565.57</td>
-<td align="right">0.01</td>
+<td align="right">0.06</td>
 <td align="right">247.7</td>
 <td align="right">0.00</td>
 <td align="right">286.9</td>
@@ -2077,7 +2077,7 @@ ha</caption>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">486.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">262.8</td>
 <td align="right">0.00</td>
 </tr>
@@ -2085,37 +2085,37 @@ ha</caption>
 <td align="right">2015</td>
 <td align="right">3</td>
 <td align="right">495.93</td>
-<td align="right">0.01</td>
+<td align="right">0.05</td>
 <td align="right">377.8</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">1163.1</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">726.8</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">339.2</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">1163.1</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">767.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2015</td>
 <td align="right">4</td>
 <td align="right">131.78</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">509.9</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">723.6</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">620.9</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">625.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">683.8</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">654.6</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">2016</td>
@@ -2175,7 +2175,7 @@ ha</caption>
 <td align="right">2017</td>
 <td align="right">1</td>
 <td align="right">125.35</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2193,7 +2193,7 @@ ha</caption>
 <td align="right">2017</td>
 <td align="right">2</td>
 <td align="right">350.43</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 <td align="right">153.5</td>
 <td align="right">0.00</td>
 <td align="right">177.8</td>
@@ -2211,7 +2211,7 @@ ha</caption>
 <td align="right">2017</td>
 <td align="right">3</td>
 <td align="right">107.63</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">82.0</td>
 <td align="right">0.00</td>
 <td align="right">252.4</td>
@@ -2247,7 +2247,7 @@ ha</caption>
 <td align="right">2018</td>
 <td align="right">1</td>
 <td align="right">157.39</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2265,7 +2265,7 @@ ha</caption>
 <td align="right">2018</td>
 <td align="right">2</td>
 <td align="right">64.29</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">28.2</td>
 <td align="right">0.00</td>
 <td align="right">32.6</td>
@@ -2319,7 +2319,7 @@ ha</caption>
 <td align="right">2020</td>
 <td align="right">1</td>
 <td align="right">901.71</td>
-<td align="right">0.01</td>
+<td align="right">0.09</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2337,61 +2337,61 @@ ha</caption>
 <td align="right">2020</td>
 <td align="right">2</td>
 <td align="right">1295.74</td>
-<td align="right">0.02</td>
+<td align="right">0.13</td>
 <td align="right">567.4</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">657.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">599.4</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">1114.2</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">602.2</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2020</td>
 <td align="right">3</td>
 <td align="right">417.43</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 <td align="right">318.0</td>
 <td align="right">0.00</td>
 <td align="right">979.0</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">611.8</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">285.5</td>
 <td align="right">0.00</td>
 <td align="right">979.0</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">645.9</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">2020</td>
 <td align="right">4</td>
 <td align="right">938.91</td>
-<td align="right">0.02</td>
+<td align="right">0.09</td>
 <td align="right">3633.3</td>
-<td align="right">0.01</td>
+<td align="right">0.06</td>
 <td align="right">5155.3</td>
-<td align="right">0.01</td>
+<td align="right">0.08</td>
 <td align="right">4423.9</td>
-<td align="right">0.01</td>
+<td align="right">0.07</td>
 <td align="right">4455.3</td>
-<td align="right">0.01</td>
+<td align="right">0.07</td>
 <td align="right">4872.2</td>
-<td align="right">0.01</td>
+<td align="right">0.07</td>
 <td align="right">4663.8</td>
-<td align="right">0.01</td>
+<td align="right">0.07</td>
 </tr>
 <tr class="odd">
 <td align="right">2021</td>
 <td align="right">1</td>
 <td align="right">630.31</td>
-<td align="right">0.01</td>
+<td align="right">0.06</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2409,55 +2409,55 @@ ha</caption>
 <td align="right">2021</td>
 <td align="right">2</td>
 <td align="right">879.40</td>
-<td align="right">0.01</td>
+<td align="right">0.09</td>
 <td align="right">385.1</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">446.1</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">406.8</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">756.2</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">408.7</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="odd">
 <td align="right">2021</td>
 <td align="right">3</td>
 <td align="right">362.99</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 <td align="right">276.5</td>
 <td align="right">0.00</td>
 <td align="right">851.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">532.0</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">248.3</td>
 <td align="right">0.00</td>
 <td align="right">851.3</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">561.6</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 </tr>
 <tr class="even">
 <td align="right">2021</td>
 <td align="right">4</td>
 <td align="right">397.62</td>
-<td align="right">0.01</td>
+<td align="right">0.04</td>
 <td align="right">1538.6</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">2183.2</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 <td align="right">1873.5</td>
-<td align="right">0.00</td>
+<td align="right">0.03</td>
 <td align="right">1886.8</td>
-<td align="right">0.00</td>
+<td align="right">0.03</td>
 <td align="right">2063.3</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 <td align="right">1975.0</td>
-<td align="right">0.00</td>
+<td align="right">0.03</td>
 </tr>
 <tr class="odd">
 <td align="right">2022</td>
@@ -2583,7 +2583,7 @@ ha</caption>
 <tr class="odd">
 <td align="right">1</td>
 <td align="right">2475.56</td>
-<td align="right">0.04</td>
+<td align="right">0.24</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">0.0</td>
@@ -2600,53 +2600,53 @@ ha</caption>
 <tr class="even">
 <td align="right">2</td>
 <td align="right">3512.55</td>
-<td align="right">0.06</td>
+<td align="right">0.35</td>
 <td align="right">1538.2</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">1781.8</td>
-<td align="right">0.00</td>
+<td align="right">0.03</td>
 <td align="right">1624.9</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">0.0</td>
 <td align="right">0.00</td>
 <td align="right">3020.5</td>
-<td align="right">0.01</td>
+<td align="right">0.05</td>
 <td align="right">1632.4</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 </tr>
 <tr class="odd">
 <td align="right">3</td>
 <td align="right">1414.00</td>
-<td align="right">0.02</td>
+<td align="right">0.14</td>
 <td align="right">1077.1</td>
-<td align="right">0.00</td>
+<td align="right">0.02</td>
 <td align="right">3316.2</td>
-<td align="right">0.01</td>
+<td align="right">0.05</td>
 <td align="right">2072.4</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 <td align="right">967.2</td>
-<td align="right">0.00</td>
+<td align="right">0.01</td>
 <td align="right">3316.2</td>
-<td align="right">0.01</td>
+<td align="right">0.05</td>
 <td align="right">2187.8</td>
-<td align="right">0.01</td>
+<td align="right">0.03</td>
 </tr>
 <tr class="even">
 <td align="right">4</td>
 <td align="right">1517.68</td>
-<td align="right">0.02</td>
+<td align="right">0.15</td>
 <td align="right">5872.9</td>
-<td align="right">0.01</td>
+<td align="right">0.09</td>
 <td align="right">8333.2</td>
-<td align="right">0.02</td>
+<td align="right">0.13</td>
 <td align="right">7150.9</td>
-<td align="right">0.02</td>
+<td align="right">0.11</td>
 <td align="right">7201.7</td>
-<td align="right">0.02</td>
+<td align="right">0.11</td>
 <td align="right">7875.6</td>
-<td align="right">0.02</td>
+<td align="right">0.12</td>
 <td align="right">7538.6</td>
-<td align="right">0.02</td>
+<td align="right">0.12</td>
 </tr>
 </tbody>
 </table>

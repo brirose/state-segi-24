@@ -1,0 +1,27 @@
+---
+title: "resistance-assessment"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(sf)
+library(here)
+library(janitor)
+
+```
+
+-input treatment data
+-union to create independent treatment+disturbance history polygons
+
+
+
+#Input and clean treatment data
+
+
+
+

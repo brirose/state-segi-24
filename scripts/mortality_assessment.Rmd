@@ -298,7 +298,7 @@ Here i calculate the proportion of area that experienced each severity of fire
 
 ```{r severity_area}
 
-total_area_ha = sum(groves$acres)/0.404686
+total_area_ha = sum(groves$acres)*0.404686
 
 #here i calculate ha of each severity in each year
 severity_annual <- cbi_clipped %>% 

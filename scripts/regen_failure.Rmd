@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, include = F, warning = F, error = F)
 
 library(here)
 library(tidyverse)
+library(janitor)
 library(sf)
 library(terra)
 
@@ -19,12 +20,12 @@ This document holds the analysis for regeneration failure areas.
 
 ```{r import_data}
 #BA 7-class fires that have had high sev and are in groves 1984-2024 
-sev_class7 <- st_read(here("data/spatial_data/outputs/ba_class7_poly/ba_class7_poly.shp"))
+sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp"))
 
 #polygons of SEGI groves, "skinny"
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
-  st_transform(crs(sev_ba_segi)) %>% #uniform crs
+  st_transform(crs(sev_class7)) %>% #uniform crs
   st_cast("MULTIPOLYGON") 
 
 ```
@@ -34,8 +35,6 @@ groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_publi
 ```{r}
 #grove filtered 7-class
 #BA 7-class fires that have had high sev and are in groves 1984-2024 
-sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp")) %>% 
-  st_transform(crs(cbi2017))
 
 ba_class7_segi <- st_intersection(groves, sev_class7)
 
@@ -55,12 +54,37 @@ We will consider areas that fall into the highest burn severity category as thos
 
 ```{r sev_polygons}
 
-high_sev <- 
-  
-
-
+# filter to only include the highest severity
+high_sev <- sev_class7 %>% 
+  filter(burnsev == 7)  # highest severity is 7
 ```
 
+Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
 
+Here, I make a layer that represents seed source (grove area that has not experienced category 7 fire). Then I use this to find areas where dispersal is likely by adding a 67.8m buffer.
+
+```{r seed_source}
+
+sf_use_s2(TRUE)
+
+# i think the issue that is happening below is starting here...need to figure out what the method issue is here. dont really want to put this into arc.
+#seems that the groves layer has invalid geometries. need to try and rebuild them to see if i can get to work
+
+seed_source <- st_difference(groves, high_sev) %>% 
+  #st_union() %>% 
+  st_buffer(dist = 67.8)
+  
+plot(seed_source)
+```
+
+Once I know where dispersal is likely, I can difference the highest severity layer to determine where regeneration failure is highly likely.
+
+```{r regen-failure}
+
+regen_fail <- st_difference(high_sev, seed_source)
+
+#hmm not really working that well....not sure what is the issue
+
+```
 
 
