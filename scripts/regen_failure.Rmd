@@ -20,13 +20,15 @@ This document holds the analysis for regeneration failure areas.
 
 ```{r import_data}
 #BA 7-class fires that have had high sev and are in groves 1984-2024 
+# need to switch this to: 801-1100 mod risk, >1101 high risk; rdnbr
 sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp"))
 
 #polygons of SEGI groves, "skinny"
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
   st_transform(crs(sev_class7)) %>% #uniform crs
-  st_cast("MULTIPOLYGON") 
+  st_cast("MULTIPOLYGON") %>% 
+  st_make_valid()
 
 ```
 
@@ -71,7 +73,8 @@ sf_use_s2(TRUE)
 #seems that the groves layer has invalid geometries. need to try and rebuild them to see if i can get to work
 
 seed_source <- st_difference(groves, high_sev) %>% 
-  #st_union() %>% 
+  st_union() %>% 
+  st_make_valid() %>% 
   st_buffer(dist = 67.8)
   
 plot(seed_source)
@@ -81,9 +84,12 @@ Once I know where dispersal is likely, I can difference the highest severity lay
 
 ```{r regen-failure}
 
-regen_fail <- st_difference(high_sev, seed_source)
+regen_fail <- st_difference(high_sev, seed_source) %>% 
+  st_make_valid()
 
 #hmm not really working that well....not sure what is the issue
+
+plot(regen_fail)
 
 ```
 

@@ -42,7 +42,8 @@ sti <- st_read(here("data/spatial_data/inputs/forest/SEKI_STI_20211021.gdb"),lay
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
   st_transform(crs(cbi_all)) %>% #uniform crs
-  st_cast("MULTIPOLYGON") 
+  st_cast("MULTIPOLYGON") %>% 
+  st_make_valid()
 
 ```
 

@@ -23,5 +23,13 @@ library(janitor)
 #Input and clean treatment data
 
 
+```{r}
+treatment <- read_sf()#add treatment data
+
+fire_history <- read_sf() #CBI
+
+```
+
+
 
 
