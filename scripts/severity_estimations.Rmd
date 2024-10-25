@@ -11,9 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
 library(sf)
+library(terra)
 library(readxl)
 library(kableExtra)
-
+library(janitor)
 ```
 
 ## Load Data
