@@ -36,7 +36,7 @@ library(janitor)
 ```{r}
 
 #check layers in gdb
-st_layers(here("data/spatial_data/inputs/fire/fire22_1.gdb"))
+#st_layers(here("data/spatial_data/inputs/fire/fire22_1.gdb"))
 
 #input assessments we have , initially from GDB, now made to a shapefile
 # cbi2017 <- st_read(here("data/spatial_data/inputs/fire/VegBurnSeverity18_1.gdb"), layer = "VegBurnSeverity_BestAssessment")%>% clean_names()
@@ -107,14 +107,36 @@ cbi_missing <- st_read(here("data/spatial_data/outputs/CBI_missing/CBI_missing.s
 ```{r}
 #fix where derived inputs are missing windy fire severity
 
-#BA for Windy Fire, raster from ravg
+#CBI for Windy Fire, raster from ravg
 cbi_windy <- rast(here("data/spatial_data/inputs/fire/windy_2021_ravg_data/ca3604711863120210910_20201018_20211015_rdnbr_cbi4.tif"))%>% 
   project(crs(cbi2017))
 
-cbi_windy_missing <- mask(cbi_windy, cbi_missing, inverse = T) %>%  
-  clamp(lower = 1, upper = 4, values = F) %>% 
+#CBI for Coffee Pot Fire, raster from ravg
+cbi_coffee <- rast(here("data/spatial_data/inputs/fire/2024_CA_CoffeePot_RAVG/ca3639211876520240803_20240729_20240914_rdnbr_cbi4.tif"))%>% 
+  project(crs(cbi2017))
+
+
+cbi_windy_missing <- mask(cbi_windy, cbi_missing, inverse = T, touches = F) %>%  
+  clamp(lower = 1, upper = 4, values = F) %>% #remove erroneous values
   as.polygons() %>% 
   st_as_sf()
+
+#is still making a few little holes
+#st_write(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.shp"), append = F)
+
+#writeRaster(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.tif"))
+
+cbi_coffee <- cbi_coffee %>% 
+  clamp(lower = 1, upper = 4, values = F) %>% #remove erroneous values
+  as.polygons() %>% 
+  st_as_sf() %>% 
+  rename("burnsev" = "ca3639211876520240803_20240729_20240914_rdnbr_cbi4") %>% 
+  mutate(
+    name = "2024coffeepot",
+    assss_t = "ravg",
+    year = "2024",
+    id = "2024COFFEE"
+  )
   
 cbi_windy_missing <- cbi_windy_missing %>%   
   rename("burnsev" = "Layer_1") %>% 
@@ -126,9 +148,11 @@ cbi_windy_missing <- cbi_windy_missing %>%
   )
 
 
-cbi_additional <- bind_rows(cbi_missing, cbi_windy_missing)
+cbi_additional <- bind_rows(cbi_missing, cbi_windy_missing, cbi_coffee) %>% 
+  st_cast("POLYGON") %>% 
+  summarise(.by = c ("id","name","assss_t", "year","burnsev"), across(geometry, st_union))
 
-
+#st_write(cbi_additional, here("data/spatial_data/outputs/debug_poly.shp"), append = F)
 ```
 
 
@@ -251,10 +275,6 @@ st_write(fires_needed, here("data/spatial_data/outputs/fires_needed/fires_needed
 
 ```{r}
 #Complete perimeters (not grove filtered)
-
-#combine older with new fires
-segi_17 <- segi_17 %>%
-  rename("geometry" = "Shape")
 
 #ID which are duplicated
 in_new <- unique(cbi_additional$id)

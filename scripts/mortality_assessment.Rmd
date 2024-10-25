@@ -209,7 +209,7 @@ st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/mo
 
 ```
 
-Currently the following mortality rate calculation is off because some of the trees we have points for are outside the spatial extent of the fires they were measured for. Ground data suggest that these may still have seen some fire. Need to decide whether these trees should be included, with their field severity used, or excluded. they do still have severities here because they are within the footprint of a different fire, but those are not the correct burnsev. samesame question for trees that show up as NA because they are outside the mapped footprint of fires
+Currently the following mortality rate calculation is off because some of the trees we have points for are outside the spatial extent of the fires they were measured for. Ground data suggest that these may still have seen some fire (2016 Hidden). Need to decide whether these trees should be included, with their field severity used, or excluded. they do still have severities here because they are within the footprint of a different fire, but those are not the correct burnsev. samesame question for trees that show up as NA because they are outside the mapped footprint of fires
 
 
 ### Mortality rate by fire
