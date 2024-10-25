@@ -1,0 +1,98 @@
+---
+title: "Severity Estimations"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(sf)
+library(readxl)
+library(kableExtra)
+
+```
+
+## Load Data
+
+To make severity estimates, I will use our complete CBI layer
+
+```{r load}
+
+#four-class CBI severity for all fires that intersect groves, not clipped to groves
+cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
+
+cbi_all$area_ha_total <- as.numeric(st_area(cbi_all))*0.0001
+
+#polygons of SEGI groves, "skinny"
+groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
+  clean_names() %>%
+  st_transform(crs(cbi_all)) %>% #uniform crs
+  st_cast("MULTIPOLYGON") %>% 
+  st_make_valid()
+
+```
+
+```{r grove_clip}
+
+#CBI severity for fires that intersect groves, clipped to groves
+
+cbi_clipped <- st_intersection(cbi_all, groves)
+cbi_clipped <- cbi_clipped %>% 
+  rename("grov_nm" = "grove_name") %>% 
+  select(grov_nm, id, burnsev, fire_yr) 
+
+cbi_clipped$area_ha_grove <- as.numeric(st_area(cbi_clipped))*0.0001 
+
+```
+
+## Fire List
+
+```{r}
+
+all_area <- cbi_all %>% 
+  st_drop_geometry() %>% 
+  arrange(burnsev) %>% 
+  pivot_wider(names_from = burnsev, names_prefix = "all_ha_",values_from = area_ha_total, values_fill = 0) %>% 
+  select(!all_ha_255)%>% 
+  mutate(all_ha_total = all_ha_1 + all_ha_2 + all_ha_3 + all_ha_4)
+
+grove_area <- cbi_clipped %>% 
+  st_drop_geometry() %>% 
+  arrange(burnsev) %>% 
+  summarise(.by = c(id, burnsev), area_ha_grove = sum(area_ha_grove)) %>% 
+  pivot_wider(names_from = burnsev, names_prefix = "grove_ha_",values_from = area_ha_grove, values_fill = 0) %>% 
+  mutate(grove_ha_total = grove_ha_1 + grove_ha_2 + grove_ha_3 + grove_ha_4)
+
+by_grove <- cbi_clipped %>% 
+  st_drop_geometry() %>% 
+  summarise(.by= c(id, grov_nm, burnsev), area_ha_grove = sum(area_ha_grove)) %>% 
+  pivot_wider(names_from = burnsev, names_prefix = "ha_",values_from = area_ha_grove, values_fill = 0) %>% 
+  arrange(id) %>% 
+  mutate(ha_total = ha_1 + ha_2 + ha_3 + ha_4)
+
+grove_count <- by_grove %>% 
+  summarize(.by = c(id), grove_count = n())
+
+fire_sev_ha <- left_join(grove_area, all_area) %>% 
+  left_join(grove_count) %>% 
+  select(-fire_yr, -assss_t) %>% 
+  arrange(id)
+
+
+kable(fire_sev_ha, 
+      digits = 2,
+      caption = "Fire size and severity for fires that burned SEGI groves 1983-2024")
+
+
+kable(by_grove, 
+      digits = 2,
+      caption = "Fire severity size for fires that burned SEGI groves 1983-2024 by grove")
+
+```
+
+
+

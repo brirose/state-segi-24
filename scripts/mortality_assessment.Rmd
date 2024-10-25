@@ -60,33 +60,6 @@ cbi_clipped$area_ha <- as.numeric(st_area(cbi_clipped))*0.0001
 ```
 
 
-We used field data collected from XXX fires
-
-this set will be replaced once I have the field data for these. in this doc currently as a reminder. 
-
-Mortality rates observed by Shive et al. (in review) for the Rough and Pier Fire, rates for the Railroad Fire from Stephenson and Brigham (2021). 
-Survey area 	Low 	Moderate 	High
--2015 Rough Fire (Evans, Kennedy and Lockwood Groves) 	0.0% 	14.0% 	75.0%
--2017 Railroad Fire (Nelder Grove) 	5.9% 	22.2% 	100.0%
--2017 Pier Fire (Black Mountain Grove) 	11.9% 	24.5% 	74.6%
-
-
-```{r mortality_examples}
-
-#initialize dataframe of mortality rates by fire,
-
-mortality_rates_fires <- tibble(
-  fire_year = c(2015, 2017, 2017),
-  fire_name = c("rough", "railroad", "pier"),
-  grove = c("evans, kennedy, lockwood", "nelder", "black_mountain"),
-  low = c(0.0, 0.059, 0.119),
-  med = c(0.14, 0.222, 0.245),
-  high = c(0.75, 1.0, 0.746),
-  source = c("Shive et al.", "Shive et al.", "Stephenson and Brigham (2021)")
-)
-
-```
-
 ## Load and clean data
 
 Each dataset is slightly different, so I am loading each separately, cleaning them and then combining them. I then make them a spatial feature so that we can plot them on the map and find the severity.
@@ -159,6 +132,7 @@ monarchs_combined <- meyers_corrected
 
 ```
 
+
 ##Calculate Mortality Rates
 Now, i calculate mortality rate based on trees prefire vs postfire status.
 
@@ -208,8 +182,6 @@ monarchs_severity <- monarchs_severity %>%
 st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity.shp"), append = F)
 
 ```
-
-Currently the following mortality rate calculation is off because some of the trees we have points for are outside the spatial extent of the fires they were measured for. Ground data suggest that these may still have seen some fire (2016 Hidden). Need to decide whether these trees should be included, with their field severity used, or excluded. they do still have severities here because they are within the footprint of a different fire, but those are not the correct burnsev. samesame question for trees that show up as NA because they are outside the mapped footprint of fires
 
 
 ### Mortality rate by fire
@@ -308,6 +280,37 @@ severity_annual <- cbi_clipped %>%
   mutate(prop_grove_area = total_ha/total_area_ha)
 
 kable(severity_annual, 
+      digits = 2,
+      caption = "Area and proportion of grove area experiencing fire severity annually 1984-2023")
+
+#here i calculate ha of each severity since 1984
+severity_total <- cbi_clipped %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(burnsev), total_ha = sum(area_ha)) %>% 
+  mutate(prop_grove_area = total_ha/total_area_ha) 
+
+kable(severity_total, 
+      digits = 2,
+      caption = "Area and proportion of grove area experiencing fire severity 1984-2023")
+```
+
+```{r severity_area}
+
+total_area_ha = sum(groves$acres)*0.404686
+
+#here i calculate ha of each severity in each year
+severity_annual <- cbi_clipped %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c(fire_yr, burnsev), total_ha = sum(area_ha)) %>% 
+  mutate(prop_grove_area = total_ha/total_area_ha) %>% 
+  arrange(fire_yr)
+
+severity_annual_wider <- severity_annual
+  pivot_wider(names_from = burnsev, names_prefix = "burnsev_", values_from = total_ha:prop_grove_area)
+
+severity_annual[is.na(severity_annual_wider)] <- 0
+
+kable(severity_annual_wider, 
       digits = 2,
       caption = "Area and proportion of grove area experiencing fire severity annually 1984-2023")
 
@@ -484,7 +487,7 @@ ggplot(method_comparison_fire, aes(x = grove, y = value)) +
 
 ```
 
-Seems to be a fair amount of disagreement between methods. Overall see higher estimates by using STI. As far as I can see, there are no cases of the STI estimates being lower than their corresponding estimate (see boxplots below).
+
 
 ```{r compare_sti_box}
 
@@ -504,3 +507,22 @@ ggplot(difference_mortality, aes(burnsev, diff))+
 
 ```
 
+The following describe the difference between methods at the grove level (ie estimated count of mortality per grove)
+
+```{r compare_sti_scatter, fig.width=10, fig.height=14}
+
+method_comparison_fire <- sti_mortality_est %>% 
+  filter(aggregation == "fire", measure == "ct") %>% 
+  as.data.frame()
+  
+#plot values for fire aggregated mortality rates
+ggplot(method_comparison_fire, aes(x = grove, y = value)) +
+  geom_point(aes(color = method))+
+  facet_wrap(vars(burnsev))+
+  coord_flip()+
+  theme_minimal()+
+  xlab(NULL)+
+  labs(title = "Comparison of mortality counts in groves based on STI counts and average trees per ha across\ngroves using fire aggregate mortality rates", y = "Tree mortality per grove")+
+  theme(plot.title.position = "plot")
+
+```

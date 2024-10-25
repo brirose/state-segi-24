@@ -127,7 +127,7 @@ cbi_windy_missing <- mask(cbi_windy, cbi_missing, inverse = T, touches = F) %>%
 #writeRaster(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.tif"))
 
 cbi_coffee <- cbi_coffee %>% 
-  clamp(lower = 1, upper = 4, values = F) %>% #remove erroneous values
+  #clamp(lower = 1, upper = 4, values = F) %>% #remove erroneous values
   as.polygons() %>% 
   st_as_sf() %>% 
   rename("burnsev" = "ca3639211876520240803_20240729_20240914_rdnbr_cbi4") %>% 
@@ -136,7 +136,10 @@ cbi_coffee <- cbi_coffee %>%
     assss_t = "ravg",
     year = "2024",
     id = "2024COFFEE"
-  )
+  ) %>% 
+  filter(!burnsev == 0)
+
+#st_write(cbi_coffee, here("data/spatial_data/outputs/debug_coffee_missing.shp"), append = F)
   
 cbi_windy_missing <- cbi_windy_missing %>%   
   rename("burnsev" = "Layer_1") %>% 
@@ -289,7 +292,7 @@ cbi_all <- cbi_additional %>%
 
 
 cbi_all <- cbi_all %>%
-  mutate(fire_yr = parse_number(id)) %>% 
+  mutate(fire_yr = str_extract(id, "\\d{4}")) %>% 
   select(id, fire_yr, burnsev, assss_t, geometry)
 
 #check
