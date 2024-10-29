@@ -23,13 +23,43 @@ library(janitor)
 #Input and clean treatment data
 
 
-```{r}
+```{r input_data}
 treatment <- read_sf()#add treatment data
 
-fire_history <- read_sf() #CBI
+fire <- read_sf() #CBI
+
+groves <- read_sf() #grove data
 
 ```
 
+reminder: do both with buffer and without; need to decide if doing donut or all and subtracting after
+```{r buffer}
+
+#buffer groves
+groves_buffered <- 
+
+#clip treatment to area of interest
+treatment_clipped <- st_intersection(treament, groves_buffered)
+
+#clip fire to area of interest
+fire_clipped <- st_intersection(fire, groves_buffered)
+
+```
+
+
+
+```{r create_union}
+
+#create layer of individual polygons for each fire history
+fire_history <- st_union(fire_clipped, by_feature = T)
+
+#create layer of individual polygons for each treatment history
+fire_history <- st_union(treatment_clipped, by_feature = T)
+
+#create layer of individual polygons for each fire history/treatment history
+resistance_polyons <- st_union(fire_history, treatment_history, by_feature = T)
+
+```
 
 
 
