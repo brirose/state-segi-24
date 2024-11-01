@@ -73,7 +73,8 @@ by_grove <- cbi_clipped %>%
   summarise(.by= c(id, grov_nm, burnsev), area_ha_grove = sum(area_ha_grove)) %>% 
   pivot_wider(names_from = burnsev, names_prefix = "ha_",values_from = area_ha_grove, values_fill = 0) %>% 
   arrange(id) %>% 
-  mutate(ha_total = ha_1 + ha_2 + ha_3 + ha_4)
+  mutate(ha_total = ha_1 + ha_2 + ha_3 + ha_4) %>% 
+  filter(ha_total > 0.01)
 
 grove_count <- by_grove %>% 
   summarize(.by = c(id), grove_count = n())
@@ -85,12 +86,12 @@ fire_sev_ha <- left_join(grove_area, all_area) %>%
 
 
 kable(fire_sev_ha, 
-      digits = 2,
+      digits = 1,
       caption = "Fire size and severity for fires that burned SEGI groves 1983-2024")
 
 
 kable(by_grove, 
-      digits = 2,
+      digits = 1,
       caption = "Fire severity size for fires that burned SEGI groves 1983-2024 by grove")
 
 ```
