@@ -2,7 +2,11 @@
 title: "Mortality Assessment"
 author: "Shive Lab (B. Baker)"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: yes
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -61,10 +65,40 @@ cbi_clipped$area_ha <- as.numeric(st_area(cbi_clipped))*0.0001
 
 ```
 
-
 ## Load and clean data
 
 Each dataset is slightly different, so I am loading each separately, cleaning them and then combining them. I then make them a spatial feature so that we can plot them on the map and find the severity.
+
+```{r shive_input, results = F}
+#Shive et all data for Pier, Railroad, Rough
+#needs locations appended
+
+multiple_shive_locs <- st_read(here("data/spatial_data/inputs/fire/SEGI_MortalityStudy_AllMonarchs/SEGI_MortalityStudy_AllMonarchs.shp")) %>% 
+  clean_names() %>% 
+  mutate(easting = sf::st_coordinates(.)[,1],
+         northing = sf::st_coordinates(.)[,2])
+
+multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_AllGroves_2022.csv")) %>%
+  clean_names() %>% 
+  left_join(multiple_shive_locs) %>% 
+  rename(
+    survey_fire = fire,
+    id = tree_number,
+    grove = grove_name,
+    postfire_status = live_status2020
+    ) %>% 
+  mutate(
+    survey_year = 2020,
+    fire_year = survey_year-yrs_post_fire,
+    source = "Shive etal, Mortality Study",
+    prefire_status = "unknown"
+    ) %>% 
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
+
+
+```
+
+
 
 ```{r ucb_input}
 #Data from Hardlund, monarch locations already corrected
@@ -259,6 +293,7 @@ meyers_corrected <- meyers_combined %>%
 ```{r combine_inputs}
 #combine inputs
 monarchs_combined <- meyers_corrected %>% 
+  bind_rows(multiple_shive) %>% 
   bind_rows(castle_ucb) %>% 
   bind_rows(mort_usgs) %>% 
   #bind_rows(ff_usgs) %>% #needs to be converted to utm still
@@ -268,8 +303,7 @@ monarchs_combined <- meyers_corrected %>%
 
 ```
 
-
-##Calculate Mortality Rates
+## Calculate Mortality Rates
 
 Now, i calculate mortality rate based on trees prefire vs postfire status.
 
@@ -309,17 +343,16 @@ monarchs_severity <- monarchs_severity %>%
   rename("tree_id" = "id.x",
          "fire_id" = "id.y") %>% 
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
-  select(tree_id, grove, postfire_status, prefire_status, survey_year, survey_fire, fire_id, fire_yr, burnsev, source) 
+  mutate(measure_delay = as.numeric(fire_yr)-as.numeric(survey_year)) %>% 
+  select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id,  burnsev, source) 
 
 #need to do more checking about the NA monarchs after join
 #also some of them are out of the fire footprint on the spatial data, but have field severity written in; replace with field severity there or remove from dataset?
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
-st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_4Nov24.shp"), append = F)
+# st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_4Nov24.shp"), append = F)
 
 ```
-
-
 
 ### Mortality rate by fire
 
@@ -371,7 +404,6 @@ kable(mortality_year,
 
 Decision needed: which aggregation will we want to use? Likely should wait until we have enough actual data, rather than just the USFS
 
-
 ```{r check_debug}
 
 # plot to check and debug
@@ -400,10 +432,9 @@ Decision needed: which aggregation will we want to use? Likely should wait until
 
 ```
 
-
 ## Estimate SEGI mortality from fires
 
-Now that we have ranges of mortality for each severity level, we can use these to estimate mortality. 
+Now that we have ranges of mortality for each severity level, we can use these to estimate mortality.
 
 Here i calculate the proportion of area that experienced each severity of fire
 
@@ -442,7 +473,7 @@ kable(severity_total,
 
 First, I put together some quick mortality estimates that utilize the `trees_ha` trees/ha value.
 
-I did this as annual estimates. 
+I did this as annual estimates.
 
 ```{r annual_mort}
 #annual mortality (without removal of SEKI areas that have counts)
@@ -477,7 +508,6 @@ kable(annual_mort_est,
 
 ...and as total mortality by severity class
 
-
 ```{r total_mort}
 #total mortality (without removal of SEKI areas that have counts)
 
@@ -505,13 +535,11 @@ kable(total_mort_est,
       caption = "SEGI total mortality from fire estimates using only trees per ha")
 ```
 
-
 ## Compare STI vs average per ha at grove level
 
-Here i look at how the estimates change if I use the sti in SEKI to make the estimates. I estimate by grove and do the estimates by sti and by average trees mortality ranges. 
+Here i look at how the estimates change if I use the sti in SEKI to make the estimates. I estimate by grove and do the estimates by sti and by average trees mortality ranges.
 
 We expect that in some groves the sti should be an undercount since it does not cover entire grove area (list here)
-
 
 ```{r sti_mort}
 
@@ -581,7 +609,7 @@ sti_mortality_est <- sti_sev %>%
 
 ```
 
-The following are some visuals to compare some of these values. I have yet to do any actual statistical analysis. 
+The following are some visuals to compare some of these values. I have yet to do any actual statistical analysis.
 
 ```{r compare_sti_scatter, fig.width=10, fig.height=14}
 
@@ -600,8 +628,6 @@ ggplot(method_comparison_fire, aes(x = grove, y = value)) +
   theme(plot.title.position = "plot")
 
 ```
-
-
 
 ```{r compare_sti_box}
 
@@ -623,20 +649,16 @@ ggplot(difference_mortality, aes(burnsev, diff))+
 
 The following describe the difference between methods at the grove level (ie estimated count of mortality per grove)
 
-```{r compare_sti_groves, fig.width=10, fig.height=14}
+```{r compare_sti_groves}
 
-method_comparison_fire <- sti_mortality_est %>% 
-  filter(aggregation == "fire", measure == "ct") %>% 
-  as.data.frame()
+method_comparison_fire_grove <- sti_mortality_est %>% 
+  filter(measure == "ct") %>% 
+  as.data.frame() %>% 
+  summarise(.by = c(aggregation, method, statistic, burnsev), per_grove = sum(value)/length(unique(sti_mortality_est$grove))) %>% 
+  pivot_wider(names_from = statistic, values_from = per_grove)
   
-#plot values for fire aggregated mortality rates
-ggplot(method_comparison_fire, aes(x = grove, y = value)) +
-  geom_point(aes(color = method))+
-  facet_wrap(vars(burnsev))+
-  coord_flip()+
-  theme_minimal()+
-  xlab(NULL)+
-  labs(title = "Comparison of mortality counts in groves based on STI counts and average trees per ha across\ngroves using fire aggregate mortality rates", y = "Tree mortality per grove")+
-  theme(plot.title.position = "plot")
+kable(method_comparison_fire_grove, 
+      digits = 2,
+      caption = "SEGI average mortality per grove from fire and annual estimates using trees per ha and STI")
 
 ```
