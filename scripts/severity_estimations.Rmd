@@ -49,6 +49,27 @@ cbi_clipped <- cbi_clipped %>%
 cbi_clipped$area_ha_grove <- as.numeric(st_area(cbi_clipped))*0.0001 
 
 ```
+## Known fires in groves since perimeters started
+
+```{r}
+
+all_fires <- st_read(here("data/spatial_data/inputs/fire/fire22_1.gdb"), layer = "firep22_1") %>% 
+  clean_names() %>%
+  st_transform(crs(cbi_all)) %>%  #make consistent crs
+  st_cast("MULTIPOLYGON") %>% 
+  rownames_to_column() %>% 
+  st_intersection(groves) 
+
+all_fires <- all_fires %>% 
+  mutate(fire_name = case_when(!str_detect(fire_name, " ") ~ str_to_title(fire_name), 
+                               T ~ paste("unknown", rowname, sep = "_")),
+         area_ha = as.numeric(st_area(.))*0.0001,
+         area_acres = area_ha/2.471) %>% 
+  st_drop_geometry() %>% 
+select(year, fire_name, grove_name, area_ha, area_acres)
+```
+
+
 
 ## Fire List
 
@@ -64,7 +85,7 @@ all_area <- cbi_all %>%
 grove_area <- cbi_clipped %>% 
   st_drop_geometry() %>% 
   arrange(burnsev) %>% 
-  summarise(.by = c(id, burnsev), area_ha_grove = sum(area_ha_grove)) %>% 
+  summarise(.by = c(id, burnsev), area_ha_grove = sum(area_ha_grove), grove_ct = length(unique(grov_nm))) %>% 
   pivot_wider(names_from = burnsev, names_prefix = "grove_ha_",values_from = area_ha_grove, values_fill = 0) %>% 
   mutate(grove_ha_total = grove_ha_1 + grove_ha_2 + grove_ha_3 + grove_ha_4)
 
@@ -93,6 +114,77 @@ kable(fire_sev_ha,
 kable(by_grove, 
       digits = 1,
       caption = "Fire severity size for fires that burned SEGI groves 1983-2024 by grove")
+
+```
+
+
+
+
+
+## Prelim Figures for Communications
+
+```{r}
+#make master dataframe
+
+
+#need to append info from 2023-2024
+
+recent_fire <- by_grove %>% 
+  filter(str_detect(id, "2024")) %>%  #no fires in 2023 somehow, so just need 2024
+  mutate(year = "2024", area_acres = ha_total/2.471) %>%
+  rename(
+    grove_name = grov_nm,
+    fire_name = id
+  )
+
+all_fires_summary <- all_fires %>% 
+  bind_rows(recent_fire) %>% 
+  summarize(.by = year, 
+            grove_count = length(unique(grove_name)),
+            fire_count = length(unique(fire_name)),
+            area_acres_total = sum(area_acres)) %>% 
+  mutate(year = as.numeric(year)) %>% 
+  arrange(year)
+
+#fire area in groves by severity breakdown by year
+
+severity_summary <- grove_area %>% 
+  mutate(year = parse_number(id),
+         fire = str_to_title(str_extract(id, "(?<=\\d{4}).+"))) %>% 
+  pivot_longer(grove_ha_1:grove_ha_4) %>% 
+  summarise(
+    .by = c(year, name),
+    area_acres = sum(value/2.471)
+      ) %>% 
+  mutate(
+    severity = parse_number(name)
+  ) %>% 
+  select(-name) %>% 
+  pivot_wider(names_from = severity, names_prefix = "area_acres_", values_from = area_acres)
+
+
+#combine
+
+all_fires_summary <- all_fires_summary %>% 
+  left_join(severity_summary)
+
+```
+
+
+```{r}
+
+
+```
+
+
+
+```{r}
+# All fire area in groves since recording began
+
+
+
+#now make bar chart
+  
 
 ```
 

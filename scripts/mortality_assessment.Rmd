@@ -87,9 +87,17 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
     grove = grove_name,
     postfire_status = live_status2020
     ) %>% 
-  mutate(
-    survey_year = 2020,
-    fire_year = survey_year-yrs_post_fire,
+  mutate( #edit these to make sure survey yr and fire yr correct; RRD in 2018, others in 2020
+    survey_year = case_when(
+      survey_fire == "Railroad" ~ 2018,
+      T ~ 2020
+    ),
+    fire_year = case_when(
+      survey_fire == "Railroad" ~ 2017,
+      survey_fire == "Rough" ~ 2015,
+      survey_fire == "Pier" ~ 2027,
+      T ~ 0
+    ),
     source = "Shive etal, Mortality Study",
     prefire_status = "unknown"
     ) %>% 
@@ -158,7 +166,6 @@ mort_usgs <- read_csv(here("data/plot_data/USGS_MortalityStudy_SEGItrees_09Sept2
       T ~ "other"),
     source = "USGS, mortality"
   ) %>% 
-  
   select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
 
 #check to make sure survey year falls after the most recent fire experienced
@@ -344,7 +351,7 @@ monarchs_severity <- monarchs_severity %>%
          "fire_id" = "id.y") %>% 
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
   mutate(measure_delay = as.numeric(fire_yr)-as.numeric(survey_year)) %>% 
-  select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id,  burnsev, source) 
+  select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source) 
 
 #need to do more checking about the NA monarchs after join
 #also some of them are out of the fire footprint on the spatial data, but have field severity written in; replace with field severity there or remove from dataset?
