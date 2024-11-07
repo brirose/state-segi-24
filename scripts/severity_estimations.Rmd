@@ -8,13 +8,20 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library(here)
-library(tidyverse)
-library(sf)
-library(terra)
-library(readxl)
-library(kableExtra)
-library(janitor)
+library(here)      # sets directory and locates files
+library(tidyverse) # data manipulation
+library(sf)        # GIS (vector)
+library(terra)     # GIS (raster)
+library(readxl)    # read excel files directly
+library(kableExtra)# make tables
+library(janitor)   # clean data names
+library(dygraphs)  # html visualizations (timeseries)
+library(xts)       # convert data-frame > xts format (timeseries)
+library(lubridate) # date manipulation
+library(htmlwidgets)
+library(harrypotter)
+
+
 ```
 
 ## Load Data
@@ -64,7 +71,7 @@ all_fires <- all_fires %>%
   mutate(fire_name = case_when(!str_detect(fire_name, " ") ~ str_to_title(fire_name), 
                                T ~ paste("unknown", rowname, sep = "_")),
          area_ha = as.numeric(st_area(.))*0.0001,
-         area_acres = area_ha/2.471) %>% 
+         area_acres = area_ha*2.471) %>% 
   st_drop_geometry() %>% 
 select(year, fire_name, grove_name, area_ha, area_acres)
 ```
@@ -131,19 +138,37 @@ kable(by_grove,
 
 recent_fire <- by_grove %>% 
   filter(str_detect(id, "2024")) %>%  #no fires in 2023 somehow, so just need 2024
-  mutate(year = "2024", area_acres = ha_total/2.471) %>%
+  mutate(year = "2024", area_acres = ha_total*2.471) %>%
   rename(
     grove_name = grov_nm,
     fire_name = id
   )
 
+# dataframe of years without fire in groves
+
+fire_yrs <- as.integer(unique(all_fires$year))
+all_yrs <- 1900:2023
+
+no_fire_yrs <- setdiff(all_yrs, fire_yrs)
+
+no_fire <- tibble(
+  year = c(no_fire_yrs) ,
+  grove_count = 0,
+  fire_count = 0,
+  area_acres_total = 0
+)
+
+
+
+#create complete dataset of fires
 all_fires_summary <- all_fires %>% 
-  bind_rows(recent_fire) %>% 
+  bind_rows(recent_fire) %>%
   summarize(.by = year, 
             grove_count = length(unique(grove_name)),
             fire_count = length(unique(fire_name)),
             area_acres_total = sum(area_acres)) %>% 
   mutate(year = as.numeric(year)) %>% 
+  bind_rows(no_fire) %>% 
   arrange(year)
 
 #fire area in groves by severity breakdown by year
@@ -154,7 +179,7 @@ severity_summary <- grove_area %>%
   pivot_longer(grove_ha_1:grove_ha_4) %>% 
   summarise(
     .by = c(year, name),
-    area_acres = sum(value/2.471)
+    area_acres = sum(value*2.471)
       ) %>% 
   mutate(
     severity = parse_number(name)
@@ -165,26 +190,188 @@ severity_summary <- grove_area %>%
 
 #combine
 
-all_fires_summary <- all_fires_summary %>% 
-  left_join(severity_summary)
+all_fires_date <- all_fires_summary %>% 
+  left_join(severity_summary) %>% # combine severity
+  mutate(year = ymd(year, truncated = 2L)) # makes years date format, assigns jan1 as md
 
 ```
 
 
 ```{r}
-
-
-```
-
-
-
-```{r}
-# All fire area in groves since recording began
-
-
-
-#now make bar chart
+# timeseries of total area burned in groves since 1900
+# create xts necessary to use dygraph
+all_fires_xts <- all_fires_date %>% 
+  select(year, area_acres_total, grove_count) %>% 
+  mutate(area_acres_total = base::round(area_acres_total, 1),
+         grove_count = as.integer(grove_count)) %>% 
+  as.xts()
   
+
+#Plot
+p <- dygraph(all_fires_xts, main = "Sequoia groves and grove area burned (acres) in wildfires annually 1900 - 2024") %>%
+  dyAxis("y", label = "Acres Burned") %>% 
+  dyAxis("y2", label = "Grove Count", valueRange = c(0, 30)) %>% 
+  dySeries("area_acres_total", label = "Acres burned", axis =('y')) %>% 
+  dySeries("grove_count", label = "Groves burned", axis =('y2')) %>% 
+  dyOptions(
+    stackedGraph = TRUE,
+    labelsUTC = TRUE, 
+    fillGraph=TRUE, 
+    fillAlpha=0.1, 
+    drawGrid = FALSE, 
+    colors=c("firebrick", "goldenrod")) %>%
+  dyRangeSelector(fillColor = "burlywood", strokeColor = "") %>%
+  dyCrosshair(direction = "vertical") %>%
+  dyHighlight(highlightCircleSize = 5, 
+              highlightSeriesBackgroundAlpha = 0.2, 
+              hideOnMouseOut = FALSE)  %>%
+  dyLegend(show = "follow")
+
+# save the widget
+
+saveWidget(p, file=here("outputs/acres_year.html"))
+
+```
+
+
+```{r}
+# timeseries of total area burned in groves since 1900
+# create xts necessary to use dygraph
+severity_xts <- all_fires_date[86:nrow(all_fires_date),] %>%
+  select(year, area_acres_total, area_acres_1:area_acres_4) %>% 
+  mutate(across(area_acres_total:area_acres_4, base::round,1),
+         across(everything(), ~replace_na(.x, 0))) %>% 
+  as.xts()
+  
+  
+
+#Plot
+p <- dygraph(severity_xts, main = "Sequoia grove area burned (acres) in wildfires annually 1985 - 2024 by Composite Burn Index (CBI) severity class") %>%
+  dyAxis("y", label = "Acres Burned") %>% 
+  dySeries("area_acres_total", label = "Total") %>% 
+  dySeries("area_acres_1", label = "CBI 1") %>% 
+  dySeries("area_acres_2", label = "CBI 2") %>% 
+  dySeries("area_acres_3", label = "CBI 3") %>%
+  dySeries("area_acres_4", label = "CBI 4") %>% 
+  dyOptions(
+    stackedGraph = TRUE,
+    labelsUTC = TRUE, 
+    fillGraph=TRUE, 
+    fillAlpha=0.1, 
+    drawGrid = FALSE, 
+    colors=c("#FFD529", "#FEAF3A", "#E07D54", "#803A56", "#713654")
+    ) %>%
+  dyRangeSelector(fillColor = "burlywood", strokeColor = "") %>%
+  dyCrosshair(direction = "vertical") %>%
+  dyHighlight(highlightCircleSize = 5, 
+              highlightSeriesBackgroundAlpha = 0.2, 
+              hideOnMouseOut = FALSE)  %>%
+  dyLegend(show = "follow")
+
+# save the widget
+
+saveWidget(p, file=here("outputs/acres_severity.html"))
+
+```
+
+
+```{r}
+
+# All fire area in groves since recording began
+# modify for easy ggplotting
+all_fires_2plot <- all_fires_date %>% 
+  select(year, grove_count:area_acres_total) %>% 
+  mutate(year = year(year),
+         area_acres_total = round(area_acres_total,1),
+         grove_count_scale = 300*grove_count,
+         across(everything(), ~replace_na(.x, 0)))
+  
+  
+#now make bar chart
+
+ggplot(all_fires_2plot, aes(x = year, y = area_acres_total))+
+  geom_col(fill = "goldenrod1")+
+  # geom_line(aes(x = year, y = grove_count_scale), color = "peachpuff4")+
+  # scale_y_continuous(sec.axis = sec_axis(trans = ~./ 300, name = "Count of Groves Burned"))+
+  labs(
+    title = "Sequoia grove area (acres) burned annually by wildfire 1900-2024",
+    x = "",
+    y = "Total grove area (acres)",
+    caption = "Total acres of grove area burned annually in wildfires since 1900 (green bars) and number of (Shive Lab, 2024).")+
+  #coord_flip()+
+  scale_x_reverse()+
+  scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
+  theme_minimal()+
+  theme(plot.caption = element_text(hjust = 0, face= "italic"),
+        plot.title.position = "plot",
+        plot.caption.position =  "plot",
+        axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+
+ggsave(here("outputs/allFires_annualAcres_bar.png"),
+       width = 5, height = 7, units = "in", dpi = 600)
+
+
+```
+
+
+
+```{r}
+
+severity_2plot <- all_fires_date %>% 
+  select(-fire_count, -grove_count, -area_acres_total) %>% 
+  pivot_longer(!year, names_to = "measure") %>% 
+  mutate(year = year(year),
+         acres = round(value,1),
+         across(everything(), ~replace_na(.x, 0)),
+         severity = as.factor(parse_number(measure))
+         ) %>% 
+  filter(!year %in% c(1900:1984))
+
+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
+  geom_col()+
+  labs(
+    title = "Sequoia grove area (acres) burned annually by wildfire by\nComposite Burn Index (CBI) severity class 1985-2024",
+    x = "",
+    y = "Total grove area (acres)",
+    fill = "CBI severity",
+    caption = "(Shive Lab, 2024)") +
+  #coord_flip()+
+  scale_fill_hp(discrete = T, house = "gryffindor") +
+  scale_x_reverse()+
+  scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
+  theme_minimal()+
+  theme(plot.caption = element_text(hjust = 0, face= "italic"),
+        plot.title.position = "plot",
+        plot.caption.position =  "plot",
+        axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+
+ggsave(here("outputs/severityFires_annualAcres_stackedbar.png"),
+       width = 5, height = 7, units = "in", dpi = 600)
+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
+  geom_col()+
+  facet_wrap(~severity)+
+  labs(
+    title = "Sequoia grove area (acres) burned annually by wildfire by Composite Burn Index (CBI)\nseverity class 1985-2024",
+    x = "",
+    y = "Total grove area (acres)",
+    fill = "CBI severity",
+    caption = "(Shive Lab, 2024)") +
+  #coord_flip()+
+  scale_fill_hp(discrete = T, house = "gryffindor") +
+  scale_x_reverse()+
+  scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
+  theme_minimal()+
+  theme(
+    legend.position = "none",
+    plot.caption = element_text(hjust = 0, face= "italic"),
+    plot.title.position = "plot",
+    plot.caption.position =  "plot",
+    axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+
+ggsave(here("outputs/severityFires_annualAcres_facetbar.png"),
+       width = 5, height = 7, units = "in", dpi = 600)
 
 ```
 
