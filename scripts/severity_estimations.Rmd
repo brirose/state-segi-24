@@ -192,7 +192,8 @@ severity_summary <- grove_area %>%
 
 all_fires_date <- all_fires_summary %>% 
   left_join(severity_summary) %>% # combine severity
-  mutate(year = ymd(year, truncated = 2L)) # makes years date format, assigns jan1 as md
+  mutate(year = ymd(year, truncated = 2L))
+# makes years date format, assigns jan1 as md
 
 ```
 
@@ -201,7 +202,7 @@ all_fires_date <- all_fires_summary %>%
 # timeseries of total area burned in groves since 1900
 # create xts necessary to use dygraph
 all_fires_xts <- all_fires_date %>% 
-  select(year, area_acres_total, grove_count) %>% 
+  select(year, area_acres_total, grove_count, fire_count) %>% 
   mutate(area_acres_total = base::round(area_acres_total, 1),
          grove_count = as.integer(grove_count)) %>% 
   as.xts()
@@ -209,17 +210,18 @@ all_fires_xts <- all_fires_date %>%
 
 #Plot
 p <- dygraph(all_fires_xts, main = "Sequoia groves and grove area burned (acres) in wildfires annually 1900 - 2024") %>%
-  dyAxis("y", label = "Acres Burned") %>% 
-  dyAxis("y2", label = "Grove Count", valueRange = c(0, 30)) %>% 
+  dyAxis("y", label = "Acres") %>% 
+  dyAxis("y2", label = "Count", valueRange = c(0, 30)) %>% 
   dySeries("area_acres_total", label = "Acres burned", axis =('y')) %>% 
   dySeries("grove_count", label = "Groves burned", axis =('y2')) %>% 
+  dySeries("fire_count", label = "Number of fires", axis =('y2')) %>% 
   dyOptions(
     stackedGraph = TRUE,
     labelsUTC = TRUE, 
     fillGraph=TRUE, 
     fillAlpha=0.1, 
     drawGrid = FALSE, 
-    colors=c("firebrick", "goldenrod")) %>%
+    colors=c( "#713654","#FFD529", "#FEAF3A")) %>%
   dyRangeSelector(fillColor = "burlywood", strokeColor = "") %>%
   dyCrosshair(direction = "vertical") %>%
   dyHighlight(highlightCircleSize = 5, 
@@ -249,10 +251,10 @@ severity_xts <- all_fires_date[86:nrow(all_fires_date),] %>%
 p <- dygraph(severity_xts, main = "Sequoia grove area burned (acres) in wildfires annually 1985 - 2024 by Composite Burn Index (CBI) severity class") %>%
   dyAxis("y", label = "Acres Burned") %>% 
   dySeries("area_acres_total", label = "Total") %>% 
-  dySeries("area_acres_1", label = "CBI 1") %>% 
-  dySeries("area_acres_2", label = "CBI 2") %>% 
-  dySeries("area_acres_3", label = "CBI 3") %>%
-  dySeries("area_acres_4", label = "CBI 4") %>% 
+  dySeries("area_acres_1", label = "Undetected change") %>% 
+  dySeries("area_acres_2", label = "Low severity") %>% 
+  dySeries("area_acres_3", label = "Moderate severity") %>%
+  dySeries("area_acres_4", label = "High severity") %>% 
   dyOptions(
     stackedGraph = TRUE,
     labelsUTC = TRUE, 
@@ -291,24 +293,25 @@ all_fires_2plot <- all_fires_date %>%
 
 ggplot(all_fires_2plot, aes(x = year, y = area_acres_total))+
   geom_col(fill = "goldenrod1")+
-  # geom_line(aes(x = year, y = grove_count_scale), color = "peachpuff4")+
-  # scale_y_continuous(sec.axis = sec_axis(trans = ~./ 300, name = "Count of Groves Burned"))+
+  #geom_line(aes(x = year, y = grove_count_scale), color = "peachpuff4")+
+  scale_y_continuous(expand = c(0, 0))+ #, sec.axis = sec_axis(trans = ~./ 300, name = "Count of Groves Burned"))+
   labs(
-    title = "Sequoia grove area (acres) burned annually by wildfire 1900-2024",
+    title = "Sequoia grove area (acres) burned annually by wildfire", subtitle ="1900-2024",
     x = "",
     y = "Total grove area (acres)",
-    caption = "Total acres of grove area burned annually in wildfires since 1900 (green bars) and number of (Shive Lab, 2024).")+
+    caption = "(Shive Lab, 2024)" #Total acres of grove area burned annually in wildfires since 1900 (yellow bars) and number of groves burned (brown line)./n
+    )+
   #coord_flip()+
   scale_x_reverse()+
   scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
-  theme_minimal()+
+  theme_classic()+
   theme(plot.caption = element_text(hjust = 0, face= "italic"),
         plot.title.position = "plot",
         plot.caption.position =  "plot",
-        axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+        axis.text.x = element_text(angle = 45, vjust = 1.2, hjust=1))
 
 ggsave(here("outputs/allFires_annualAcres_bar.png"),
-       width = 5, height = 7, units = "in", dpi = 600)
+       width = 7, height = 6, units = "in", dpi = 600)
 
 
 ```
@@ -323,12 +326,20 @@ severity_2plot <- all_fires_date %>%
   mutate(year = year(year),
          acres = round(value,1),
          across(everything(), ~replace_na(.x, 0)),
-         severity = as.factor(parse_number(measure))
+         severity = parse_number(measure),
+         severity = as.factor(
+           case_when(
+             severity == 1 ~ "Undetected change",
+             severity == 2 ~ "Low severity",
+             severity == 3 ~ "Moderate severity",
+             severity == 4 ~ "High severity"
+           )
+         )
          ) %>% 
   filter(!year %in% c(1900:1984))
 
 
-ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
   geom_col()+
   labs(
     title = "Sequoia grove area (acres) burned annually by wildfire by\nComposite Burn Index (CBI) severity class 1985-2024",
@@ -338,40 +349,47 @@ ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
     caption = "(Shive Lab, 2024)") +
   #coord_flip()+
   scale_fill_hp(discrete = T, house = "gryffindor") +
+  scale_y_continuous(expand = c(0, 0)) +
   scale_x_reverse()+
-  scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
-  theme_minimal()+
+  scale_x_continuous(breaks = seq(1985, 2025, by = 5), 
+                     limits = c(1985, 2025),
+                     expand = c(0, 0))+
+  theme_classic()+
   theme(plot.caption = element_text(hjust = 0, face= "italic"),
         plot.title.position = "plot",
         plot.caption.position =  "plot",
-        axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+        axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1.2),
+        legend.position = c(0.2, 0.8))
 
 ggsave(here("outputs/severityFires_annualAcres_stackedbar.png"),
-       width = 5, height = 7, units = "in", dpi = 600)
+       width = 6, height = 7, units = "in", dpi = 600)
 
-ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
   geom_col()+
   facet_wrap(~severity)+
   labs(
-    title = "Sequoia grove area (acres) burned annually by wildfire by Composite Burn Index (CBI)\nseverity class 1985-2024",
+    title = "Sequoia grove area (acres) burned annually by wildfire in each\nComposite Burn Index (CBI) severity class 1985-2024",
     x = "",
     y = "Total grove area (acres)",
     fill = "CBI severity",
     caption = "(Shive Lab, 2024)") +
   #coord_flip()+
   scale_fill_hp(discrete = T, house = "gryffindor") +
+  scale_y_continuous(expand = c(0, 0)) +
   scale_x_reverse()+
-  scale_x_continuous(breaks = seq(1900, 2025, by = 10))+
-  theme_minimal()+
+  scale_x_continuous(breaks = seq(1985, 2025, by = 5), 
+                     limits = c(1985, 2025),
+                     expand = c(0, 2))+
+  theme_classic()+
   theme(
     legend.position = "none",
     plot.caption = element_text(hjust = 0, face= "italic"),
     plot.title.position = "plot",
     plot.caption.position =  "plot",
-    axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1))
+    axis.text.x = element_text(angle = 45, vjust = 1.3, hjust=1.2))
 
 ggsave(here("outputs/severityFires_annualAcres_facetbar.png"),
-       width = 5, height = 7, units = "in", dpi = 600)
+       width = 6, height = 6, units = "in", dpi = 600)
 
 ```
 
