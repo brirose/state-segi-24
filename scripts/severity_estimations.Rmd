@@ -20,6 +20,7 @@ library(xts)       # convert data-frame > xts format (timeseries)
 library(lubridate) # date manipulation
 library(htmlwidgets)
 library(harrypotter)
+library(LaCroixColoR)
 
 
 ```
@@ -327,19 +328,20 @@ severity_2plot <- all_fires_date %>%
          acres = round(value,1),
          across(everything(), ~replace_na(.x, 0)),
          severity = parse_number(measure),
-         severity = as.factor(
-           case_when(
+         severity =  base::as.factor(case_when(
              severity == 1 ~ "Undetected change",
              severity == 2 ~ "Low severity",
              severity == 3 ~ "Moderate severity",
              severity == 4 ~ "High severity"
-           )
-         )
-         ) %>% 
+           )),
+         severity = factor(severity, levels = c("Undetected change","Low severity","Moderate severity","High severity"))
+           ) %>% 
   filter(!year %in% c(1900:1984))
 
 
-ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
+
+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
   geom_col()+
   labs(
     title = "Sequoia grove area (acres) burned annually by wildfire by\nComposite Burn Index (CBI) severity class 1985-2024",
@@ -348,9 +350,8 @@ ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
     fill = "CBI severity",
     caption = "(Shive Lab, 2024)") +
   #coord_flip()+
-  scale_fill_hp(discrete = T, house = "gryffindor") +
+   scale_fill_manual(values= c("#233d4d", "#fe7f2d","#a1c181", "#fcca46"))+
   scale_y_continuous(expand = c(0, 0)) +
-  scale_x_reverse()+
   scale_x_continuous(breaks = seq(1985, 2025, by = 5), 
                      limits = c(1985, 2025),
                      expand = c(0, 0))+
@@ -364,7 +365,7 @@ ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
 ggsave(here("outputs/severityFires_annualAcres_stackedbar.png"),
        width = 6, height = 7, units = "in", dpi = 600)
 
-ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
+ggplot(severity_2plot, aes(x = year, y = acres, fill = fct_rev(severity)))+
   geom_col()+
   facet_wrap(~severity)+
   labs(
@@ -374,7 +375,7 @@ ggplot(severity_2plot, aes(x = year, y = acres, fill = severity))+
     fill = "CBI severity",
     caption = "(Shive Lab, 2024)") +
   #coord_flip()+
-  scale_fill_hp(discrete = T, house = "gryffindor") +
+  scale_fill_manual(values= c("#233d4d", "#fe7f2d","#a1c181", "#fcca46"))+
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_reverse()+
   scale_x_continuous(breaks = seq(1985, 2025, by = 5), 
