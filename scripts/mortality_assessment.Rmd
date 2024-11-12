@@ -110,7 +110,7 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
 
 ```{r ucb_input}
 #Data from Hardlund, monarch locations already corrected
-castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_15Nov23.csv")) %>% 
+castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSurvey_10Nov24.csv")) %>% 
   clean_names() %>% 
   mutate(
     prefire_status = case_when( #pull prefire dead from notes
