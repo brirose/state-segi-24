@@ -32,33 +32,15 @@ groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_publi
 
 ```
 
-
-
-```{r}
-#grove filtered 7-class
-#BA 7-class fires that have had high sev and are in groves 1984-2024 
-
-ba_class7_segi <- st_intersection(groves, sev_class7)
-
-ba_class7_segi <- ba_class7_segi %>% 
-  rename("grov_nm" = "grove_name",
-         "fire_yr" = "year") %>% 
-  select(grov_nm, id, burnsev, fire_yr) 
-
-ba_class7_segi$area_ha <- as.numeric(st_area(ba_class7_segi))*0.0001 
-
-#dir.create(here("data/spatial_data/outputs/ba_class7_poly"))
-st_write(ba_class7_segi, here("data/spatial_data/outputs/ba_class7_poly/ba_class7_poly.shp"), append = F)
-
-```
-
 We will consider areas that fall into the highest burn severity category as those where regeneration failure is likely. The layer I am starting from contains rdnbr for fires from 1984-2023 that both burned at high severity and burned sequoia groves.
 
 ```{r sev_polygons}
 
 # filter to only include the highest severity
 high_sev <- sev_class7 %>% 
-  filter(burnsev == 7)  # highest severity is 7
+  filter(burnsev == 7)  # highest severity is 7 need to switch this to: 801-1100 mod risk, >1101 high risk; rdnbr
+
+#st_write(high_sev, here("data/spatial_data/outputs/highsev_debug.shp") ,append = F)
 ```
 
 Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
@@ -67,29 +49,25 @@ Here, I make a layer that represents seed source (grove area that has not experi
 
 ```{r seed_source}
 
-sf_use_s2(TRUE)
+# sf package was not working, convert to terra-friendly objects
+groves <- vect(groves)
+high_sev <- vect(high_sev)
 
-# i think the issue that is happening below is starting here...need to figure out what the method issue is here. dont really want to put this into arc.
-#seems that the groves layer has invalid geometries. need to try and rebuild them to see if i can get to work
-
-seed_source <- st_difference(groves, high_sev) %>% 
-  st_union() %>% 
-  st_make_valid() %>% 
-  st_buffer(dist = 67.8)
+disbursal_area <- erase(groves, high_sev) %>% 
+  buffer(width = 67.8)
   
-plot(seed_source)
 ```
 
 Once I know where dispersal is likely, I can difference the highest severity layer to determine where regeneration failure is highly likely.
 
 ```{r regen-failure}
+#start with high sev area
+regen_fail <- erase(high_sev, disbursal_area) %>% # erase areas where disbursal happens
+  intersect(groves) # select groves only
 
-regen_fail <- st_difference(high_sev, seed_source) %>% 
-  st_make_valid()
+writeVector(regen_fail, here("data/spatial_data/outputs/regenfail_debug.shp"), overwrite = T)
 
-#hmm not really working that well....not sure what is the issue
 
-plot(regen_fail)
 
 ```
 
