@@ -13,22 +13,23 @@ library(tidyverse)
 library(janitor)
 library(sf)
 library(terra)
+library(kableExtra)
 
 ```
 
 This document holds the analysis for regeneration failure areas.
 
 ```{r import_data}
-#BA 7-class fires that have had high sev and are in groves 1984-2024 
-# need to switch this to: 801-1100 mod risk, >1101 high risk; rdnbr
-sev_class7 <- st_read(here("data/spatial_data/outputs/ba_highsev_7/ba_highsev_7.shp"))
+# rdnbr fires that have had high sev and are in groves 1984-2024 
+sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif"))
 
 #polygons of SEGI groves, "skinny"
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
   clean_names() %>%
   st_transform(crs(sev_class7)) %>% #uniform crs
   st_cast("MULTIPOLYGON") %>% 
-  st_make_valid()
+  st_make_valid() %>% 
+  vect() # make terra object
 
 ```
 
@@ -37,10 +38,11 @@ We will consider areas that fall into the highest burn severity category as thos
 ```{r sev_polygons}
 
 # filter to only include the highest severity
-high_sev <- sev_class7 %>% 
-  filter(burnsev == 7)  # highest severity is 7 need to switch this to: 801-1100 mod risk, >1101 high risk; rdnbr
+high_sev <- as.polygons(sev_rdnbr) %>% 
+  subset(rdnbr >= 801, NSE = T) %>%  #select  rdnbr 801-1100 mod risk and >1101 high risk
+  aggregate()
 
-#st_write(high_sev, here("data/spatial_data/outputs/highsev_debug.shp") ,append = F)
+writeVector(high_sev, here("data/spatial_data/outputs/highsev_debug.shp"), overwrite = T)
 ```
 
 Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
@@ -49,26 +51,47 @@ Here, I make a layer that represents seed source (grove area that has not experi
 
 ```{r seed_source}
 
-# sf package was not working, convert to terra-friendly objects
-groves <- vect(groves)
-high_sev <- vect(high_sev)
+disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
+  buffer(width = 67.8) #buffer by 67.8m 
 
-disbursal_area <- erase(groves, high_sev) %>% 
-  buffer(width = 67.8)
-  
+writeVector(disbursal_area, here("data/spatial_data/outputs/disbursal_debug.shp"), overwrite = T)
+
 ```
 
 Once I know where dispersal is likely, I can difference the highest severity layer to determine where regeneration failure is highly likely.
 
 ```{r regen-failure}
 #start with high sev area
-regen_fail <- erase(high_sev, disbursal_area) %>% # erase areas where disbursal happens
-  intersect(groves) # select groves only
+regen_fail <- erase(groves, disbursal_area) %>%  #erase areas where disbursal happens
+  subset(select = c("grove_name", "acres"), NSE = T) #select only grove name
 
-writeVector(regen_fail, here("data/spatial_data/outputs/regenfail_debug.shp"), overwrite = T)
+regen_fail$area_ha <- expanse(regen_fail, unit = "ha") #calculate area affected
 
 
+#writeVector(regen_fail, here("data/spatial_data/outputs/regenfail.shp"), overwrite = T)
 
 ```
 
+```{r outputs}
+
+regen_fail_sf <- st_as_sf(regen_fail) %>% 
+ st_drop_geometry() %>% 
+  mutate(
+    grove_ha = acres/2.471,
+    failure_perc = area_ha/grove_ha*100) %>% 
+  select(grove_name, area_ha, failure_perc) %>% 
+  arrange(-area_ha)
+
+total_ha <- sum(regen_fail$area_ha)
+total_perc <- total_ha/sum(groves$acres)*100
+
+regen_fail_sf <- regen_fail_sf %>% 
+  add_row(.before = 1, grove_name = "Total", 
+        area_ha = total_ha, failure_perc = total_perc)
+
+kable(regen_fail_sf,
+      digits = 1,
+      caption = "Grove area at risk to complete natural regeneration failure by grove")
+
+```
 
