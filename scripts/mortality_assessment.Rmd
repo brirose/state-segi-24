@@ -110,7 +110,7 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
 
 ```{r ucb_input}
 #Data from Hardlund, monarch locations already corrected
-castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSurvey_10Nov24.csv")) %>% 
+castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_10Nov24.csv")) %>% 
   clean_names() %>% 
   mutate(
     prefire_status = case_when( #pull prefire dead from notes
@@ -314,6 +314,8 @@ monarchs_combined <- meyers_corrected %>%
 
 Now, i calculate mortality rate based on trees prefire vs postfire status.
 
+DECISION NEEDED: how many trees should be surveyed for a given fire for it to be worth including?
+
 ```{r binary_severity}
 #need to add filter for tree size
 monarchs_binary <- monarchs_combined %>% 
@@ -344,20 +346,28 @@ monarch_severity_duplicated <- monarchs_severity %>%
   mutate(dups = duplicated(id.x)) %>% 
   filter(dups == T) #makes df of second time a tree ID is in the initial df
 
+#set up to filter out for fires without enough observations
+observation_counts <- monarchs_severity %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = c("id.y") , count = n()) %>% 
+  filter(count > 50)
+
+
 monarchs_severity <- monarchs_severity %>% 
-  filter(!id.x %in% monarch_severity_duplicated$id.x) %>% # remove all duplicated IDs
   bind_rows(monarch_severity_duplicated) %>% #bind this back bc contains the second obs which after the join is the more recent fire
-  rename("tree_id" = "id.x",
+  mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
+  filter(!id.x %in% monarch_severity_duplicated$id.x, # remove all duplicated IDs
+         measure_delay < 10,
+         id.y %in% observation_counts$id.y
+         ) %>% 
+    rename("tree_id" = "id.x",
          "fire_id" = "id.y") %>% 
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
-  mutate(measure_delay = as.numeric(fire_yr)-as.numeric(survey_year)) %>% 
   select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source) 
 
-#need to do more checking about the NA monarchs after join
-#also some of them are out of the fire footprint on the spatial data, but have field severity written in; replace with field severity there or remove from dataset?
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
-# st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_4Nov24.shp"), append = F)
+# st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_19Nov24.shp"), append = F)
 
 ```
 
@@ -401,7 +411,8 @@ mortality_year <- monarchs_mortality_year %>%
   summarize(.by = burnsev,
             min_yr = min(mortality),
             max_yr = max(mortality),
-            avg_yr = mean(mortality))
+            avg_yr = mean(mortality))%>% 
+  arrange(burnsev)
 
 kable(mortality_year,
       digits = 3,
