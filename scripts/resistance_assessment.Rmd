@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(terra)
 library(sf)
 library(here)
 library(janitor)
@@ -24,40 +25,55 @@ library(janitor)
 
 
 ```{r input_data}
-treatment <- read_sf()#add treatment data
 
-fire <- read_sf() #CBI
+#fire history in CBI
+fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>%   #CBI
+  st_make_valid()
 
-groves <- read_sf() #grove data
+fire <- vect(fire)  
+
+#full, cleaned treatment layer (will this be the case?)
+#currently is just NPS to work out the code
+treatment <- vect(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023/NPS_Combined_TrtFile_1966_2023.shp")) %>% #add treatment data
+  clean_names() %>% 
+  project(fire)
+
+#skinny jeans groves
+groves <- vect(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
+  clean_names() %>% 
+  project(fire) #uniform crs
+
 
 ```
 
 reminder: do both with buffer and without; need to decide if doing donut or all and subtracting after
 ```{r buffer}
 
-#buffer groves
-groves_buffered <- 
+#buffer groves by 75m
+groves_buffered <- buffer(groves, width = 75)
 
-#clip treatment to area of interest
-treatment_clipped <- st_intersection(treament, groves_buffered)
+#clip treatment to area(s) of interest
+treatment_75clipped <- intersect(treatment, groves_buffered)
+treatment_clipped <- intersect(treatment, groves)
 
 #clip fire to area of interest
-fire_clipped <- st_intersection(fire, groves_buffered)
+fire_75clipped <- intersect(fire, groves_buffered)
+fire_clipped <- intersect(fire, groves_buffered)
 
 ```
 
 
 
-```{r create_union}
+```{r union_unbuffered}
 
 #create layer of individual polygons for each fire history
-fire_history <- st_union(fire_clipped, by_feature = T)
+fire_history <- union(fire_clipped)
 
 #create layer of individual polygons for each treatment history
-fire_history <- st_union(treatment_clipped, by_feature = T)
+trt_history <- union(treatment_clipped)
 
 #create layer of individual polygons for each fire history/treatment history
-resistance_polyons <- st_union(fire_history, treatment_history, by_feature = T)
+resistance_polyons <- union(fire_history, treatment_history)
 
 ```
 

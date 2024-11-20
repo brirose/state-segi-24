@@ -20,16 +20,13 @@ library(kableExtra)
 This document holds the analysis for regeneration failure areas.
 
 ```{r import_data}
+
 # rdnbr fires that have had high sev and are in groves 1984-2024 
 sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif"))
 
 #polygons of SEGI groves, "skinny"
-groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
-  clean_names() %>%
-  st_transform(crs(sev_class7)) %>% #uniform crs
-  st_cast("MULTIPOLYGON") %>% 
-  st_make_valid() %>% 
-  vect() # make terra object
+groves <- vect(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
+  clean_names()
 
 ```
 
@@ -42,7 +39,6 @@ high_sev <- as.polygons(sev_rdnbr) %>%
   subset(rdnbr >= 801, NSE = T) %>%  #select  rdnbr 801-1100 mod risk and >1101 high risk
   aggregate()
 
-writeVector(high_sev, here("data/spatial_data/outputs/highsev_debug.shp"), overwrite = T)
 ```
 
 Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
@@ -53,8 +49,6 @@ Here, I make a layer that represents seed source (grove area that has not experi
 
 disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
   buffer(width = 67.8) #buffer by 67.8m 
-
-writeVector(disbursal_area, here("data/spatial_data/outputs/disbursal_debug.shp"), overwrite = T)
 
 ```
 
