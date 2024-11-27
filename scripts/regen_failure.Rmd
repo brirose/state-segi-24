@@ -21,6 +21,8 @@ This document holds the analysis for regeneration failure areas.
 
 ```{r import_data}
 
+##check that same crs
+
 # rdnbr fires that have had high sev and are in groves 1984-2024 
 sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif"))
 

@@ -24,27 +24,28 @@ library(janitor)
 #Input and clean treatment data
 
 
+
+
 ```{r input_data}
 
 #fire history in CBI
-fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>%   #CBI
-  st_make_valid()
-
+fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) 
 fire <- vect(fire)  
 
 #full, cleaned treatment layer (will this be the case?)
-#currently is just NPS to work out the code
-treatment <- vect(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023/NPS_Combined_TrtFile_1966_2023.shp")) %>% #add treatment data
-  clean_names() %>% 
+treatment <- vect(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023/NPS_Combined_TrtFile_1966_2023.shp")) %>% 
   project(fire)
 
-#skinny jeans groves
-groves <- vect(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
-  clean_names() %>% 
+#skinny jeans groves, exported to shp from gdb in arc bc polys were weird
+groves <- vect(here("data/spatial_data/inputs/forest/all_groves_REexported.shp")) %>%
   project(fire) #uniform crs
 
-
 ```
+
+
+
+
+
 
 reminder: do both with buffer and without; need to decide if doing donut or all and subtracting after
 ```{r buffer}
@@ -54,28 +55,168 @@ groves_buffered <- buffer(groves, width = 75)
 
 #clip treatment to area(s) of interest
 treatment_75clipped <- intersect(treatment, groves_buffered)
-treatment_clipped <- intersect(treatment, groves)
 
 #clip fire to area of interest
 fire_75clipped <- intersect(fire, groves_buffered)
-fire_clipped <- intersect(fire, groves_buffered)
+
+```
+
+```{r}
+trt_fire <- rbind(treatment_75clipped, fire_75clipped)
+
+trt_history <- union(trt_fire)
+```
+
+
+```{r unions}
+#layer with unique polys for fire history
+#matrix of 1/0 for each fire 
+fire_history <- union(fire_75clipped) %>% 
+  st_as_sf() %>% 
+  rename_with(str_replace, pattern = "id", replacement = "fire") %>% 
+  rownames_to_column(var = "fire_history_id")
+
+fire_hist <- fire_history %>% 
+  select(fire_history_id) %>% 
+  vect()
+
+#layer of individual polygons for each treatment history
+#currently using fire layer since treatment is being RUDE
+#would be matrix of 1/0 for each treatment
+trt_history <- st_as_sf(fire_history) %>%
+  slice_head(n = 217) %>% 
+  rename_with(str_replace, pattern = "fire", replacement = "trt")
+  
+trt_hist <- trt_history %>% 
+  select(trt_history_id) %>% 
+  vect()
+  
+
+
+#layer of individual polygons for each fire history/treatment history
+#matrix of 1/0 for each of the 2 previous histories
+resistance_polygons <- union(fire_hist, trt_hist)
 
 ```
 
 
 
-```{r union_unbuffered}
+```{r fire_lookup}
+
+#create key with fire year and severity for polygon
+fire_lookup <- st_as_sf(fire_75clipped) %>% 
+  st_drop_geometry() %>% 
+  rownames_to_column(var = "fire_id") %>% 
+  mutate(
+    fire_id = paste("fire_", fire_id, sep = ""),
+    fire_type = case_when(
+      burnsev == 1 ~ "undetected_fire",
+      burnsev == 2 ~ "lowsev_fire",
+      burnsev == 3 ~ "modsev_fire",
+      burnsev == 4 ~ "highsev_fire"
+    )) %>% 
+  select(fire_id, fire_yr, fire_type) 
 
 #create layer of individual polygons for each fire history
-fire_history <- union(fire_clipped)
+fire_history2 <- st_as_sf(fire_history) %>% 
+  st_drop_geometry() 
 
-#create layer of individual polygons for each treatment history
-trt_history <- union(treatment_clipped)
-
-#create layer of individual polygons for each fire history/treatment history
-resistance_polyons <- union(fire_history, treatment_history)
+resistance_fire <- resistance %>% 
+  left_join(fire_history2)
 
 ```
+
+
+
+```{r}
+
+treatment_lookup <- treatment_75clipped %>% 
+  st_as_sf() %>% 
+  st_drop_geometry() %>% 
+  clean_names() %>% 
+  rownames_to_column(var = "dist_id") %>% 
+  mutate(dist_id = paste("trt_", dist_id, sep = "")) %>% 
+  select(dist_id, actual_co_1, treatment_c) %>% 
+  replace_na(list(treatment_c = "unknown")) %>% 
+  rename(dist_yr = actual_co_1,
+         dist_type = treatment_c)
+  
+trt_history2 <- st_as_sf(trt_history) %>% 
+  st_drop_geometry() #%>% 
+  pivot_longer(cols = -trt_history_id, names_to = "trt_id") %>% 
+  filter(value == 1) %>% 
+  left_join(treatment_lookup) %>% 
+  select(-trt_id, -value) %>% 
+  arrange(trt_history_id, trt_yr) %>%  # order by poly & burnyear
+   # assign sequential disturbance number of each burn within each polygon group
+  group_by(trt_history_id) %>%
+  mutate(trt_number = paste0('trtnumber_', row_number())) %>%
+  ungroup() %>% 
+  pivot_wider(names_from = trt_number, values_from = c(trt_yr, trt_type))
+  
+  
+
+
+```
+
+
+
+```{r}
+
+resistance <- resistance_polygons %>% 
+  st_as_sf() %>% 
+  st_drop_geometry() %>% 
+  rownames_to_column(var = "resist_id") %>% 
+  left_join(fire_history2) %>% 
+  left_join(trt_history2) %>% 
+  pivot_longer(cols = c(-resist_id,-fire_history_id, -trt_history_id), names_to = "dist_id") %>% 
+  filter(value == 1) %>% 
+  left_join(fire_lookup, join_by(dist_id == fire_id))%>%
+  left_join(treatment_lookup, join_by(dist_id)) %>% 
+  mutate(
+    dist_yr = case_when(
+      is.na(dist_yr) ~ as.integer(fire_yr),
+      T ~ dist_yr),
+    dist_type = case_when(
+      is.na(dist_type) ~ fire_type,
+      T ~ dist_type)
+  ) %>% 
+  select(resist_id, dist_id, dist_yr, dist_type) %>% 
+  arrange(dist_id, dist_yr)%>%  # order by poly & burnyear
+  ungroup() %>% 
+  rename(
+    current_dist_yr = dist_yr,
+    current_dist_type = dist_type
+  )
+  
+```
+
+```{r}
+dist_order <- resistance %>% 
+  group_by(resist_id) %>%
+  #this is not working correctly; seems to in some cases and not others
+  mutate(prev_dist_yr = lead(current_dist_yr, 1),
+         prev_dist_type = lead(current_dist_type, 1)) #%>%
+  ungroup() #%>%
+  #set definition of classes, including the exclusion of burn then thin
+  mutate(burn_before_mech = 
+           # will replace burnyear with current_disturb_year, and replace 
+           # burnsev with current_disturb_type
+         case_when(current_disturb_type %in% c("highsev_fire") & next_disturb_type %in% c("COMM_HAZ","MECH_UNDR","RX_PILE") ~TRUE,
+                   TRUE~FALSE))
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
