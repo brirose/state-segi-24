@@ -19,11 +19,14 @@ library(kableExtra)
 
 This document holds the analysis for regeneration failure areas.
 
+actually check the crs/make match
+
 ```{r import_data}
 
 ##check that same crs
 
 # rdnbr fires that have had high sev and are in groves 1984-2024 
+#double check this layer (looking for reburn area) -- will need to see spatially + temporally 
 sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif"))
 
 #polygons of SEGI groves, "skinny"
@@ -34,12 +37,16 @@ groves <- vect(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.g
 
 We will consider areas that fall into the highest burn severity category as those where regeneration failure is likely. The layer I am starting from contains rdnbr for fires from 1984-2023 that both burned at high severity and burned sequoia groves.
 
+want to split up the classes!
+
 ```{r sev_polygons}
 
 # filter to only include the highest severity
-high_sev <- as.polygons(sev_rdnbr) %>% 
+immediate_regen_failure <- as.polygons(sev_rdnbr) %>% 
   subset(rdnbr >= 801, NSE = T) %>%  #select  rdnbr 801-1100 mod risk and >1101 high risk
   aggregate()
+
+#output high and mod risk by grove
 
 ```
 
@@ -49,8 +56,12 @@ Here, I make a layer that represents seed source (grove area that has not experi
 
 ```{r seed_source}
 
+# make high sev 640 and greater
+
 disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
   buffer(width = 67.8) #buffer by 67.8m 
+
+#output high sev
 
 ```
 

@@ -17,186 +17,122 @@ library(janitor)
 ```
 
 -input treatment data
--union to create independent treatment+disturbance history polygons
+-"union" to create independent treatment+disturbance history polygons
 
 
 
 #Input and clean treatment data
 
 
-
-
 ```{r input_data}
 
 #fire history in CBI
-fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) 
-fire <- vect(fire)  
+fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
+ 
 
 #full, cleaned treatment layer (will this be the case?)
-treatment <- vect(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023/NPS_Combined_TrtFile_1966_2023.shp")) %>% 
-  project(fire)
+treatment <- st_read(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023_repaired/NPS_Combined_TrtFile_1966_2023_repaired.shp")) %>% 
+  st_transform(crs(fire))
 
 #skinny jeans groves, exported to shp from gdb in arc bc polys were weird
-groves <- vect(here("data/spatial_data/inputs/forest/all_groves_REexported.shp")) %>%
-  project(fire) #uniform crs
+groves <- st_read(here("data/spatial_data/inputs/forest/all_groves_REexported.shp")) %>%
+  st_transform(crs(fire)) #uniform crs
+
+```
+
+```{r full_trt_lyr}
+
+trt_clean <- treatment %>% 
+  clean_names() %>%
+  select(ucb_year, ucb_treat) %>%  # select only needed columns
+  rename(dist_year = ucb_year,
+         dist_type = ucb_treat)
+
+
 
 ```
 
 
+```{r dist_lyr}
 
+# create clean fire layer
+fire_clean <- fire %>% 
+  clean_names() %>% 
+  mutate( #replace burnsev with class names, create cols to combine with trt
+    dist_type = case_when(
+      burnsev == 1 ~ "undetected_fire",
+      burnsev == 2 ~ "lowsev_fire",
+      burnsev == 3 ~ "modsev_fire",
+      burnsev == 4 ~ "highsev_fire"),
+    dist_year = as.numeric(fire_yr)
+  ) %>% 
+  select(dist_year, dist_type)#only needed columns
+  
+#combine to into all disturbance layer
 
+disturb <- fire_clean %>% 
+  bind_rows(trt_clean)
+
+```
 
 
 reminder: do both with buffer and without; need to decide if doing donut or all and subtracting after
 ```{r buffer}
 
 #buffer groves by 75m
-groves_buffered <- buffer(groves, width = 75)
+groves_buffered <- st_buffer(groves, dist = 75)
 
-#clip treatment to area(s) of interest
-treatment_75clipped <- intersect(treatment, groves_buffered)
+#reduce disturbance to within (buffered) groves
+dist_groves <- st_intersection(disturb, groves_buffered) %>% 
+  select(dist_year, dist_type) %>% 
+  mutate(dist_id = 1:length(dist_year))
 
-#clip fire to area of interest
-fire_75clipped <- intersect(fire, groves_buffered)
-
-```
-
-```{r}
-trt_fire <- rbind(treatment_75clipped, fire_75clipped)
-
-trt_history <- union(trt_fire)
-```
-
-
-```{r unions}
-#layer with unique polys for fire history
-#matrix of 1/0 for each fire 
-fire_history <- union(fire_75clipped) %>% 
-  st_as_sf() %>% 
-  rename_with(str_replace, pattern = "id", replacement = "fire") %>% 
-  rownames_to_column(var = "fire_history_id")
-
-fire_hist <- fire_history %>% 
-  select(fire_history_id) %>% 
-  vect()
-
-#layer of individual polygons for each treatment history
-#currently using fire layer since treatment is being RUDE
-#would be matrix of 1/0 for each treatment
-trt_history <- st_as_sf(fire_history) %>%
-  slice_head(n = 217) %>% 
-  rename_with(str_replace, pattern = "fire", replacement = "trt")
-  
-trt_hist <- trt_history %>% 
-  select(trt_history_id) %>% 
-  vect()
-  
-
-
-#layer of individual polygons for each fire history/treatment history
-#matrix of 1/0 for each of the 2 previous histories
-resistance_polygons <- union(fire_hist, trt_hist)
+dist_groves_lookup <- dist_groves %>% 
+  st_drop_geometry()
 
 ```
 
+```{r dist_hist}
 
+options(scipen = 999)
 
-```{r fire_lookup}
+dist_hist <- st_intersection(dist_groves) %>% 
+  mutate(resist_id = 1:length(origins)) %>% 
+  select(resist_id, origins) %>% 
+  st_collection_extract(type = c("POLYGON"), warn = FALSE) %>% #keep only polys
+  #recombine multipolygons
+  summarise(.by = c(resist_id, origins), geometry = st_combine(geometry)) %>% 
+  mutate(area_ha = as.numeric(st_area(.))*0.0001) %>% 
+  # remove areas less than 1 acre (likely "overlap" due to poorly mapped edges)
+  filter(area_ha >= 0.04) 
 
-#create key with fire year and severity for polygon
-fire_lookup <- st_as_sf(fire_75clipped) %>% 
-  st_drop_geometry() %>% 
-  rownames_to_column(var = "fire_id") %>% 
-  mutate(
-    fire_id = paste("fire_", fire_id, sep = ""),
-    fire_type = case_when(
-      burnsev == 1 ~ "undetected_fire",
-      burnsev == 2 ~ "lowsev_fire",
-      burnsev == 3 ~ "modsev_fire",
-      burnsev == 4 ~ "highsev_fire"
-    )) %>% 
-  select(fire_id, fire_yr, fire_type) 
+#cannot plot with vectors
+dist_plot <- dist_hist %>%
+  select(-origins)
 
-#create layer of individual polygons for each fire history
-fire_history2 <- st_as_sf(fire_history) %>% 
-  st_drop_geometry() 
+#st_write(dist_plot, here("data/spatial_data/debug/dist_lyr3_debug.shp"), append = F)
 
-resistance_fire <- resistance %>% 
-  left_join(fire_history2)
+dist_hist_long <- dist_hist %>% 
+  st_drop_geometry() %>%  # attributes only
+  unnest(origins) %>%  # make long dataframe
+  rename(dist_id = origins) %>% 
+  left_join(dist_groves_lookup, by = join_by(dist_id)) %>% # connect with disturbance attributes
+  select(-dist_id)
 
 ```
-
 
 
 ```{r}
-
-treatment_lookup <- treatment_75clipped %>% 
-  st_as_sf() %>% 
-  st_drop_geometry() %>% 
-  clean_names() %>% 
-  rownames_to_column(var = "dist_id") %>% 
-  mutate(dist_id = paste("trt_", dist_id, sep = "")) %>% 
-  select(dist_id, actual_co_1, treatment_c) %>% 
-  replace_na(list(treatment_c = "unknown")) %>% 
-  rename(dist_yr = actual_co_1,
-         dist_type = treatment_c)
-  
-trt_history2 <- st_as_sf(trt_history) %>% 
-  st_drop_geometry() #%>% 
-  pivot_longer(cols = -trt_history_id, names_to = "trt_id") %>% 
-  filter(value == 1) %>% 
-  left_join(treatment_lookup) %>% 
-  select(-trt_id, -value) %>% 
-  arrange(trt_history_id, trt_yr) %>%  # order by poly & burnyear
-   # assign sequential disturbance number of each burn within each polygon group
-  group_by(trt_history_id) %>%
-  mutate(trt_number = paste0('trtnumber_', row_number())) %>%
-  ungroup() %>% 
-  pivot_wider(names_from = trt_number, values_from = c(trt_yr, trt_type))
-  
-  
-
-
-```
-
-
-
-```{r}
-
-resistance <- resistance_polygons %>% 
-  st_as_sf() %>% 
-  st_drop_geometry() %>% 
-  rownames_to_column(var = "resist_id") %>% 
-  left_join(fire_history2) %>% 
-  left_join(trt_history2) %>% 
-  pivot_longer(cols = c(-resist_id,-fire_history_id, -trt_history_id), names_to = "dist_id") %>% 
-  filter(value == 1) %>% 
-  left_join(fire_lookup, join_by(dist_id == fire_id))%>%
-  left_join(treatment_lookup, join_by(dist_id)) %>% 
-  mutate(
-    dist_yr = case_when(
-      is.na(dist_yr) ~ as.integer(fire_yr),
-      T ~ dist_yr),
-    dist_type = case_when(
-      is.na(dist_type) ~ fire_type,
-      T ~ dist_type)
-  ) %>% 
-  select(resist_id, dist_id, dist_yr, dist_type) %>% 
-  arrange(dist_id, dist_yr)%>%  # order by poly & burnyear
-  ungroup() %>% 
+dist_order <- dist_hist_long %>% 
   rename(
-    current_dist_yr = dist_yr,
+    current_dist_yr = dist_year,
     current_dist_type = dist_type
-  )
-  
-```
-
-```{r}
-dist_order <- resistance %>% 
+  ) %>% 
   group_by(resist_id) %>%
-  #this is not working correctly; seems to in some cases and not others
-  mutate(prev_dist_yr = lead(current_dist_yr, 1),
-         prev_dist_type = lead(current_dist_type, 1)) #%>%
+  # identify next treatment where relevant
+  # note: use lead if year = character, lag if year = numeric
+  mutate(next_dist_yr = lag(current_dist_yr, 1),
+         next_dist_type = lag(current_dist_type, 1)) #%>%
   ungroup() #%>%
   #set definition of classes, including the exclusion of burn then thin
   mutate(burn_before_mech = 
@@ -210,6 +146,56 @@ dist_order <- resistance %>%
 
 
 
+```{r}
+
+# define resistance classes
+polys_wide_sum <- polys_wide %>%
+  group_by(polyID) %>%
+  summarise(across(c(6:11), sum))
+# View(polygons_dist_classes)
+head(polys_wide_sum)
+#   
+#   
+polygons_dist_classes =  polys_wide_sum %>%
+  group_by(polyID) %>%
+  summarise(resist_class =
+      case_when(
+      #High resistance
+        # mod or low or rx + any mech
+        # mod or low or rx + mod or low or rx
+        (COMM_HAZ + MECH_UNDER + RX_PILE + MOD_SEV + LOW_SEV) >= 2 & (RX_PILE + MOD_SEV + LOW_SEV)>=1 & HIGH_SEV == 0 ~ 'High resistance',
+      # #Mod resistance
+        # mod or low or rx
+        (RX_PILE + MOD_SEV + LOW_SEV) == 1 & (COMM_HAZ+MECH_UNDER) == 0 & HIGH_SEV == 0 ~ 'Moderate resistance',
+      # #Low resistance
+       # any mech
+       (RX_PILE + MOD_SEV + LOW_SEV) == 0 & (COMM_HAZ+MECH_UNDER) >= 1 & HIGH_SEV == 0 ~ 'Low resistance',
+      #Loss of mature forest
+       # any high
+       HIGH_SEV == 1 ~ 'Loss of mature forest',
+      #Likely persistant type conversion
+       # High-High
+       HIGH_SEV > 1 ~ 'Likely persistent type conversion'))
+polygons_dist_classes
+
+poly_data = merge(polygons_dist_classes,polys_dist_order_screen,by="polyID",all=FALSE)
+head(poly_data)
+
+#don't need burn before mech here - if HS before mech, it will just show loss of forest
+#if mod or low sev - we will assume it was clean up
+#confirm with Charlotte but it looks like summary tables were calculated annually as appropriate
+true = poly_data %>%
+  filter(burn_before_mech == FALSE)
+head(true)
+
+sum(true$Hectares)
+
+# View(poly_data)
+poly_data_ac = poly_data %>%
+  group_by(polyID,resist_class) %>%
+  summarise(Hectares = mean(Hectares))
+head(poly_data_ac)
+```
 
 
 

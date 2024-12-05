@@ -69,6 +69,8 @@ cbi_clipped$area_ha <- as.numeric(st_area(cbi_clipped))*0.0001
 
 Each dataset is slightly different, so I am loading each separately, cleaning them and then combining them. I then make them a spatial feature so that we can plot them on the map and find the severity.
 
+swap workflow --> make sf before combining
+
 ```{r shive_input, results = F}
 #Shive et all data for Pier, Railroad, Rough
 #needs locations appended
@@ -85,7 +87,7 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
     survey_fire = fire,
     id = tree_number,
     grove = grove_name,
-    postfire_status = live_status2020
+    postfire_status = final_live_dead
     ) %>% 
   mutate( #edit these to make sure survey yr and fire yr correct; RRD in 2018, others in 2020
     survey_year = case_when(
@@ -126,8 +128,8 @@ castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_10Nov24.csv")) %>
     postfire_status = status,
     id = monarch_num,
     grove = site,
-    easting = plot_easting,
-    northing = plot_northing
+    easting = monarch_easting,
+    northing = monarch_northing
     ) %>% 
   select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
 
@@ -303,11 +305,12 @@ monarchs_combined <- meyers_corrected %>%
   bind_rows(multiple_shive) %>% 
   bind_rows(castle_ucb) %>% 
   bind_rows(mort_usgs) %>% 
-  #bind_rows(ff_usgs) %>% #needs to be converted to utm still
+  bind_rows(ff_usgs) %>% #needs to be converted to utm still
   drop_na(easting, northing) %>% 
-  st_as_sf(coords = c("easting", "northing"), crs = 32611) %>%  #wgs84, UTM zone 11N
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
   st_transform(crs(cbi_all))
 
+## output shapefile + csv of all monarchs
 ```
 
 ## Calculate Mortality Rates
@@ -315,6 +318,9 @@ monarchs_combined <- meyers_corrected %>%
 Now, i calculate mortality rate based on trees prefire vs postfire status.
 
 DECISION NEEDED: how many trees should be surveyed for a given fire for it to be worth including?
+
+Table with final column of trees per class to gut check
+how many fires +trees per fire and measure delay
 
 ```{r binary_severity}
 #need to add filter for tree size
@@ -349,15 +355,15 @@ monarch_severity_duplicated <- monarchs_severity %>%
 #set up to filter out for fires without enough observations
 observation_counts <- monarchs_severity %>% 
   st_drop_geometry() %>% 
-  summarise(.by = c("id.y") , count = n()) %>% 
-  filter(count > 50)
+  summarise(.by = c("id.y") , count = n()) #%>% 
+  #filter(count > 50)
 
 
 monarchs_severity <- monarchs_severity %>% 
   bind_rows(monarch_severity_duplicated) %>% #bind this back bc contains the second obs which after the join is the more recent fire
   mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
   filter(!id.x %in% monarch_severity_duplicated$id.x, # remove all duplicated IDs
-         measure_delay < 10,
+         measure_delay < 5, # swap to 5
          id.y %in% observation_counts$id.y
          ) %>% 
     rename("tree_id" = "id.x",
@@ -367,7 +373,7 @@ monarchs_severity <- monarchs_severity %>%
 
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
-# st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_19Nov24.shp"), append = F)
+st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_27Nov24a.shp"), append = F)
 
 ```
 

@@ -1,9 +1,10 @@
 library(tidyverse)
 library(readxl)
+library(here)
 #working directly in the shapefile was too slow, so exported to excel and re-saved as csv
 
 ALL_SEVERITY_FIRES_union = 
-  read_csv('C:\\Users\\kshive\\Documents\\UCB\\Projects\\In Progress\\State of the Sierra\\R files\\COMBO_SEVERITY_TREATMENTS_union_26May2024.csv')
+  read_csv(here("data/COMBO_SEVERITY_TREATMENTS_union_26May2024.csv"))
 head(ALL_SEVERITY_FIRES_union)
 # one row for each polygon:burn, with columns for polyID, acres, year, sev, and 
 # burn number (1st, 2nd, etc.). If you change your idea of what the goal 
@@ -41,7 +42,7 @@ polys_dist_order_screen = polygon_burns_tidy %>%
   group_by(polyID) %>%
   mutate(next_disturb_year = lead(current_disturb_year, 1),
          next_disturb_type = lead(current_disturb_type, 1)) %>%
-  ungroup() %>%
+  ungroup() #%>%
 
   #set definition of classes, including the exclusion of burn then thinninn?
   mutate(burn_before_mech = 
