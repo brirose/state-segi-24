@@ -31,7 +31,8 @@ sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/nee
 
 #polygons of SEGI groves, "skinny"
 groves <- vect(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
-  clean_names()
+  clean_names() %>% 
+  project(sev_rdnbr)
 
 ```
 
@@ -41,12 +42,44 @@ want to split up the classes!
 
 ```{r sev_polygons}
 
-# filter to only include the highest severity
-immediate_regen_failure <- as.polygons(sev_rdnbr) %>% 
-  subset(rdnbr >= 801, NSE = T) %>%  #select  rdnbr 801-1100 mod risk and >1101 high risk
-  aggregate()
 
+#select  rdnbr 801-1100 mod risk and >1101 high risk
+reclass_matrix <- tibble(
+  from = c(-10498, 801, 1100),
+  to = c(801, 1100, 9992),
+  becomes = c(1, 3, 4)
+)
+
+# filter to only include the highest severity
+immediate_regen_failure <- sev_rdnbr %>% 
+  classify(reclass_matrix,
+           right = F, # include "from" value in category
+           include.lowest = T) %>% #include max value
+  as.polygons() %>% 
+  st_as_sf() %>% 
+  rename(sev_class = rdnbr) %>% 
+  summarise(.by = sev_class, geometry = st_combine(geometry)) %>% 
+  mutate(area_ha = as.numeric(st_area(.))*0.0001) %>% 
+  filter(sev_class != 1)
+
+st_write(immediate_regen_failure, here("data/spatial_data/immediate_failure.shp"))
+
+
+immediate_failure <- st_drop_geometry(immediate_regen_failure) %>% 
+  mutate(
+    failure = case_when(
+      sev_class == 3 ~ "high failure",
+      sev_class == 4 ~ "complete failure"
+    )
+  )
 #output high and mod risk by grove
+
+total_ha <- sum(immediate_failure$area_ha)
+total_perc <- total_ha/sum(groves$acres)*100
+
+immediate_failure <- immediate_failure %>% 
+  add_row(.before = 1, grove_name = "Total", 
+        area_ha = total_ha, failure_perc = total_perc)
 
 ```
 
@@ -57,11 +90,26 @@ Here, I make a layer that represents seed source (grove area that has not experi
 ```{r seed_source}
 
 # make high sev 640 and greater
+reclass_matrix2 <- tibble(
+  from = c(-10498, 640),
+  to = c(640, 9992),
+  becomes = c(1, 2)
+)
+
+high_sev <- sev_rdnbr %>% 
+  classify(reclass_matrix2,
+           right = F, # include "from" value in category
+           include.lowest = T) %>% #include max value
+  as.polygons() %>% 
+  st_as_sf() %>% 
+  rename(sev_class = rdnbr) %>% 
+  summarise(.by = sev_class, geometry = st_combine(geometry)) %>% 
+  filter(sev_class == 2) %>% 
+  vect()
 
 disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
   buffer(width = 67.8) #buffer by 67.8m 
 
-#output high sev
 
 ```
 
@@ -98,7 +146,7 @@ regen_fail_sf <- regen_fail_sf %>%
 
 kable(regen_fail_sf,
       digits = 1,
-      caption = "Grove area at risk to complete natural regeneration failure by grove")
+      caption = "Area at risk to long-term natural regeneration failure by grove")
 
 ```
 

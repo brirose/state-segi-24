@@ -131,8 +131,10 @@ dist_order <- dist_hist_long %>%
   group_by(resist_id) %>%
   # identify next treatment where relevant
   # note: use lead if year = character, lag if year = numeric
-  mutate(next_dist_yr = lag(current_dist_yr, 1),
-         next_dist_type = lag(current_dist_type, 1)) #%>%
+  mutate(
+    current_dist_type = tolower(current_dist_type),
+    next_dist_yr = lag(current_dist_yr, 1),
+    next_dist_type = lag(current_dist_type, 1)) #%>%
   ungroup() #%>%
   #set definition of classes, including the exclusion of burn then thin
   mutate(burn_before_mech = 
