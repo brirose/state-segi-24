@@ -44,9 +44,16 @@ groves <- st_read(here("data/spatial_data/inputs/forest/all_groves_REexported.sh
 
 trt_clean <- treatment %>% 
   clean_names() %>%
-  select(ucb_year, ucb_treat) %>%  # select only needed columns
-  rename(dist_year = ucb_year,
-         dist_type = ucb_treat)
+  rename(dist_year = ucb_year) %>% 
+  # make categories fast to code
+  mutate(
+    dist_type = case_when(
+      ucb_treat == "Fire-related treatment" ~ "rx_pile",
+      ucb_treat == "Mechanical fuels management" ~ "mech_under",
+      ucb_treat == "Commercial" ~ "comm_haz",
+      T ~ "fix"),
+    ) %>% 
+  select(dist_year, dist_type) # select only needed columns
 
 
 
@@ -58,19 +65,19 @@ trt_clean <- treatment %>%
 # create clean fire layer
 fire_clean <- fire %>% 
   clean_names() %>% 
-  mutate( #replace burnsev with class names, create cols to combine with trt
+  #replace burnsev with class names, create cols to combine with trt
+  mutate(
     dist_type = case_when(
-      burnsev == 1 ~ "undetected_fire",
+      burnsev == 1 ~ "lowsev_fire", ##CHECK WITH KRISTEN ON THIS
       burnsev == 2 ~ "lowsev_fire",
       burnsev == 3 ~ "modsev_fire",
       burnsev == 4 ~ "highsev_fire"),
-    dist_year = as.numeric(fire_yr)
-  ) %>% 
+    dist_year = as.numeric(fire_yr)) %>% 
   select(dist_year, dist_type)#only needed columns
   
 #combine to into all disturbance layer
 
-disturb <- fire_clean %>% 
+disturb <- fire_clean #%>% 
   bind_rows(trt_clean)
 
 ```
@@ -85,10 +92,15 @@ groves_buffered <- st_buffer(groves, dist = 75)
 #reduce disturbance to within (buffered) groves
 dist_groves <- st_intersection(disturb, groves_buffered) %>% 
   select(dist_year, dist_type) %>% 
+  # combine where there is buffer overlap and poorly drawn geometries
+  summarise(.by = c(dist_year, dist_type), geometry = st_union(st_combine(geometry))) %>% 
+  st_make_valid() %>% 
   mutate(dist_id = 1:length(dist_year))
 
 dist_groves_lookup <- dist_groves %>% 
   st_drop_geometry()
+
+#st_write(dist_groves, here("data/spatial_data/debug/buffered_unioncomo_debug.shp"), append = F)
 
 ```
 
@@ -122,6 +134,51 @@ dist_hist_long <- dist_hist %>%
 ```
 
 
+Some of the treatments end up with a TON of overlaps; here I output the IDs in the treatment history layer where the components are likely in need of fixing due to mapping errors. Fixing these polygons is easiest in arc and should be done in the full treatment layer.
+
+```{r fix_trt}
+
+# multiple treatments recorded in a year
+trt_fix_multiple <- dist_hist_long %>% 
+  filter(dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% # only treatments
+  summarize(.by = c(resist_id, dist_year), count = n()) %>% # count per yr
+  filter(count > 1) %>%  #filter where more than 1
+  summarize(.by = resist_id, count = sum(count)) %>% 
+  mutate(concern = "multiple per year")
+
+# many treatments recorded
+trt_fix_many <- dist_hist_long %>% 
+  filter(dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% # only treatments
+  summarize(.by = resist_id, count = n()) %>% # count treatments total 
+  filter(count >= 5) %>% # filter where 5 or more treatments
+  mutate(concern = "many treatments") 
+  
+add <- setdiff(unique(trt_fix_many$resist_id), unique(trt_fix_multiple$resist_id))
+
+trt_fix_sf <- trt_fix_many %>% 
+  filter(resist_id %in% add) %>% 
+  bind_rows(trt_fix_multiple) %>% 
+  left_join(dist_plot)
+
+st_write(trt_fix_sf, here("data/spatial_data/debug/debug_fix_fire.shp"), append = F)
+
+```
+
+Checking for the same issue as above but in the fire layer...this is more annoying/worrying
+```{r fix_fire}
+
+dist_fix_fire <- dist_hist_long %>% 
+  filter(dist_type %in% c("undetected_fire", "lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarize(.by = c(resist_id, dist_year), count = n()) %>% 
+  filter(count > 1)
+
+fix_fire_sf <- dist_fix_fire %>% left_join(dist_plot)
+
+#st_write(fix_fire_sf, here("data/spatial_data/debug/debug_fix_fire.shp"), append = F)
+```
+
+
+
 ```{r}
 dist_order <- dist_hist_long %>% 
   rename(
@@ -134,14 +191,45 @@ dist_order <- dist_hist_long %>%
   mutate(
     current_dist_type = tolower(current_dist_type),
     next_dist_yr = lag(current_dist_yr, 1),
-    next_dist_type = lag(current_dist_type, 1)) #%>%
-  ungroup() #%>%
-  #set definition of classes, including the exclusion of burn then thin
+    next_dist_type = lag(current_dist_type, 1)) %>%
+  ungroup() %>%
+  #identify exclusion of burn then thin
   mutate(burn_before_mech = 
-           # will replace burnyear with current_disturb_year, and replace 
-           # burnsev with current_disturb_type
-         case_when(current_disturb_type %in% c("highsev_fire") & next_disturb_type %in% c("COMM_HAZ","MECH_UNDR","RX_PILE") ~TRUE,
-                   TRUE~FALSE))
+         case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("comm_haz","mech_under","rx_pile") ~TRUE,
+                   TRUE~FALSE)) %>% 
+  # USED TO ALLOW FURTHER CODE TO WORK, REMOVE ONCE DUPLICATES FIXED
+  group_by(resist_id, current_dist_yr, current_dist_type) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  add_row(.before = 1, resist_id = 999999, 
+        current_dist_yr = 1999, current_dist_type = "comm_haz", next_dist_yr= NA, next_dist_type = NA, burn_before_mech = FALSE)
+
+```
+
+```{r classify}
+
+dist_classified <- dist_order %>%
+  mutate(TRUES=1) %>% 
+  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0)%>%
+  summarise(.by = resist_id, across(c(comm_haz:mech_under), sum)) %>% 
+  summarise(.by = resist_id, resist_class =
+              case_when(
+                #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
+                (comm_haz + mech_under + rx_pile + modsev_fire + lowsev_fire) >= 2 
+                & (rx_pile + modsev_fire + lowsev_fire)>=1 
+                & highsev_fire == 0 ~ 'High resistance',
+                #Mod resistance: mod or low or rx
+                (rx_pile + modsev_fire + lowsev_fire) == 1 
+                & (comm_haz+mech_under) == 0 
+                & highsev_fire == 0 ~ 'Moderate resistance',
+                #Low resistance: any mech
+                (rx_pile + modsev_fire + lowsev_fire) == 0 
+                & (comm_haz+mech_under) >= 1 
+                & highsev_fire == 0 ~ 'Low resistance',
+                #Loss of mature forest: any high
+                highsev_fire == 1 ~ 'Loss of mature forest',
+                #Likely persistent type conversion: High-High
+                highsev_fire > 1 ~ 'Likely persistent type conversion'))
 
 ```
 
@@ -150,35 +238,6 @@ dist_order <- dist_hist_long %>%
 
 ```{r}
 
-# define resistance classes
-polys_wide_sum <- polys_wide %>%
-  group_by(polyID) %>%
-  summarise(across(c(6:11), sum))
-# View(polygons_dist_classes)
-head(polys_wide_sum)
-#   
-#   
-polygons_dist_classes =  polys_wide_sum %>%
-  group_by(polyID) %>%
-  summarise(resist_class =
-      case_when(
-      #High resistance
-        # mod or low or rx + any mech
-        # mod or low or rx + mod or low or rx
-        (COMM_HAZ + MECH_UNDER + RX_PILE + MOD_SEV + LOW_SEV) >= 2 & (RX_PILE + MOD_SEV + LOW_SEV)>=1 & HIGH_SEV == 0 ~ 'High resistance',
-      # #Mod resistance
-        # mod or low or rx
-        (RX_PILE + MOD_SEV + LOW_SEV) == 1 & (COMM_HAZ+MECH_UNDER) == 0 & HIGH_SEV == 0 ~ 'Moderate resistance',
-      # #Low resistance
-       # any mech
-       (RX_PILE + MOD_SEV + LOW_SEV) == 0 & (COMM_HAZ+MECH_UNDER) >= 1 & HIGH_SEV == 0 ~ 'Low resistance',
-      #Loss of mature forest
-       # any high
-       HIGH_SEV == 1 ~ 'Loss of mature forest',
-      #Likely persistant type conversion
-       # High-High
-       HIGH_SEV > 1 ~ 'Likely persistent type conversion'))
-polygons_dist_classes
 
 poly_data = merge(polygons_dist_classes,polys_dist_order_screen,by="polyID",all=FALSE)
 head(poly_data)
