@@ -19,23 +19,18 @@ library(kableExtra)
 
 This document holds the analysis for regeneration failure areas.
 
-actually check the crs/make match
-
 ```{r import_data}
 
-##check that same crs
-
 # rdnbr fires that have had high sev and are in groves 1984-2024 
-#double check this layer (looking for reburn area) -- will need to see spatially + temporally 
-sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif"))
+# double check this layer (looking for reburn area) -- will need to see spatially + temporally 
+sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_mostRecent.tif"))
 
 #polygons of SEGI groves, "skinny"
 groves <- vect(here("data/spatial_data/inputs/forest/all_groves_REexported.shp")) %>% 
   clean_names() %>% 
-  project(sev_rdnbr)
+  project(sev_rdnbr) #make same CRS
 
 groves$hectares <- expanse(groves, unit = "ha")
-
 grove_ha <- sum(groves$hectares)
 
 ```
@@ -72,7 +67,7 @@ immediate_regen_failure <- sev_rdnbr %>%
 
 
 #dir.create(here("data/spatial_data/outputs/immediate_failure"))
-#st_write(immediate_regen_failure, here("data/spatial_data/outputs/immediate_failure/immediate_failure.shp"), append = F)
+st_write(immediate_regen_failure, here("data/spatial_data/outputs/immediate_failure/immediate_failure.shp"), append = F)
 
 #summarize immediate regen failure
 immediate_failure_summary <- st_drop_geometry(immediate_regen_failure) %>% 

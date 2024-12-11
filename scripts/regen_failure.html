@@ -11,7 +11,7 @@
 
 <meta name="author" content="Shive Lab (B. Baker)" />
 
-<meta name="date" content="2024-12-06" />
+<meta name="date" content="2024-12-11" />
 
 <title>Regen Failure</title>
 
@@ -352,26 +352,22 @@ display: none;
 
 <h1 class="title toc-ignore">Regen Failure</h1>
 <h4 class="author">Shive Lab (B. Baker)</h4>
-<h4 class="date">2024-12-06</h4>
+<h4 class="date">2024-12-11</h4>
 
 </div>
 
 
 <p>This document holds the analysis for regeneration failure areas.</p>
-<p>actually check the crs/make match</p>
-<pre class="r"><code>##check that same crs
-
-# rdnbr fires that have had high sev and are in groves 1984-2024 
-#double check this layer (looking for reburn area) -- will need to see spatially + temporally 
-sev_rdnbr &lt;- rast(here(&quot;data/spatial_data/outputs/rdnbr_severe-fires_cropped/needFires_rdnbr.tif&quot;))
+<pre class="r"><code># rdnbr fires that have had high sev and are in groves 1984-2024 
+# double check this layer (looking for reburn area) -- will need to see spatially + temporally 
+sev_rdnbr &lt;- rast(here(&quot;data/spatial_data/outputs/rdnbr_mostRecent.tif&quot;))
 
 #polygons of SEGI groves, &quot;skinny&quot;
 groves &lt;- vect(here(&quot;data/spatial_data/inputs/forest/all_groves_REexported.shp&quot;)) %&gt;% 
   clean_names() %&gt;% 
-  project(sev_rdnbr)
+  project(sev_rdnbr) #make same CRS
 
 groves$hectares &lt;- expanse(groves, unit = &quot;ha&quot;)
-
 grove_ha &lt;- sum(groves$hectares)</code></pre>
 <p>We will consider areas that fall into the highest burn severity
 category as those where regeneration failure is likely. The layer I am
@@ -403,9 +399,12 @@ immediate_regen_failure &lt;- sev_rdnbr %&gt;%
   select(immediate_failure, grove_name, area_ha, perc)</code></pre>
 <pre><code>## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          </code></pre>
 <pre class="r"><code>#dir.create(here(&quot;data/spatial_data/outputs/immediate_failure&quot;))
-#st_write(immediate_regen_failure, here(&quot;data/spatial_data/outputs/immediate_failure/immediate_failure.shp&quot;), append = F)
-
-#summarize immediate regen failure
+st_write(immediate_regen_failure, here(&quot;data/spatial_data/outputs/immediate_failure/immediate_failure.shp&quot;), append = F)</code></pre>
+<pre><code>## Deleting layer `immediate_failure&#39; using driver `ESRI Shapefile&#39;
+## Writing layer `immediate_failure&#39; to data source 
+##   `C:/Users/bri.baker/analysis_github/State_SEGI/state-segi-24/data/spatial_data/outputs/immediate_failure/immediate_failure.shp&#39; using driver `ESRI Shapefile&#39;
+## Writing 90 features with 4 fields and geometry type Unknown (any).</code></pre>
+<pre class="r"><code>#summarize immediate regen failure
 immediate_failure_summary &lt;- st_drop_geometry(immediate_regen_failure) %&gt;% 
   summarise(.by = immediate_failure, area_ha = sum(area_ha)) %&gt;%  #add failure in each category
   mutate(perc = area_ha/grove_ha*100 ) #include percentage
@@ -647,7 +646,7 @@ grove</caption>
 <td align="right">22.8</td>
 <td align="right">4.8</td>
 <td align="right">62.1</td>
-<td align="right">27.5</td>
+<td align="right">27.6</td>
 </tr>
 <tr class="even">
 <td align="left">Burro Creek</td>
@@ -696,12 +695,12 @@ grove</caption>
 </tr>
 <tr class="odd">
 <td align="left">New Oriole Lake</td>
-<td align="right">0.8</td>
-<td align="right">0.0</td>
-<td align="right">13.7</td>
-<td align="right">0.0</td>
-<td align="right">0.8</td>
-<td align="right">13.7</td>
+<td align="right">1.0</td>
+<td align="right">0.1</td>
+<td align="right">16.9</td>
+<td align="right">1.8</td>
+<td align="right">1.1</td>
+<td align="right">18.7</td>
 </tr>
 <tr class="even">
 <td align="left">Redwood Creek</td>
@@ -741,12 +740,12 @@ grove</caption>
 </tr>
 <tr class="even">
 <td align="left">Castle Creek</td>
-<td align="right">2.2</td>
+<td align="right">2.9</td>
 <td align="right">0.2</td>
-<td align="right">2.4</td>
+<td align="right">3.3</td>
 <td align="right">0.2</td>
-<td align="right">2.3</td>
-<td align="right">2.6</td>
+<td align="right">3.1</td>
+<td align="right">3.5</td>
 </tr>
 <tr class="odd">
 <td align="left">Forgotten</td>
@@ -813,12 +812,12 @@ grove</caption>
 </tr>
 <tr class="even">
 <td align="left">Skagway</td>
-<td align="right">0.1</td>
+<td align="right">0.5</td>
 <td align="right">0.0</td>
-<td align="right">0.3</td>
+<td align="right">2.2</td>
 <td align="right">0.0</td>
-<td align="right">0.1</td>
-<td align="right">0.3</td>
+<td align="right">0.5</td>
+<td align="right">2.2</td>
 </tr>
 <tr class="odd">
 <td align="left">Muir</td>
@@ -849,12 +848,12 @@ grove</caption>
 </tr>
 <tr class="even">
 <td align="left">Redwood Mountain</td>
-<td align="right">111.7</td>
-<td align="right">39.1</td>
-<td align="right">10.5</td>
-<td align="right">3.7</td>
-<td align="right">150.7</td>
-<td align="right">14.2</td>
+<td align="right">135.8</td>
+<td align="right">41.9</td>
+<td align="right">12.8</td>
+<td align="right">4.0</td>
+<td align="right">177.7</td>
+<td align="right">16.8</td>
 </tr>
 <tr class="odd">
 <td align="left">General Grant</td>
@@ -957,12 +956,12 @@ grove</caption>
 </tr>
 <tr class="even">
 <td align="left">Converse Mountain</td>
-<td align="right">7.5</td>
-<td align="right">2.6</td>
-<td align="right">55.7</td>
-<td align="right">19.2</td>
-<td align="right">10.1</td>
-<td align="right">74.9</td>
+<td align="right">7.7</td>
+<td align="right">2.8</td>
+<td align="right">57.0</td>
+<td align="right">21.1</td>
+<td align="right">10.5</td>
+<td align="right">78.1</td>
 </tr>
 <tr class="odd">
 <td align="left">Cabin Creek</td>
@@ -984,12 +983,12 @@ grove</caption>
 </tr>
 <tr class="odd">
 <td align="left">All</td>
-<td align="right">843.9</td>
-<td align="right">356.4</td>
-<td align="right">8.3</td>
+<td align="right">869.7</td>
+<td align="right">359.6</td>
+<td align="right">8.6</td>
 <td align="right">3.5</td>
-<td align="right">1200.3</td>
-<td align="right">11.8</td>
+<td align="right">1229.3</td>
+<td align="right">12.1</td>
 </tr>
 </tbody>
 </table>
@@ -1063,8 +1062,8 @@ grove</caption>
 <tbody>
 <tr class="odd">
 <td align="left">Total</td>
-<td align="right">850.1</td>
-<td align="right">8.4</td>
+<td align="right">885.4</td>
+<td align="right">8.7</td>
 </tr>
 <tr class="even">
 <td align="left">Freeman Creek</td>
@@ -1072,13 +1071,13 @@ grove</caption>
 <td align="right">2.7</td>
 </tr>
 <tr class="odd">
-<td align="left">Wheel Meadow</td>
-<td align="right">124.2</td>
-<td align="right">1.2</td>
+<td align="left">Redwood Mountain</td>
+<td align="right">155.1</td>
+<td align="right">1.5</td>
 </tr>
 <tr class="even">
-<td align="left">Redwood Mountain</td>
-<td align="right">123.3</td>
+<td align="left">Wheel Meadow</td>
+<td align="right">124.2</td>
 <td align="right">1.2</td>
 </tr>
 <tr class="odd">
@@ -1088,7 +1087,7 @@ grove</caption>
 </tr>
 <tr class="even">
 <td align="left">Alder Creek</td>
-<td align="right">50.3</td>
+<td align="right">50.9</td>
 <td align="right">0.5</td>
 </tr>
 <tr class="odd">
@@ -1127,33 +1126,33 @@ grove</caption>
 <td align="right">0.1</td>
 </tr>
 <tr class="even">
+<td align="left">Converse Mountain</td>
+<td align="right">8.7</td>
+<td align="right">0.1</td>
+</tr>
+<tr class="odd">
 <td align="left">Deer Creek</td>
 <td align="right">7.9</td>
 <td align="right">0.1</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Starvation Creek</td>
 <td align="right">7.3</td>
 <td align="right">0.1</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Black Mountain</td>
 <td align="right">7.2</td>
 <td align="right">0.1</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Packsaddle</td>
 <td align="right">7.1</td>
 <td align="right">0.1</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Long Meadow</td>
 <td align="right">6.4</td>
-<td align="right">0.1</td>
-</tr>
-<tr class="odd">
-<td align="left">Converse Mountain</td>
-<td align="right">6.3</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="even">
@@ -1222,13 +1221,13 @@ grove</caption>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
-<td align="left">Giant Forest</td>
+<td align="left">Castle Creek</td>
 <td align="right">0.7</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
-<td align="left">Castle Creek</td>
-<td align="right">0.6</td>
+<td align="left">Giant Forest</td>
+<td align="right">0.7</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
@@ -1247,18 +1246,18 @@ grove</caption>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
-<td align="left">South Peyrone</td>
+<td align="left">New Oriole Lake</td>
 <td align="right">0.3</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
-<td align="left">Redwood Creek</td>
-<td align="right">0.2</td>
+<td align="left">South Peyrone</td>
+<td align="right">0.3</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
-<td align="left">New Oriole Lake</td>
-<td align="right">0.1</td>
+<td align="left">Redwood Creek</td>
+<td align="right">0.2</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
@@ -1267,31 +1266,36 @@ grove</caption>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
-<td align="left">Silver Creek</td>
+<td align="left">Skagway</td>
 <td align="right">0.1</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
+<td align="left">Silver Creek</td>
+<td align="right">0.1</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
 <td align="left">Agnew</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Cherry Gap</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Oriole Lake</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Deer Meadow</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Dillonwood - West</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>

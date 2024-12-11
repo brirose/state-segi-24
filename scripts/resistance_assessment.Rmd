@@ -16,13 +16,11 @@ library(janitor)
 
 ```
 
--input treatment data
--"union" to create independent treatment+disturbance history polygons
-
-
 
 #Input and clean treatment data
 
+
+make sure to include ownership
 
 ```{r input_data}
 
@@ -77,7 +75,7 @@ fire_clean <- fire %>%
   
 #combine to into all disturbance layer
 
-disturb <- fire_clean #%>% 
+disturb <- fire_clean %>% 
   bind_rows(trt_clean)
 
 ```
@@ -179,7 +177,7 @@ fix_fire_sf <- dist_fix_fire %>% left_join(dist_plot)
 
 
 
-```{r}
+```{r prev_treat}
 dist_order <- dist_hist_long %>% 
   rename(
     current_dist_yr = dist_year,
@@ -231,39 +229,53 @@ dist_classified <- dist_order %>%
                 #Likely persistent type conversion: High-High
                 highsev_fire > 1 ~ 'Likely persistent type conversion'))
 
+# recombine with info
+dist_data <- left_join(dist_order, dist_classified, by = "resist_id")
+
 ```
 
 
+ask if the annual summaries should exclude "cleanup" burn_before_mech
+
+```{r dist_combo}
+
+dist_nocleanup <- dist_data %>%
+  filter(burn_before_mech == FALSE)
+
+total_area
+
+```
+
+
+
+```{r annual_area}
+
+
+
+```
+
+
+subtract out buffer and do calculation of totals again
 
 
 ```{r}
 
-
-poly_data = merge(polygons_dist_classes,polys_dist_order_screen,by="polyID",all=FALSE)
-head(poly_data)
-
-#don't need burn before mech here - if HS before mech, it will just show loss of forest
-#if mod or low sev - we will assume it was clean up
-#confirm with Charlotte but it looks like summary tables were calculated annually as appropriate
-true = poly_data %>%
-  filter(burn_before_mech == FALSE)
-head(true)
-
-sum(true$Hectares)
-
-# View(poly_data)
-poly_data_ac = poly_data %>%
-  group_by(polyID,resist_class) %>%
-  summarise(Hectares = mean(Hectares))
-head(poly_data_ac)
 ```
 
 
+do figures!
 
+treatments by treatment type for all entities annually - activity*
+treatments by treatment type for all entities annually - footprint**
+treatments by treatment type for major landowners annually - activity*
+treatments by treatment type for major landowners annually - footprint**
 
+* activity acres are total acres treated, regardless of if they were repeated treatments on the same acre vs different acres - gets at capacity to do work (so a thin 100 acres and then burn the 100 acres = 200 activity acres)
 
+** footprint acres is the total area receiving treatment (so a thin 100 acres and then burn the same 100 acres = 100 footprint acres)
 
-
-
-
-
+numbers to output
+number of times treated by smallest polygon
+number of times burned in wildfire by smallest polygon
+total footprint acres treated 1984-2024 and 2014-2024
+total activity acres treated 1984-2024 and 2014-2024

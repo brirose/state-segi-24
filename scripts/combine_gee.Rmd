@@ -20,8 +20,7 @@ library(here)
 Run fire severity in google earth engine (!https://code.earthengine.google.com/6b457bd07887865287c58b2b83e44dad)
 
 ```{r}
-# #Load seperate rdnbr rasters -- maybe automate later
-
+#Load separate rdnbr rasters
 rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T) #define files
 
 rasnames <- rasfiles%>% #define names
@@ -38,23 +37,17 @@ dat <- rasfiles %>% #read in files
 
 ```
 
-```{r}
-#convert to multipolygons
-
-dat_poly <- lapply(dat, as.polygons)
-```
-
 
 ```{r}
 ## make spatial raster collection
 s <- sprc(dat)
 
-## merge rasters
-severity_rdnbr <- merge(s)
+## merge rasters; NOT GOOD FOR OVERLAPS
+severity_rdnbr <- merge(s, first = F)
 
-#output new combined raster
+#output new combined raster 
 #dir.create(here("data/spatial_data/outputs/fire/needFires_rdnbr"))
-writeRaster(severity_rdnbr, here("data/spatial_data/outputs/fire/needFires_rdnbr.tif"))
+writeRaster(severity_rdnbr, here("data/spatial_data/outputs/rdnbr_mostRecent.tif"), overwrite = T)
 
 #severity_rdnbr <- rast(here("data/spatial_data/inputs/needFires_rdnbr.tif"))
 
@@ -65,6 +58,7 @@ writeRaster(severity_rdnbr, here("data/spatial_data/outputs/fire/needFires_rdnbr
 plot(severity_rdnbr)
 
 #decided to do classification and conversion to polygons before combining BA
+# need overaps
 
 ```
 
@@ -103,29 +97,8 @@ breaks7[7,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 ```
 
 
-
-```{r}
-#classify raster
-
-# severity_ba7 <- classify(severity_rdnbr, breaks7, 
-#                         right = F, # include "from" value in category
-#                         include.lowest = T) %>% #include max value 
-#   as.factor() #make factor
-# 
-# x <- levels(severity_ba7)[[1]] %>% #pull levels of raster
-#   rename(ba_category = rdnbr) # rename level
-# 
-# x$class <- category_names7 #add categories as a level
-# 
-# levels(severity_ba7) <- x #save new levels back
-
-#writeRaster(severity_ba7, here("data/spatial_data/needSeverity_baClass7.tif"))
-
-```
-
-
 ```{r, results = F}
-#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
+#classify rasters in list; allows easily to include fire names and produces overlapping polys (multiple fires)
 
 dat_class <- lapply(dat, classify, rcl = breaks7, right = F, include.lowest = T) #include max value 
 
@@ -180,34 +153,8 @@ breaks4[4,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 ```
 
 
-
 ```{r}
-#classify raster
-
-# severity_ba4 <- classify(severity_rdnbr, breaks4, 
-#                         right = F, # include "from" value in category
-#                         include.lowest = T) %>% #include max value 
-#   as.factor() #make factor
-# 
-# x <- levels(severity_ba4)[[1]] %>% #pull levels of raster
-#   rename(ba_category = rdnbr) # rename level
-# 
-# x$class <- category_names4 #add categories as a level
-# x$class <- category_ranges4 #add categories as a level
-# 
-# 
-# levels(severity_ba4) <- x #save new levels back
-# 
-# dir.create(here("data/spatial_data/inputs/fire/needFires_baClass4"))
-# 
-# writeRaster(severity_ba4, here("data/spatial_data/inputs/fire/needFires_baClass4/needFires_baClass4.tif"))
-# 
-# plot(severity_ba4)
-
-```
-
-```{r}
-#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
+#classify rasters in list
 
 dat_class <- lapply(dat, classify, rcl = breaks4, right = F, include.lowest = T) #include max value 
 
@@ -268,7 +215,7 @@ breaks4CBI[4,2] = minmax(severity_rdnbr)[2] #and highest be max in raster
 
 
 ```{r}
-#classify rasters in list (similar to above); used in favor of above because it allows easily to include fire names
+#classify rasters in list 
 
 dat_class <- lapply(dat, classify, rcl = breaks4CBI, right = F, include.lowest = T) #include max value 
 
