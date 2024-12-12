@@ -103,7 +103,9 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
     source = "Shive etal, Mortality Study",
     prefire_status = "unknown"
     ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
+  st_transform(crs(cbi_all))
 
 
 ```
@@ -131,7 +133,9 @@ castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_10Nov24.csv")) %>
     easting = monarch_easting,
     northing = monarch_northing
     ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
+  st_transform(crs(cbi_all))
 
 ```
 
@@ -168,10 +172,12 @@ mort_usgs <- read_csv(here("data/plot_data/USGS_MortalityStudy_SEGItrees_09Sept2
       T ~ "other"),
     source = "USGS, mortality"
   ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
+  st_transform(crs(cbi_all))
 
 #check to make sure survey year falls after the most recent fire experienced
-summary_usgs <- mort_usgs %>% 
+summary_usgs <- st_drop_geometry(mort_usgs) %>% 
   summarise(.by = c(survey_fire, survey_year, grove), count = n())
 #surveys done following both KNP and castle; Eden creek (in coffeepot) surveyed; will need to exclude severity of coffeepot in mort assessment
 
@@ -203,10 +209,12 @@ ff_usgs <- read_excel(here("data/plot_data/USGS_FireAndFuels_SEGI_plot_data_15Au
   rename(
     postfire_status = ld,
     dbh_cm = dbh) %>% 
-  select(id, grove, survey_year, lat, lon, postfire_status, prefire_status, source, survey_fire, dbh_cm)
-  
+  select(id, grove, survey_year, lat, lon, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4269) %>% 
+  st_transform(crs(cbi_all))
 
 ```
+
 
 ```{r usfs_input}
 #Meyer input
@@ -293,24 +301,79 @@ meyers_corrected <- meyers_combined %>%
                "MT199", #coordinates wrong
                "Mt Home86"), #coordinates wrong
     !str_detect(id, "Middle Tule20\\d+") #outside of castle burn perim
-    ) 
+    ) %>% 
+  drop_na(easting) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
+  st_transform(crs(cbi_all))
 
-  
 
 ```
 
+
+ "Here's the SEGI data from our plot network at MHDSF. The tree locations are derived from GPS'd plot locations and mapped using distances and azimuths measured on the ground. Our plots are tenth-acre (37.2ft/11.3m radius), and we tag trees >4.5in (11.4cm) dbh within this plot. The columns "status_pre" and "status_pos" refer to the pre- and post-Castle fire sampling efforts, with "L" as living and "D" as dead. Trees with status "X" had fallen or were salvaged. Units for the columns in this shapefile are as follows: dbh (in), height (ft)."
+ 
+```{r bisbing}
+bisbing <- st_read(here("data/spatial_data/inputs/mortality/bisbing_segi_stem_map/MHDSF_AMEX_SEGI_stem_mapped_for_Shive.shp")) %>% 
+st_transform(crs(cbi_all)) %>% 
+  mutate(
+    id = paste(forest, tag_number, sep = "_"),
+    dbh_cm = dbh*2.54,
+    source = "Bisbing Lab",
+    grove = "Mountain Home",
+    survey_year = 2021,
+    survey_fire = "Castle"
+  ) %>% 
+  rename(
+    postfire_status = status_pos,
+    prefire_status = status_pre
+  ) %>% 
+  select(id, grove, survey_year, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  st_transform(crs(cbi_all))
+
+```
+
+```{r whitakers}
+
+whitakers_locs <- st_read(here("data/spatial_data/inputs/mortality/whitakers_treelocs/GIANT.shp")) %>% 
+  clean_names
+
+whitakers <- read_excel(here("data/plot_data/whitakers_PostBurnStatus2022.xlsx")) %>% 
+  clean_names() %>% 
+  left_join(whitakers_locs, join_by(tree_number == treenum)) %>% 
+  rename(postfire_status = x2022_status ) %>% 
+  mutate(
+    dbh_cm = case_when(is.na(dbh) ~ as.numeric(x1999_dbh),
+                       T ~ as.numeric(dbh)), ##NOT SURE HOW TO FILTER? THIS IS THE 1999 dbh for most trees
+    prefire_status = case_when(death_by == "D" ~ "D",
+                       T ~ "L"),
+    source = "Whitakers",
+    survey_year = 2022,
+    grove = "Redwood Mountain",
+    survey_fire = "KNP",
+    id = paste("WHIT", tree_number, sep = "_")
+  )%>% 
+  st_as_sf() %>% 
+  select(id, grove, survey_year, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>%
+  st_transform(crs(cbi_all))
+
+```
+
+
 ```{r combine_inputs}
-#combine inputs
+#combine inputs, will not allow mismatched crs
 monarchs_combined <- meyers_corrected %>% 
   bind_rows(multiple_shive) %>% 
   bind_rows(castle_ucb) %>% 
   bind_rows(mort_usgs) %>% 
-  bind_rows(ff_usgs) %>% #needs to be converted to utm still
-  drop_na(easting, northing) %>% 
-  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
-  st_transform(crs(cbi_all))
+  bind_rows(ff_usgs) %>% 
+  bind_rows(bisbing) %>% 
+  bind_rows(whitakers)
 
 ## output shapefile + csv of all monarchs
+#dir.create(here("data/spatial_data/outputs/mortality_monarchs"))
+#st_write(monarchs_combined, here("data/spatial_data/outputs/mortality_monarchs/mortality_monarchs_12Dec24.shp"), append = F)
+#write_csv(monarchs_combined, here("data/outputs_data/mortality_monarchs.csv"))
+
 ```
 
 ## Calculate Mortality Rates
@@ -319,8 +382,19 @@ Now, i calculate mortality rate based on trees prefire vs postfire status.
 
 DECISION NEEDED: how many trees should be surveyed for a given fire for it to be worth including?
 
-Table with final column of trees per class to gut check
-how many fires +trees per fire and measure delay
+
+```{r values}
+
+ha_peracre <- 0.404686
+
+# >= this measure delay (years) will not be included 
+delay = 5 #likely want to use 5
+
+# >= this observation count per fire will not be included
+observations = 0
+
+```
+
 
 ```{r binary_severity}
 #need to add filter for tree size
@@ -350,32 +424,60 @@ monarchs_severity <- monarchs_binary %>%
 #the cbi_all layer has all fires, but the observation data only are for recent fires, so remove duplicates
 monarch_severity_duplicated <- monarchs_severity %>% 
   mutate(dups = duplicated(id.x)) %>% 
-  filter(dups == T) #makes df of second time a tree ID is in the initial df
+  filter(dups == T) %>%  #makes df of second+ time a tree ID is in the initial df
+  group_by(id.x)%>% 
+  slice_max(order_by = fire_yr) %>% 
+  ungroup()
 
 #set up to filter out for fires without enough observations
 observation_counts <- monarchs_severity %>% 
   st_drop_geometry() %>% 
-  summarise(.by = c("id.y") , count = n()) #%>% 
-  #filter(count > 50)
+  summarise(.by = c("id.y") , count = n()) %>% 
+  filter(count > observations)
 
 
 monarchs_severity <- monarchs_severity %>% 
-  bind_rows(monarch_severity_duplicated) %>% #bind this back bc contains the second obs which after the join is the more recent fire
-  mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
-  filter(!id.x %in% monarch_severity_duplicated$id.x, # remove all duplicated IDs
-         measure_delay < 5, # swap to 5
-         id.y %in% observation_counts$id.y
-         ) %>% 
+    filter(!id.x %in% monarch_severity_duplicated$id.x) %>%  # remove all duplicated IDs
+   bind_rows(monarch_severity_duplicated) %>% #bind this back bc contains the second obs which after the join is the more recent fire
+mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
     rename("tree_id" = "id.x",
          "fire_id" = "id.y") %>% 
+  filter(measure_delay < delay, # remove trees with too long a delay
+         fire_id %in% observation_counts$id.y) %>% # remove when in a fire w/o enough obs
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
   select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source) 
 
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
-st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_27Nov24a.shp"), append = F)
+#st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_12Dec24.shp"), append = F)
 
 ```
+
+
+```{r gut-check1}
+
+severity_summary <- monarchs_severity %>%
+  st_drop_geometry() %>% 
+  summarize(.by = burnsev, count = n())
+
+
+breakdown_summary <- monarchs_severity %>% 
+  st_drop_geometry() %>% 
+  summarize(.by = c(fire_id, burnsev, measure_delay), 
+            count = n(), live = sum(postfire_status)) %>% 
+  mutate(dead = count - live) %>% 
+  arrange(fire_id, burnsev)
+
+kable(severity_summary,
+      digits = 3,
+      caption = "Trees in each severity class")
+
+kable(breakdown_summary,
+      digits = 3,
+      caption = "Breakdown of trees in each severity class by fire")
+
+```
+
 
 ### Mortality rate by fire
 
@@ -426,7 +528,7 @@ kable(mortality_year,
 
 ```
 
-Decision needed: which aggregation will we want to use? Likely should wait until we have enough actual data, rather than just the USFS
+Decision needed: which aggregation will we want to use?
 
 ```{r check_debug}
 
@@ -464,7 +566,7 @@ Here i calculate the proportion of area that experienced each severity of fire
 
 ```{r severity_area}
 
-total_area_ha = sum(groves$acres)*0.404686
+total_area_ha = sum(groves$acres)*ha_peracre
 
 #here i calculate ha of each severity in each year
 severity_annual <- cbi_clipped %>% 
@@ -492,17 +594,17 @@ severity_total <- cbi_clipped %>%
 
 kable(severity_total, 
       digits = 2,
-      caption = "Area and proportion of grove area experiencing fire severity 1984-2023")
+      caption = "Total area and proportion of grove area experiencing fire severity 1984-2023")
 ```
 
-First, I put together some quick mortality estimates that utilize the `trees_ha` trees/ha value.
+First, I put together mortality estimates that utilize the `trees_ha` trees/ha value.
 
 I did this as annual estimates.
 
 ```{r annual_mort}
 #annual mortality (without removal of SEKI areas that have counts)
 
-trees_ha = 2.61/0.404686 #there are an estimated 2.61 segi trees per acre, converted to ha
+trees_ha = 2.61/ha_peracre #there are an estimated 2.61 segi trees per acre, converted to ha
 
 trees_total = total_area_ha*trees_ha
 
@@ -584,7 +686,7 @@ grove_sev_area <- cbi_clipped %>%
 grove_area <- groves %>% #convert multisurface to multipolygon
   st_drop_geometry() %>% 
   select(grove_name, acres) %>% 
-  mutate(grove_ha = acres*0.404686,
+  mutate(grove_ha = acres*ha_peracre,
          grove_name = case_when(
            grove_name == "Devil's Canyon" ~ "Devils Canyon",
            T ~ grove_name))%>% 

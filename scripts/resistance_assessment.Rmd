@@ -250,6 +250,10 @@ total_area
 
 ```{r annual_area}
 
+annual_trt_w75buffer <- dist_nocleanup %>% 
+  filter(current_dist_type == c("comm_haz", "rx_pile", "mech_under")) %>% 
+  summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
 
 
 ```
