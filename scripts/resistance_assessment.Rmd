@@ -320,11 +320,6 @@ annual_trt_activity <- dist_nocleanup %>%
   
 
 ```
-
-
-
-
-
 do figures!
 
 treatments by treatment type for all entities annually - activity*
@@ -362,7 +357,96 @@ total footprint acres treated 1984-2024 and 2014-2024
 total activity acres treated 1984-2024 and 2014-2024
 
 
+
+## Retreatment
 ```{r retreatment}
 
+retreatment <- dist_data %>% 
+  drop_na() %>% 
+  summarise(.by = c(resist_id, resist_class), last_trt = max(current_dist_yr), 
+            yrsSince = (2025 - as.numeric(last_trt)), Hectares = mean(area_ha)) %>% 
+  mutate(RetreatmentNeeded = case_when( #adjust these numbers
+            yrsSince == 22 ~ 2025,
+            yrsSince == 21 ~ 2026,
+            yrsSince == 20 ~ 2027,
+            yrsSince == 19 ~ 2028,
+            yrsSince == 18 ~ 2029,
+            yrsSince == 17 ~ 2030,
+            yrsSince == 16 ~ 2031,
+            yrsSince == 15 ~ 2032,
+            yrsSince == 14 ~ 2033,
+            yrsSince == 13 ~ 2034,
+            yrsSince == 12 ~ 2035,
+            yrsSince == 11 ~ 2036,
+            yrsSince == 10 ~ 2037,
+            yrsSince == 9 ~ 2038,
+            yrsSince == 8 ~ 2039,
+            yrsSince == 7 ~ 2040,
+            yrsSince == 6 ~ 2041,
+            yrsSince == 5 ~ 2042,
+            yrsSince == 4 ~ 2043,
+            yrsSince == 3 ~ 2044,
+            yrsSince == 2 ~ 2045,
+            yrsSince == 1 ~ 2046,
+            T ~ 2025
+  )) %>% 
+  filter(!resist_class %in% c("Loss of mature forest",
+                              "Likely persistent type conversion")) 
+# calc needed values
+#mean_annual_trt <- 
+#mean_annual_comm <- 
+#mean_annual_rx <- 
+  
+
 ```
+
+```{r}
+
+retreatment_overall <- retreatment %>% 
+  summarise(.by = RetreatmentNeeded, Hectares = sum(Hectares))
+
+ggplot(retreatment_overall, aes(RetreatmentNeeded, Hectares)) + 
+  geom_col(stat="identity", width=0.5, position = "dodge") + 
+  ylab("Hectares") +
+  scale_fill_manual(values=c("#006600","#00FF00","palegreen")) + #what are colors for?
+  theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
+  # scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  ggtitle("Re-treatment needs")
+
+```
+
+
+```{r retreat_resist}
+retreat_resist <- retreatment %>% 
+  ungroup() %>% 
+  summarise(.by = c(RetreatmentNeeded, resist_class), Hectares = sum(Hectares))
+
+# figure out why this currently loses moderate resistance??
+ggplot(retreat_resist, aes(RetreatmentNeeded, Hectares, 
+                      fill = factor(resist_class,
+               levels = c("Low resistance","Moderate resistance",
+                          "High resistance")))) +
+  geom_bar(stat = "identity", position = "stack", width = 0.75) + 
+  labs(fill="Resistance classes") +
+  ylab("Hectares") +
+  scale_fill_manual(values=c("turquoise1","darkturquoise","darkslategrey")) +
+  theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
+  scale_y_continuous(labels = scales::comma) +
+#current mean annual treatment:
+  geom_hline(yintercept=mean_annual_trt, linetype='dashed', col = 'black', linewidth = 0.75) +
+#current mean annual treatment comm:
+  geom_hline(yintercept=mean_annual_comm, linetype='dashed', col = 'red', linewidth = 0.75) +
+#current mean annual treatment rx/mech:
+  geom_hline(yintercept=mean_annual_rx, linetype='dotdash', col = 'orange', linewidth = 0.75)+ 
+  scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0), labels = scales::comma)
+```
+
+
 
