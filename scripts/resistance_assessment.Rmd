@@ -13,6 +13,7 @@ library(terra)
 library(sf)
 library(here)
 library(janitor)
+library(scales)
 
 ```
 
@@ -53,8 +54,6 @@ trt_clean <- treatment %>%
     ) %>% 
   select(dist_year, dist_type) # select only needed columns
 
-
-
 ```
 
 
@@ -80,6 +79,7 @@ disturb <- fire_clean %>%
 
 ```
 
+REMINDER: include ownership? how/when (probably after the polygons are made). What ownership layer should we use?
 
 reminder: do both with buffer and without; need to decide if doing donut or all and subtracting after
 ```{r buffer}
@@ -102,6 +102,16 @@ dist_groves_lookup <- dist_groves %>%
 
 ```
 
+```{r values}
+#total area of groves and buffers 
+#note, miiight overcount bc of overlaps
+total_grovebufferHa <- sum(as.numeric(st_area(groves_buffered)*0.0001))
+
+#total area of groves alone
+total_groveHa <- sum(as.numeric(st_area(groves_buffered)*0.0001))
+
+```
+
 ```{r dist_hist}
 
 options(scipen = 999)
@@ -121,6 +131,8 @@ dist_plot <- dist_hist %>%
   select(-origins)
 
 #st_write(dist_plot, here("data/spatial_data/debug/dist_lyr3_debug.shp"), append = F)
+
+dist_ownership <- 
 
 dist_hist_long <- dist_hist %>% 
   st_drop_geometry() %>%  # attributes only
@@ -158,7 +170,7 @@ trt_fix_sf <- trt_fix_many %>%
   bind_rows(trt_fix_multiple) %>% 
   left_join(dist_plot)
 
-st_write(trt_fix_sf, here("data/spatial_data/debug/debug_fix_fire.shp"), append = F)
+#st_write(trt_fix_sf, here("data/spatial_data/debug/debug_fix_fire.shp"), append = F)
 
 ```
 
@@ -235,41 +247,106 @@ dist_data <- left_join(dist_order, dist_classified, by = "resist_id")
 ```
 
 
-ask if the annual summaries should exclude "cleanup" burn_before_mech
-
 ```{r dist_combo}
 
 dist_nocleanup <- dist_data %>%
   filter(burn_before_mech == FALSE)
 
-total_area
 
 ```
 
 
+```{r resist-fig}
 
-```{r annual_area}
+resist_footprint <- dist_nocleanup %>%
+  group_by(resist_id) %>% 
+  slice_head() %>% # remove duplicated instances of ID
+  ungroup() %>% 
+  summarise(.by = resist_class, Hectares = sum(area_ha)) %>% 
+  replace_na(list(Hectares = 0)) %>% 
+  add_row(
+    resist_class = "No resistance",
+    Hectares = total_grovebufferHa - sum(na.exclude(resist_footprint$Hectares))
+  ) 
 
-annual_trt_w75buffer <- dist_nocleanup %>% 
-  filter(current_dist_type == c("comm_haz", "rx_pile", "mech_under")) %>% 
-  summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
-  arrange(current_dist_yr)
+resist_footprint <- resist_footprint %>% 
+ mutate(
+    Hectares = round(Hectares, 0),
+    perc_area = Hectares/total_grovebufferHa*100
+  )
 
+ggplot(resist_footprint, aes(factor(resist_class, 
+                            levels = c("High resistance","Moderate resistance", "Low resistance",
+                            "No resistance","Loss of mature forest",
+                              "Likely persistent type conversion")), 
+                            Hectares, fill = resist_class, width = 0.7)) +
+  geom_bar(stat="identity") + theme_bw() + xlab("") + 
+  scale_fill_manual(values = c("High resistance" = "#006600", "Moderate resistance" = "#00FF00",
+                               "Low resistance" = "palegreen","No resistance" = "orange",
+                               "Loss of mature forest" = "red","Likely persistent type conversion" = "black")) +
+  scale_x_discrete(labels = c("High\nresistance","Moderate\nresistance","Low\nresistance",
+                              "No\nresistance","Forest\nloss",
+                              "Type\nconversion"), expand = c(0.1,0.1)) +
+  theme(axis.text.x = element_text(size =8),
+        axis.text.y = element_text(size=8),
+        axis.title=element_text(size=8),
+        strip.text.x = element_text(size = 8),
+        legend.position = "none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) +
+  scale_y_continuous(labels = comma, n.breaks = 6, expand = c(0,0), limits = c(0, 10000))
+
+ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
 
 ```
 
 
 subtract out buffer and do calculation of totals again
 
-
 ```{r}
 
 ```
 
 
+ask if the annual summaries should exclude "cleanup" burn_before_mech
+```{r annual_area}
+
+annual_trt_activity <- dist_nocleanup %>% 
+  filter(current_dist_type == c("comm_haz", "rx_pile", "mech_under")) %>% 
+  summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
+  
+
+```
+
+
+
+
+
 do figures!
 
 treatments by treatment type for all entities annually - activity*
+
+```{r}
+ggplot(annual_trt_w75buffer, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+  geom_col()+
+  theme_bw()+
+  theme(axis.text.x = element_text(size =8),
+        axis.text.y = element_text(size=8),
+        axis.title=element_text(size=8),
+        strip.text.x = element_text(size = 8),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+ggsave(here("outputs/annualtrt_activity.jpg"), width = 4.2, height = 5)
+```
+
+
 treatments by treatment type for all entities annually - footprint**
 treatments by treatment type for major landowners annually - activity*
 treatments by treatment type for major landowners annually - footprint**
@@ -283,3 +360,9 @@ number of times treated by smallest polygon
 number of times burned in wildfire by smallest polygon
 total footprint acres treated 1984-2024 and 2014-2024
 total activity acres treated 1984-2024 and 2014-2024
+
+
+```{r retreatment}
+
+```
+
