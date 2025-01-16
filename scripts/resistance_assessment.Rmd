@@ -340,7 +340,7 @@ total14_w_buffer_activity <- dist_nocleanup %>%
 
 
 ask if the annual summaries should exclude "cleanup" burn_before_mech: answer was see how much difference it makes; currently there is no cleanup included
-```{r annual_area}
+```{r annual_area_trt}
 
 annual_trt_activity <- dist_nocleanup %>% 
   filter(current_dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% 
@@ -361,10 +361,14 @@ treatments by treatment type for all entities annually - activity*
 ggplot(annual_trt_activity, aes(current_dist_yr, area_ha, fill = current_dist_type))+
   geom_col()+
   theme_bw()+
-  theme(axis.text.x = element_text(size =8),
-        axis.text.y = element_text(size=8),
-        axis.title=element_text(size=8),
-        strip.text.x = element_text(size = 8),
+  scale_fill_manual(
+    name = "Treatment Type",
+    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ef476f", "#ffd166"))+
+  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
         #legend.position = ,
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), panel.background = element_blank(), 
@@ -382,22 +386,88 @@ ggplot(annual_trt_activity_ownership, aes(current_dist_yr, area_ha, fill = curre
   facet_wrap(~unit_name)+
   geom_col()+
   theme_bw()+
-  theme(axis.text.x = element_text(size =8),
-        axis.text.y = element_text(size=8),
-        axis.title=element_text(size=8),
-        strip.text.x = element_text(size = 8),
+  scale_fill_manual(
+    name = "Treatment Type",
+    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ef476f", "#ffd166"))+
+  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
         #legend.position = ,
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), panel.background = element_blank(), 
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) 
 
-ggsave(here("outputs/annualtrt_activity.jpg"), width = 4.2, height = 5)
+ggsave(here("outputs/annualtrt_activity_split.jpg"), width = 4.2, height = 5)
 ```
 
 
 
 severity (most recent) by major landowners (figure)
+
+
+```{r annual_area_sev}
+
+annual_fire_activity <- dist_nocleanup %>% 
+  filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
+
+annual_fire_activity_ownership <- dist_nocleanup %>% 
+filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarise(.by = c(unit_name, current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
+
+
+```
+
+```{r}
+ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+  geom_col()+
+  theme_bw()+
+  scale_fill_manual(
+    name = "Fire Severity",
+   # labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ef476f", "#ffd166"))+
+  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+ggsave(here("outputs/annualfire_activity.jpg"), width = 4.2, height = 5)
+```
+
+
+
+treatments by treatment type for major landowners annually - activity*
+```{r}
+ggplot(annual_fire_activity_ownership, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+  facet_wrap(~unit_name)+
+  geom_col()+
+  theme_bw()+
+  scale_fill_manual(
+    name = "Treatment Type",
+    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ef476f", "#ffd166"))+
+  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+ggsave(here("outputs/annualfire_activity_split.jpg"), width = 4.2, height = 5)
+```
 
 
 ## Retreatment
@@ -446,14 +516,14 @@ retreatment_overall <- retreatment %>%
 ggplot(retreatment_overall, aes(RetreatmentNeeded, Hectares)) + 
   geom_col(stat="identity", width=0.5, position = "dodge") + 
   ylab("Hectares") +
-  scale_fill_manual(values=c("#006600","#00FF00","palegreen")) + #what are colors for?
+  scale_fill_manual(values=c("#006600","#00FF00","palegreen")) + #what are colors for? could add ownership
   theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
         axis.line = element_line(),
         axis.title.x = element_blank(),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
   # scale_x_discrete(expand = c(0, 0)) + 
   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
-  ggtitle("Re-treatment needs")
+  ggtitle("Re-treatment needs in Sequoia Groves")
 
 ```
 
@@ -463,13 +533,13 @@ retreat_resist <- retreatment %>%
   ungroup() %>% 
   summarise(.by = c(RetreatmentNeeded, resist_class), Hectares = sum(Hectares))
 
-# figure out why this currently loses moderate resistance??
+
 ggplot(retreat_resist, aes(RetreatmentNeeded, Hectares, 
                       fill = factor(resist_class,
                levels = c("Low resistance","Moderate resistance",
                           "High resistance")))) +
   geom_bar(stat = "identity", position = "stack", width = 0.75) + 
-  labs(fill="Resistance classes") +
+  labs(fill="Resistance classes", title = "Retreatment Needs by Resistance Class in Sequoia Groves") +
   ylab("Hectares") +
   scale_fill_manual(values=c("turquoise1","darkturquoise","darkslategrey")) +
   theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
