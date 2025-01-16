@@ -340,5 +340,20 @@ cbi_all <- cbi_all %>%
 st_write(cbi_all, here("data/spatial_data/outputs/cbi_all/cbi_all.shp"), append = F)
 
 ```
+```{r}
+#there are duplicates of fires bc names were different; fixing here without redoing whole layer
+cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
+
+fire_byyr <- cbi_all %>% 
+  st_drop_geometry() %>% 
+  summarize(.by = c(fire_yr, id)) %>% 
+  arrange(fire_yr, id)
+
+cbi_fixed <- cbi_all %>% 
+filter(!id %in% c("1995CASTLE_W", "2010SHEEP_CO"))
+
+st_write(cbi_fixed, here("data/spatial_data/outputs/cbi_all/cbi_all.shp"), append = F)
+
+```
 
 

@@ -1,0 +1,34 @@
+---
+title: "Treatment Layer Generation"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(terra)
+library(sf)
+library(here)
+library(janitor)
+
+```
+
+## Input Layers
+
+```{r inputs}
+
+nps <- st_read(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023_repaired/NPS_Combined_TrtFile_1966_2023_repaired.shp"))
+
+calveras <- st_read(here("data/spatial_data/inputs/treatment/Calaveras_all_treatments_2013_2024/Calaveras_all_treatments_2013_2024.shp")) %>% 
+  st_transform(crs(nps))
+
+mhdsf <- st_read(here("data/spatial_data/inputs/treatment/MHDSF_1951_2019_SoSEGI/MHDSF_1951_2019_SoSEGI.shp")) %>% 
+  st_transform(crs(nps))
+
+#strl <- st_read(here("data/spatial_data/inputs/treatment/ALL_SEGI_restoration_trmt_track/ALL_SEGI_restoration_trmt_track.shp"))
+
+```
+
