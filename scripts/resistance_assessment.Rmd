@@ -196,6 +196,8 @@ dist_order <- dist_hist_long %>%
 ```
 
 ```{r classify}
+#Add time frame (back 10 years)
+#think on ways to actually make this more complex (treatment time + amount in timing)
 
 dist_classified <- dist_order %>%
   mutate(TRUES=1) %>% 
@@ -309,11 +311,14 @@ totals including buffer area
 numbers to output
 
 what do these mean?
+want amount of area for each of these;make table and shapefiles
 number of times treated by smallest polygon
 number of times burned in wildfire by smallest polygon
 
 
 ```{r}
+#filter out older treatment
+
 #total footprint acres treated 1984-2024
 total84_w_buffer_footHa <- sum(resist_footprint$Hectares)
 #total footprint acres treated 2014-2024
@@ -529,6 +534,8 @@ ggplot(retreatment_overall, aes(RetreatmentNeeded, Hectares)) +
 
 
 ```{r retreat_resist}
+
+# double ccheck this includes fire (low and moderate)
 retreat_resist <- retreatment %>% 
   ungroup() %>% 
   summarise(.by = c(RetreatmentNeeded, resist_class), Hectares = sum(Hectares))

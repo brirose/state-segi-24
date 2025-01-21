@@ -93,7 +93,7 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
     fire_year = case_when(
       survey_fire == "Railroad" ~ 2017,
       survey_fire == "Rough" ~ 2015,
-      survey_fire == "Pier" ~ 2027,
+      survey_fire == "Pier" ~ 2017,
       T ~ 0
     ),
     source = "Shive etal, Mortality Study",
