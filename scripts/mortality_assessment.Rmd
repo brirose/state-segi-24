@@ -78,6 +78,7 @@ multiple_shive_locs <- st_read(here("data/spatial_data/inputs/fire/SEGI_Mortalit
 
 multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_AllGroves_2022.csv")) %>%
   clean_names() %>% 
+  filter(in_summary_stats == "Yes") %>% 
   left_join(multiple_shive_locs) %>% 
   rename(
     survey_fire = fire,
@@ -445,7 +446,7 @@ monarchs_severity <- monarchs_severity %>%
 mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
     rename("tree_id" = "id.x",
          "fire_id" = "id.y") %>% 
-  filter(measure_delay < delay, # remove trees with too long a delay
+   filter(measure_delay <= delay, # remove trees with too long a delay
          fire_id %in% observation_counts$id.y) %>% # remove when in a fire w/o enough obs
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
   select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source) 
@@ -453,6 +454,8 @@ mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>%
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
 #st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_12Dec24.shp"), append = F)
+
+write_csv(monarchs_severity, here("data/outputs_data/monarchs_severity_29Jan25.csv"))
 
 ```
 
@@ -479,6 +482,9 @@ kable(breakdown_summary,
       digits = 3,
       caption = "Breakdown of trees in each severity class by fire")
 
+
+write_csv(breakdown_summary, here("data/outputs_data/monarchs_severity_breakdown_21Jan25.csv"))
+write_csv(severity_summary, here("data/outputs_data/monarchs_severity_summary_21Jan25.csv"))
 ```
 
 
