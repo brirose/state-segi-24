@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-library(terra)
 library(sf)
 library(here)
 library(janitor)
@@ -19,16 +18,32 @@ library(janitor)
 ## Input Layers
 
 ```{r inputs}
+#make list of files to import
+trtfiles <- dir(here("data/spatial_data/inputs/treatment/FINAL_15Jan2024"), "*.shp$", full.names = T)
 
-nps <- st_read(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023_repaired/NPS_Combined_TrtFile_1966_2023_repaired.shp"))
+trtnames <- trtfiles%>% #define names
+ str_replace_all(c("C:/Users/bri.baker/analysis_github/State_SEGI/state-segi-24/data/spatial_data/inputs/treatment/FINAL_15Jan2024/" = "", "_FINAL.*" = "")) %>% 
+  tolower()
 
-calveras <- st_read(here("data/spatial_data/inputs/treatment/Calaveras_all_treatments_2013_2024/Calaveras_all_treatments_2013_2024.shp")) %>% 
-  st_transform(crs(nps))
+dat <- trtfiles %>% 
+  map(st_read) %>% #read in files
+  set_names(trtnames) %>% # with these names (if decide to unlist)
+  map(clean_names) %>% # clean names to lower snake case
+  lapply(select, ucb_year, ucb_trt_v2) #select only the columns we want
 
-mhdsf <- st_read(here("data/spatial_data/inputs/treatment/MHDSF_1951_2019_SoSEGI/MHDSF_1951_2019_SoSEGI.shp")) %>% 
-  st_transform(crs(nps))
+dat[[8]][["ucb_year"]] <- as.numeric(dat[[8]][["ucb_year"]])
+```
 
-#strl <- st_read(here("data/spatial_data/inputs/treatment/ALL_SEGI_restoration_trmt_track/ALL_SEGI_restoration_trmt_track.shp"))
+## Combine
+
+```{r combine}
+use_crs <- crs(dat[[1]]) #define single crs
+
+dat <- dat %>% lapply(st_transform, use_crs) #make all layers same crs
+
+trt_combined <- list_rbind(dat) #combine!
+
+st_write(trt_combined, here("data/spatial_data/outputs/SEGITrtdata_30Jan25.shp"))
 
 ```
 
