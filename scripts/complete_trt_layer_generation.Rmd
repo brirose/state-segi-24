@@ -31,7 +31,8 @@ dat <- trtfiles %>%
   map(clean_names) %>% # clean names to lower snake case
   lapply(select, ucb_year, ucb_trt_v2) #select only the columns we want
 
-dat[[8]][["ucb_year"]] <- as.numeric(dat[[8]][["ucb_year"]])
+dat[[8]][["ucb_year"]] <- as.numeric(dat[[8]][["ucb_year"]]) #fix data type
+
 ```
 
 ## Combine
@@ -41,9 +42,12 @@ use_crs <- crs(dat[[1]]) #define single crs
 
 dat <- dat %>% lapply(st_transform, use_crs) #make all layers same crs
 
-trt_combined <- list_rbind(dat) #combine!
+trt_combined <- list_rbind(dat, names_to = "source") %>% #combine!
+  rename(treatment = ucb_trt_v2,
+         year = ucb_year) %>% 
+  drop_na()
 
-st_write(trt_combined, here("data/spatial_data/outputs/SEGITrtdata_30Jan25.shp"))
+st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_30Jan25.shp"), append = F)
 
 ```
 
