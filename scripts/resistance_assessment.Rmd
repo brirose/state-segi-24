@@ -27,7 +27,7 @@ fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
  
 
 #full, cleaned treatment layer (will this be the case?)
-treatment <- st_read(here("data/spatial_data/inputs/treatment/NPS_Combined_TrtFile_1966_2023_repaired/NPS_Combined_TrtFile_1966_2023_repaired.shp")) %>% 
+treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_04feb25.shp")) %>% 
   st_transform(crs(fire))
 
 #buffered and fixed groves, layer made by Kristen
@@ -41,13 +41,12 @@ groves_buffered <- st_read(here("data/spatial_data/inputs/forest/SoS_Adjusted_SE
 
 trt_clean <- treatment %>% 
   clean_names() %>%
-  rename(dist_year = ucb_year) %>% 
+  rename(dist_year = year) %>% 
   # make categories fast to code
   mutate(
     dist_type = case_when(
-      ucb_treat == "Fire-related treatment" ~ "rx_pile",
-      ucb_treat == "Mechanical fuels management" ~ "mech_under",
-      ucb_treat == "Commercial" ~ "comm_haz",
+      treatment == "Fire-related treatment" ~ "rx_pile",
+      treatment == "Mechanical treatment" ~ "mech_under",
       T ~ "fix"),
     ) %>% 
   select(dist_year, dist_type) # select only needed columns
@@ -63,13 +62,19 @@ fire_clean <- fire %>%
   #replace burnsev with class names, create cols to combine with trt
   mutate(
     dist_type = case_when(
-      burnsev == 1 ~ "lowsev_fire", ##CHECK WITH KRISTEN ON THIS
+      burnsev == 1 ~ "undetected_change", ##CHECK WITH KRISTEN ON THIS
       burnsev == 2 ~ "lowsev_fire",
       burnsev == 3 ~ "modsev_fire",
       burnsev == 4 ~ "highsev_fire"),
     dist_year = as.numeric(fire_yr)) %>% 
   select(dist_year, dist_type)#only needed columns
   
+#check for overlaps
+
+fire_overlap <- fire_clean %>% 
+  group_by(dist_year) %>% 
+  st_intersection()
+
 #combine to into all disturbance layer
 
 disturb <- fire_clean %>% 
@@ -144,7 +149,7 @@ Some of the treatments end up with a TON of overlaps; here I output the IDs in t
 
 # multiple treatments recorded in a year
 trt_fix_multiple <- dist_hist_long %>% 
-  filter(dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% # only treatments
+  filter(dist_type %in% c("rx_pile", "mech_under")) %>% # only treatments
   summarize(.by = c(resist_id, dist_year), count = n()) %>% # count per yr
   filter(count > 1) %>%  #filter where more than 1
   summarize(.by = resist_id, count = sum(count)) %>% 
@@ -152,7 +157,7 @@ trt_fix_multiple <- dist_hist_long %>%
 
 # many treatments recorded
 trt_fix_many <- dist_hist_long %>% 
-  filter(dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% # only treatments
+  filter(dist_type %in% c("rx_pile", "mech_under")) %>% # only treatments
   summarize(.by = resist_id, count = n()) %>% # count treatments total 
   filter(count >= 5) %>% # filter where 5 or more treatments
   mutate(concern = "many treatments") 
@@ -184,15 +189,8 @@ dist_order <- dist_hist_long %>%
   ungroup() %>%
   #identify exclusion of burn then thin
   mutate(burn_before_mech = 
-         case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("comm_haz","mech_under","rx_pile") ~TRUE,
-                   TRUE~FALSE)) %>% 
-  # USED TO ALLOW FURTHER CODE TO WORK, REMOVE ONCE DUPLICATES FIXED
-  group_by(resist_id, current_dist_yr, current_dist_type) %>% 
-  slice(1) %>% 
-  ungroup() %>% 
-  add_row(.before = 1, resist_id = 999999, 
-        current_dist_yr = 1999, current_dist_type = "comm_haz", next_dist_yr= NA, next_dist_type = NA, burn_before_mech = FALSE)
-
+         case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("mech_under","rx_pile") ~TRUE,
+                   TRUE~FALSE))
 ```
 
 ```{r classify}
@@ -201,21 +199,21 @@ dist_order <- dist_hist_long %>%
 
 dist_classified <- dist_order %>%
   mutate(TRUES=1) %>% 
-  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0)%>%
+  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0)#%>%
   summarise(.by = resist_id, across(c(comm_haz:rx_pile), sum)) %>% 
   summarise(.by = resist_id, resist_class =
               case_when(
                 #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
-                (comm_haz + mech_under + rx_pile + modsev_fire + lowsev_fire) >= 2 
+                (mech_under + rx_pile + modsev_fire + lowsev_fire) >= 2 
                 & (rx_pile + modsev_fire + lowsev_fire)>=1 
                 & highsev_fire == 0 ~ 'High resistance',
                 #Mod resistance: mod or low or rx
                 (rx_pile + modsev_fire + lowsev_fire) == 1 
-                & (comm_haz+mech_under) == 0 
+                & mech_under == 0 
                 & highsev_fire == 0 ~ 'Moderate resistance',
                 #Low resistance: any mech
                 (rx_pile + modsev_fire + lowsev_fire) == 0 
-                & (comm_haz+mech_under) >= 1 
+                & mech_under >= 1 
                 & highsev_fire == 0 ~ 'Low resistance',
                 #Loss of mature forest: any high
                 highsev_fire == 1 ~ 'Loss of mature forest',
@@ -348,12 +346,12 @@ ask if the annual summaries should exclude "cleanup" burn_before_mech: answer wa
 ```{r annual_area_trt}
 
 annual_trt_activity <- dist_nocleanup %>% 
-  filter(current_dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% 
+  filter(current_dist_type %in% c("rx_pile", "mech_under")) %>% 
   summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
   arrange(current_dist_yr)
 
 annual_trt_activity_ownership <- dist_nocleanup %>% 
-  filter(current_dist_type %in% c("comm_haz", "rx_pile", "mech_under")) %>% 
+  filter(current_dist_type %in% c("rx_pile", "mech_under")) %>% 
   summarise(.by = c(unit_name, current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
   arrange(current_dist_yr)
 
@@ -368,7 +366,7 @@ ggplot(annual_trt_activity, aes(current_dist_yr, area_ha, fill = current_dist_ty
   theme_bw()+
   scale_fill_manual(
     name = "Treatment Type",
-    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    labels = c("Mechanical fuels management", "Fire-related treatment"),
     values = c("#26547c", "#ef476f", "#ffd166"))+
   labs(title = "Annual Treatment Footprint in Sequoia Groves",
        y = "Area (Ha)") +
@@ -393,8 +391,8 @@ ggplot(annual_trt_activity_ownership, aes(current_dist_yr, area_ha, fill = curre
   theme_bw()+
   scale_fill_manual(
     name = "Treatment Type",
-    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
-    values = c("#26547c", "#ef476f", "#ffd166"))+
+    labels = c("Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ffd166"))+
   labs(title = "Annual Treatment Footprint in Sequoia Groves",
        y = "Area (Ha)") +
   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
@@ -434,7 +432,7 @@ ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_t
   theme_bw()+
   scale_fill_manual(
     name = "Fire Severity",
-   # labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+   # labels = c("Mechanical fuels management", "Fire-related treatment"),
     values = c("#26547c", "#ef476f", "#ffd166"))+
   labs(title = "Annual Treatment Footprint in Sequoia Groves",
        y = "Area (Ha)") +

@@ -40,14 +40,42 @@ dat[[8]][["ucb_year"]] <- as.numeric(dat[[8]][["ucb_year"]]) #fix data type
 ```{r combine}
 use_crs <- crs(dat[[1]]) #define single crs
 
-dat <- dat %>% lapply(st_transform, use_crs) #make all layers same crs
+dat <- dat %>% lapply(st_transform, use_crs) %>% #make all layers same crs
+  lapply(st_zm, drop = T) %>% 
+  lapply(add_column)
+
+
+combo_geom <-bind_rows(dat) %>% 
+  rowid_to_column() %>% 
+  select(rowid,geometry)
 
 trt_combined <- list_rbind(dat, names_to = "source") %>% #combine!
   rename(treatment = ucb_trt_v2,
          year = ucb_year) %>% 
-  drop_na()
+  drop_na() %>% 
+  rowid_to_column() %>% 
+  select(-geometry) %>% #for some reason list_rbind messes with the geoms
+  left_join(combo_geom) %>% 
+  st_as_sf() %>% 
+  st_make_valid()
 
-st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_30Jan25.shp"), append = F)
+st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_04feb25.shp"), append = F)
+
+plot(trt_combined)
 
 ```
+
+
+debug
+```{r}
+srl <- read_sf(here("data/spatial_data/inputs/treatment/FINAL_15Jan2024/SRL_AlderOnly_Trts_FINAL_21Jan2025.shp")) %>% 
+  st_transform(use_crs) %>% 
+  st_zm(drop = T)
+
+st_write(srl_alderonly_trts, here("data/spatial_data/outputs/SEGI_Trtdata/srldebug.shp"), append = F)
+
+plot(srl)
+
+```
+
 
