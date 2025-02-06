@@ -59,7 +59,7 @@ trt_combined <- list_rbind(dat, names_to = "source") %>% #combine!
   st_as_sf() %>% 
   st_make_valid()
 
-st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_04feb25.shp"), append = F)
+st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_05feb25.shp"), append = F)
 
 plot(trt_combined)
 

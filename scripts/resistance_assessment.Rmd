@@ -15,6 +15,8 @@ library(here)
 library(janitor)
 library(scales)
 
+options(scipen = 999)
+
 ```
 
 
@@ -23,17 +25,20 @@ library(scales)
 ```{r input_data}
 
 #fire history in CBI
-fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
+fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>% 
+  st_make_valid()
  
 
 #full, cleaned treatment layer (will this be the case?)
 treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_04feb25.shp")) %>% 
-  st_transform(crs(fire))
+  st_transform(crs(fire)) %>% 
+  st_make_valid()
 
 #buffered and fixed groves, layer made by Kristen
 groves_buffered <- st_read(here("data/spatial_data/inputs/forest/SoS_Adjusted_SEGI_AnalysisArea/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames.shp")) %>%
   clean_names() %>% 
-  st_transform(crs(fire)) #uniform crs
+  st_transform(crs(fire)) %>%  #uniform crs
+  st_make_valid()
 
 ```
 
@@ -62,21 +67,16 @@ fire_clean <- fire %>%
   #replace burnsev with class names, create cols to combine with trt
   mutate(
     dist_type = case_when(
-      burnsev == 1 ~ "undetected_change", ##CHECK WITH KRISTEN ON THIS
+      burnsev == 1 ~ "undetected_change",
       burnsev == 2 ~ "lowsev_fire",
       burnsev == 3 ~ "modsev_fire",
       burnsev == 4 ~ "highsev_fire"),
     dist_year = as.numeric(fire_yr)) %>% 
+  filter(dist_type != "undetected_change") %>% 
   select(dist_year, dist_type)#only needed columns
   
-#check for overlaps
-
-fire_overlap <- fire_clean %>% 
-  group_by(dist_year) %>% 
-  st_intersection()
 
 #combine to into all disturbance layer
-
 disturb <- fire_clean %>% 
   bind_rows(trt_clean)
 
@@ -86,9 +86,10 @@ disturb <- fire_clean %>%
 ```{r buffer}
 
 #reduce disturbance to within (buffered) groves
-dist_groves <- st_intersection(disturb, groves_buffered) %>% 
+dist_groves <- st_intersection(disturb, groves_buffered)%>% 
   # combine where there is buffer overlap and poorly drawn geometries
-  summarise(.by = c(dist_year, dist_type, unit_name, grove_name), geometry = st_union(st_combine(geometry))) %>% 
+  summarise(.by = c(dist_year, dist_type, unit_name, grove_name), 
+            geometry = st_union(st_combine(geometry))) %>% 
   st_make_valid() %>% 
   mutate(dist_id = 1:length(dist_year))
 
@@ -96,13 +97,11 @@ dist_groves <- st_intersection(disturb, groves_buffered) %>%
 dist_groves_lookup <- dist_groves %>% 
   st_drop_geometry()
 
-#st_write(dist_groves, here("data/spatial_data/debug/buffered_unioncomo_debug.shp"), append = F)
 
 ```
 
 ```{r values}
 #total area of groves and buffers 
-#note, miiight overcount bc of overlaps
 total_grovebufferHa <- sum(as.numeric(st_area(groves_buffered)*0.0001))
 
 #total area of groves alone
@@ -112,8 +111,6 @@ total_grovebufferHa <- sum(as.numeric(st_area(groves_buffered)*0.0001))
 
 ```{r dist_hist}
 
-options(scipen = 999)
-
 dist_hist <- st_intersection(dist_groves) %>% 
   mutate(resist_id = 1:length(origins)) %>% 
   select(resist_id, origins) %>% 
@@ -122,14 +119,7 @@ dist_hist <- st_intersection(dist_groves) %>%
   summarise(.by = c(resist_id, origins), geometry = st_combine(geometry)) %>% 
   mutate(area_ha = as.numeric(st_area(.))*0.0001) %>% 
   # remove areas less than 1 acre (likely "overlap" due to poorly mapped edges)
-  filter(area_ha >= 0.04) # split this out and find hectares represented
-
-#cannot plot with vectors
-dist_plot <- dist_hist %>%
-  select(-origins)
-
-#st_write(dist_plot, here("data/spatial_data/debug/dist_lyr3_debug.shp"), append = F)
-
+  filter(area_ha >= 0.04) # NOTE: split this out and find hectares represented
 
 dist_hist_long <- dist_hist %>% 
   st_drop_geometry() %>%  # attributes only
@@ -137,6 +127,7 @@ dist_hist_long <- dist_hist %>%
   rename(dist_id = origins) %>% 
   left_join(dist_groves_lookup, by = join_by(dist_id)) %>% # connect with disturbance attributes
   select(-dist_id)
+
 
 ```
 
@@ -150,26 +141,17 @@ Some of the treatments end up with a TON of overlaps; here I output the IDs in t
 # multiple treatments recorded in a year
 trt_fix_multiple <- dist_hist_long %>% 
   filter(dist_type %in% c("rx_pile", "mech_under")) %>% # only treatments
-  summarize(.by = c(resist_id, dist_year), count = n()) %>% # count per yr
+  summarize(.by = c(resist_id, dist_year, dist_type), count = n()) %>% # count per yr
   filter(count > 1) %>%  #filter where more than 1
   summarize(.by = resist_id, count = sum(count)) %>% 
   mutate(concern = "multiple per year")
 
-# many treatments recorded
-trt_fix_many <- dist_hist_long %>% 
-  filter(dist_type %in% c("rx_pile", "mech_under")) %>% # only treatments
-  summarize(.by = resist_id, count = n()) %>% # count treatments total 
-  filter(count >= 5) %>% # filter where 5 or more treatments
-  mutate(concern = "many treatments") 
-  
-add <- setdiff(unique(trt_fix_many$resist_id), unique(trt_fix_multiple$resist_id))
 
-trt_fix_sf <- trt_fix_many %>% 
-  filter(resist_id %in% add) %>% 
-  bind_rows(trt_fix_multiple) %>% 
-  left_join(dist_plot)
+dist_fix_fire <- dist_hist_long %>% 
+  filter(dist_type %in% c("undetected_fire", "lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarize(.by = c(resist_id, dist_year), count = n()) %>% 
+  filter(count > 1)
 
-#st_write(trt_fix_sf, here("data/spatial_data/debug/debug_fix_fire.shp"), append = F)
 
 ```
 
@@ -189,7 +171,7 @@ dist_order <- dist_hist_long %>%
   ungroup() %>%
   #identify exclusion of burn then thin
   mutate(burn_before_mech = 
-         case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("mech_under","rx_pile") ~TRUE,
+         case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("mech_under","rx_pile") ~TRUE, 
                    TRUE~FALSE))
 ```
 
@@ -199,8 +181,9 @@ dist_order <- dist_hist_long %>%
 
 dist_classified <- dist_order %>%
   mutate(TRUES=1) %>% 
-  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0)#%>%
-  summarise(.by = resist_id, across(c(comm_haz:rx_pile), sum)) %>% 
+  arrange(current_dist_type) %>% 
+  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0) %>%
+  summarise(.by = resist_id, across(c(highsev_fire:rx_pile), sum)) %>% 
   summarise(.by = resist_id, resist_class =
               case_when(
                 #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
@@ -220,7 +203,7 @@ dist_classified <- dist_order %>%
                 #Likely persistent type conversion: High-High
                 highsev_fire > 1 ~ 'Likely persistent type conversion'))
 
-# recombine with info (reminger makes LONGER so duplicated shapes)
+# recombine with info (reminder makes LONGER so duplicated shapes)
 dist_data <- inner_join(dist_order, dist_classified, by = "resist_id")
 
 ```
@@ -263,8 +246,7 @@ resist_footprint <- dist_nocleanup %>%
   group_by(resist_id) %>% 
   slice_head() %>% # remove duplicated instances of ID
   ungroup() %>% 
-  summarise(.by = resist_class, Hectares = sum(area_ha)) %>% 
-  replace_na(list(Hectares = 0)) ##REMOVE ONCE GET RID OF ADDED COMMHAZ
+  summarise(.by = resist_class, Hectares = sum(area_ha))
 
 
 resist_footprint_all <- resist_footprint%>% 
@@ -434,7 +416,7 @@ ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_t
     name = "Fire Severity",
    # labels = c("Mechanical fuels management", "Fire-related treatment"),
     values = c("#26547c", "#ef476f", "#ffd166"))+
-  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+  labs(title = "Annual Wildfire Footprint in Sequoia Groves",
        y = "Area (Ha)") +
   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
   theme(axis.title.x = element_blank(),
@@ -456,10 +438,10 @@ ggplot(annual_fire_activity_ownership, aes(current_dist_yr, area_ha, fill = curr
   geom_col()+
   theme_bw()+
   scale_fill_manual(
-    name = "Treatment Type",
-    labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    name = "Fire Severity",
+    #labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
     values = c("#26547c", "#ef476f", "#ffd166"))+
-  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+  labs(title = "Annual Wildfire Footprint in Sequoia Groves",
        y = "Area (Ha)") +
   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
   theme(axis.title.x = element_blank(),
@@ -477,32 +459,20 @@ ggsave(here("outputs/annualfire_activity_split.jpg"), width = 4.2, height = 5)
 ```{r retreatment}
 
 retreatment <- dist_data %>% 
-  drop_na() %>% 
   summarise(.by = c(resist_id, resist_class), last_trt = max(current_dist_yr), 
             yrsSince = (2025 - as.numeric(last_trt)), Hectares = mean(area_ha)) %>% 
-  mutate(RetreatmentNeeded = case_when( #adjust these numbers
-            yrsSince == 22 ~ 2025,
-            yrsSince == 21 ~ 2026,
-            yrsSince == 20 ~ 2027,
-            yrsSince == 19 ~ 2028,
-            yrsSince == 18 ~ 2029,
-            yrsSince == 17 ~ 2030,
-            yrsSince == 16 ~ 2031,
-            yrsSince == 15 ~ 2032,
-            yrsSince == 14 ~ 2033,
-            yrsSince == 13 ~ 2034,
-            yrsSince == 12 ~ 2035,
-            yrsSince == 11 ~ 2036,
-            yrsSince == 10 ~ 2037,
-            yrsSince == 9 ~ 2038,
-            yrsSince == 8 ~ 2039,
-            yrsSince == 7 ~ 2040,
-            yrsSince == 6 ~ 2041,
-            yrsSince == 5 ~ 2042,
-            yrsSince == 4 ~ 2043,
-            yrsSince == 3 ~ 2044,
-            yrsSince == 2 ~ 2045,
-            yrsSince == 1 ~ 2046,
+  mutate(RetreatmentNeeded = case_when( 
+            yrsSince == 10 ~ 2025,
+            yrsSince == 9 ~ 2026,
+            yrsSince == 8 ~ 2027,
+            yrsSince == 7 ~ 2028,
+            yrsSince == 6 ~ 2029,
+            yrsSince == 5 ~ 2030,
+            yrsSince == 4 ~ 2031,
+            yrsSince == 3 ~ 2032,
+            yrsSince == 2 ~ 2033,
+            yrsSince == 1 ~ 2034,
+            yrsSince == 0 ~ 2035,
             T ~ 2025
   )) %>% 
   filter(!resist_class %in% c("Loss of mature forest",
@@ -533,7 +503,7 @@ ggplot(retreatment_overall, aes(RetreatmentNeeded, Hectares)) +
 
 ```{r retreat_resist}
 
-# double ccheck this includes fire (low and moderate)
+# double check this includes fire (low and moderate)
 retreat_resist <- retreatment %>% 
   ungroup() %>% 
   summarise(.by = c(RetreatmentNeeded, resist_class), Hectares = sum(Hectares))
