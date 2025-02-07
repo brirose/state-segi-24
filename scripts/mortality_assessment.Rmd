@@ -100,7 +100,7 @@ multiple_shive <- read_csv(here("data/plot_data/ShiveEtal_MortStudy_AllSEGIData_
     source = "Shive etal, Mortality Study",
     prefire_status = "unknown"
     ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, dbh_cm) %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
   st_transform(crs(cbi_all))
 
@@ -120,7 +120,6 @@ castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_10Nov24.csv")) %>
       str_detect(notes, "[Dd] before") ~ "dead",
       T ~ "live"),
     source = "UCB, Hardlund",
-    survey_fire = "post_castle",
     survey_year = 2021
     ) %>% 
   rename(
@@ -130,7 +129,7 @@ castle_ucb <- read_csv(here("data/plot_data/UCB_CastleSeverity_10Nov24.csv")) %>
     easting = monarch_easting,
     northing = monarch_northing
     ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, dbh_cm) %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
   st_transform(crs(cbi_all))
 
@@ -163,20 +162,11 @@ mort_usgs <- read_csv(here("data/plot_data/USGS_MortalityStudy_SEGItrees_09Sept2
       T ~ "unknown"
     ),
     survey_year = as.numeric(str_extract(last_observation_date, "(?<=/)\\d{4}")),
-    survey_fire = case_when(
-      within_knp == "Y" ~ "post_knp",
-      within_castle == "Y" ~ "post_castle",
-      T ~ "other"),
     source = "USGS, mortality"
   ) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, dbh_cm) %>% 
   st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
   st_transform(crs(cbi_all))
-
-#check to make sure survey year falls after the most recent fire experienced
-summary_usgs <- st_drop_geometry(mort_usgs) %>% 
-  summarise(.by = c(survey_fire, survey_year, grove), count = n())
-#surveys done following both KNP and castle; Eden creek (in coffeepot) surveyed; will need to exclude severity of coffeepot in mort assessment
 
 ```
 
@@ -201,12 +191,11 @@ ff_usgs <- read_excel(here("data/plot_data/USGS_FireAndFuels_SEGI_plot_data_15Au
     source = "USGS, fire & fuels",
     prefire_status = "unknown",
     grove = "NA",
-    survey_fire = "NA"
   ) %>% 
   rename(
     postfire_status = ld,
     dbh_cm = dbh) %>% 
-  select(id, grove, survey_year, lat, lon, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  select(id, grove, survey_year, lat, lon, postfire_status, prefire_status, source, dbh_cm) %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4269) %>% 
   st_transform(crs(cbi_all))
 
@@ -225,11 +214,11 @@ castle_meyer_plot <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2
 castle_meyer <- read_excel(here("data/plot_data/meyer/CastleFireGroveData_2023_combined.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   left_join(castle_meyer_plot, join_by(grove == grove, plot_no_nearby == plot_no)) %>% 
-  mutate(source = "USFS, Meyer", survey_fire = "post_castle", #include relevant info
+  mutate(source = "USFS, Meyer",  #include relevant info
          id = paste(grove, plot_no_nearby, monarch_no, sep = ""),
          survey_year = year(ymd(date)))%>% 
   rename(date_surveyed = date) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, gps_offset_m, dbh_cm, gps_offset_deg)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, gps_offset_m, dbh_cm, gps_offset_deg)
 
 
 #usfs plot data knp
@@ -242,10 +231,10 @@ knp_meyer <- read_excel(here("data/plot_data/meyer/PostfireSequoiaGroveData_2024
   clean_names() %>% 
   filter(removed == "no") %>% 
   left_join(knp_meyer_plot, join_by(grove == grove, plot_no_nearby == plot_no)) %>% 
-  mutate(source = "USFS, Meyer", survey_fire = "post_knp",
+  mutate(source = "USFS, Meyer", 
          id = paste(grove, plot_no_nearby, monarch_no, sep = ""),
          survey_year = year(ymd(date))) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, gps_offset_m, dbh_cm, gps_offset_deg)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, gps_offset_m, dbh_cm, gps_offset_deg)
 
 
 #usfs plot data windy
@@ -257,13 +246,13 @@ windy_meyer_plot <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveD
 windy_meyer <- read_excel(here("data/plot_data/meyer/WindyFireSequoiaGroveData.reduced.v2.xlsx"), sheet = "Monarchs") %>% 
   clean_names() %>% 
   left_join(windy_meyer_plot, join_by(grove == grove, plot_no == plot_no)) %>% 
-  mutate(source = "USFS, Meyer", survey_fire = "post_windy",
+  mutate(source = "USFS, Meyer", 
          prefire_status = case_when(!is.na(dead_before_fire) ~ "Dead",
                               TRUE ~ "Live"),
          id = paste(monarch_no, plot_no, sep = ""),
          survey_year = year(ymd(date)))%>%
   rename(postfire_status = status) %>% 
-  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, survey_fire, gps_offset_m, dbh_cm, gps_offset_deg)
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, gps_offset_m, dbh_cm, gps_offset_deg)
 
 #combine into one
 meyers_combined <- castle_meyer %>% 
@@ -318,13 +307,12 @@ st_transform(crs(cbi_all)) %>%
     source = "Bisbing Lab",
     grove = "Mountain Home",
     survey_year = 2021,
-    survey_fire = "Castle"
   ) %>% 
   rename(
     postfire_status = status_pos,
     prefire_status = status_pre
   ) %>% 
-  select(id, grove, survey_year, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>% 
+  select(id, grove, survey_year, postfire_status, prefire_status, source, dbh_cm) %>% 
   st_transform(crs(cbi_all))
 
 ```
@@ -346,14 +334,47 @@ whitakers <- read_excel(here("data/plot_data/whitakers_PostBurnStatus2022.xlsx")
     source = "Whitakers",
     survey_year = 2022,
     grove = "Redwood Mountain",
-    survey_fire = "KNP",
     id = paste("WHIT", tree_number, sep = "_")
   )%>% 
   st_as_sf() %>% 
-  select(id, grove, survey_year, postfire_status, prefire_status, source, survey_fire, dbh_cm) %>%
+  select(id, grove, survey_year, postfire_status, prefire_status, source, dbh_cm) %>%
   st_transform(crs(cbi_all))
 
 ```
+
+```{r tule}
+
+tule <- read_excel(here("data/plot_data/TuleGSInventoryTables.xlsx"), sheet = "Tule Data") %>% 
+  clean_names() %>% 
+  mutate(
+    id = case_when(is.na(tree) ~ paste("TR", new_tree_id, sep = ""),
+                   T ~paste("TR", tree, sep = "")),
+    prefire_status = "live",
+      # 
+      # case_when(
+      # str_detect(reasons_for_death, "Non") ~ "dead", 
+      # str_detect(reasons_for_death, "Uprooted") ~ "dead",
+      # str_detect(reasons_for_death, "Unknown") ~ "dead",
+      # str_detect(reasons_for_death, "[D,d]irect") ~ "dead", #not 100% about this, ask; includes SD direct and indirect
+      # T ~ "live"),
+    source = "Tule River Tribe",
+    survey_year = 2024,
+    postfire_status = str_to_lower(status)
+    ) %>% 
+  select(-dbh_cm) %>% 
+  rename(
+    dbh_cm = dbh_cm_2,
+    grove = grove,
+    easting = e_w,
+    northing = n_s
+    ) %>% 
+  select(id, grove, survey_year, easting, northing, postfire_status, prefire_status, source, dbh_cm) %>%
+  drop_na(easting) %>% 
+  st_as_sf(coords = c("easting", "northing"), crs = 26911) %>%  #NAD83, UTM zone 11N
+  st_transform(crs(cbi_all))
+  
+```
+
 
 
 ```{r combine_inputs}
@@ -364,14 +385,15 @@ monarchs_combined <- meyers_corrected %>%
   bind_rows(mort_usgs) %>% 
   bind_rows(ff_usgs) %>% 
   bind_rows(bisbing) %>% 
-  bind_rows(whitakers)
+  bind_rows(whitakers) %>% 
+  bind_rows(tule)
 
 ## output shapefile + csv of all monarchs
 #dir.create(here("data/spatial_data/outputs/mortality_monarchs"))
-# st_write(monarchs_combined, here("data/spatial_data/outputs/mortality_monarchs/mortality_monarchs_16Jan25.shp"), append = F)
+st_write(monarchs_combined, here("data/spatial_data/outputs/mortality_monarchs/mortality_monarchs_06feb25.shp"), append = F)
 # write_csv(monarchs_combined, here("data/outputs_data/mortality_monarchs_16Jan25.csv"))
 
-```
+``` 
 
 ```{r input-derived}
 
@@ -399,11 +421,11 @@ observations = 0
 
 ```
 
-
+NOTEI COMMENTED OUT THE FILTERS BC GENERATING FULL DATASET FOR DAVID
 ```{r binary_severity}
-#need to add filter for tree size
+
 monarchs_binary <- monarchs_combined %>% 
-  filter(dbh_cm >= 121.92) %>% 
+  #filter(dbh_cm >= 121.92) %>% 
   mutate(
     postfire_status = case_when(
       postfire_status %in% c("L", "Live", "Alive", "live", "1") ~ 1,
@@ -415,9 +437,9 @@ monarchs_binary <- monarchs_combined %>%
      prefire_status %in% c("D", "dead", "Dead", "0") ~ 0,
       T ~ -999
     )
-  ) %>% 
+  ) #%>% 
   # filter for trees of known status not known to be dead prefire
-  filter(prefire_status == 1 , postfire_status >= 0) 
+ # filter(prefire_status == 1 , postfire_status >= 0) 
 
 
 #pull severity info 
@@ -449,15 +471,41 @@ mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>%
    filter(measure_delay <= delay, # remove trees with too long a delay
          fire_id %in% observation_counts$id.y) %>% # remove when in a fire w/o enough obs
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
-  select(tree_id, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source) 
+  select(tree_id, dbh_cm, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source)
 
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
 #st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_12Dec24.shp"), append = F)
 
-write_csv(monarchs_severity, here("data/outputs_data/monarchs_severity_29Jan25.csv"))
+#write_csv(monarchs_severity, here("data/outputs_data/monarchs_severity_29Jan25.csv"))
 
 ```
+
+
+```{r}
+#for david, cross with rdnbr
+
+monarchs_severity <- monarchs_severity %>% 
+  rowid_to_column("id")
+
+sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_mostRecent.tif"))
+
+monarch_rdnbr <- extract(sev_rdnbr, monarchs_severity) %>% clean_names()
+
+monarchs_formort <- monarchs_severity %>% 
+  left_join(monarch_rdnbr) %>% 
+  st_intersection(groves) %>% 
+  select(-acres, -grove) %>% 
+  mutate(fire_name = str_to_title(str_extract(fire_id, "\\D+")),
+         dbh_cm = round(dbh_cm,2)) %>% 
+  rename(cbi = burnsev,
+         fire_year = fire_yr) %>% 
+  select(id, tree_id, grove_name, survey_year, dbh_cm, prefire_status, postfire_status, measure_delay, fire_id, fire_year, fire_name, cbi, rdnbr, unit_name, source, geometry)
+
+write_csv(monarchs_formort, here("data/outputs_data/monarchs_forMort_06Feb25.csv"))
+
+```
+
 
 
 ```{r gut-check1}

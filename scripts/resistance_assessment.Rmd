@@ -30,7 +30,7 @@ fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>%
  
 
 #full, cleaned treatment layer (will this be the case?)
-treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_04feb25.shp")) %>% 
+treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_05feb25.shp")) %>% 
   st_transform(crs(fire)) %>% 
   st_make_valid()
 
@@ -532,4 +532,4 @@ ggplot(retreat_resist, aes(RetreatmentNeeded, Hectares,
 ```
 
 
-
+pull groves with really different histories; last resistance vs time since last 
