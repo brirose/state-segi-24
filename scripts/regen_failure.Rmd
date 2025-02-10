@@ -102,9 +102,9 @@ kable(immediate_failure_groves,
       caption = "Area at risk to immediate natural regeneration failure by grove")
 ```
 
-Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
+Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 36.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
 
-Here, I make a layer that represents seed source (grove area that has not experienced rdnbr 640 or higher fire). Then I use this to find areas where dispersal is likely by adding a 67.8m buffer.
+Here, I make a layer that represents seed source (grove area that has not experienced rdnbr 640 or higher fire). Then I use this to find areas where dispersal is likely by adding a 36.8m buffer.
 
 ```{r seed_source}
 
@@ -128,7 +128,7 @@ high_sev <- sev_rdnbr %>%
   vect()
 
 disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
-  buffer(width = 67.8) #buffer by 67.8m 
+  buffer(width = 36.8) #buffer by 67.8m 
 
 
 ```

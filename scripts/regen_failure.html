@@ -11,7 +11,7 @@
 
 <meta name="author" content="Shive Lab (B. Baker)" />
 
-<meta name="date" content="2024-12-11" />
+<meta name="date" content="2025-02-10" />
 
 <title>Regen Failure</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Regen Failure</h1>
 <h4 class="author">Shive Lab (B. Baker)</h4>
-<h4 class="date">2024-12-11</h4>
+<h4 class="date">2025-02-10</h4>
 
 </div>
 
@@ -993,13 +993,13 @@ grove</caption>
 </tbody>
 </table>
 <p>Lower severity classes can act as seed source into gaps. Per Clark’s
-seed dispersal model 95% of seeds fall within 67.8m of a tree, so we can
+seed dispersal model 95% of seeds fall within 36.8m of a tree, so we can
 assume that seed dispersal into gaps created by high severity fire will
 most likely occur in this zone and we will want to buffer this out when
 trying to ascertain where regen failure is likely.</p>
 <p>Here, I make a layer that represents seed source (grove area that has
 not experienced rdnbr 640 or higher fire). Then I use this to find areas
-where dispersal is likely by adding a 67.8m buffer.</p>
+where dispersal is likely by adding a 36.8m buffer.</p>
 <pre class="r"><code># make classification that breaks at 640
 reclass_matrix2 &lt;- tibble(
   from = c(-10498, 640),
@@ -1020,7 +1020,7 @@ high_sev &lt;- sev_rdnbr %&gt;%
   vect()</code></pre>
 <pre><code>## |---------|---------|---------|---------|=========================================                                          |---------|---------|---------|---------|=========================================                                          </code></pre>
 <pre class="r"><code>disbursal_area &lt;- erase(groves, high_sev) %&gt;% #take high severity area out of groves
-  buffer(width = 67.8) #buffer by 67.8m </code></pre>
+  buffer(width = 36.8) #buffer by 67.8m </code></pre>
 <p>Once we know where dispersal is likely, we can difference the
 disbursal area from groves to determine where regeneration failure is
 highly likely.</p>
@@ -1062,241 +1062,276 @@ grove</caption>
 <tbody>
 <tr class="odd">
 <td align="left">Total</td>
-<td align="right">885.4</td>
-<td align="right">8.7</td>
+<td align="right">1145.7</td>
+<td align="right">11.3</td>
 </tr>
 <tr class="even">
 <td align="left">Freeman Creek</td>
-<td align="right">269.5</td>
-<td align="right">2.7</td>
+<td align="right">302.0</td>
+<td align="right">3.0</td>
 </tr>
 <tr class="odd">
 <td align="left">Redwood Mountain</td>
-<td align="right">155.1</td>
-<td align="right">1.5</td>
+<td align="right">190.4</td>
+<td align="right">1.9</td>
 </tr>
 <tr class="even">
 <td align="left">Wheel Meadow</td>
-<td align="right">124.2</td>
-<td align="right">1.2</td>
+<td align="right">148.6</td>
+<td align="right">1.5</td>
 </tr>
 <tr class="odd">
 <td align="left">Mountain Home</td>
-<td align="right">66.3</td>
-<td align="right">0.7</td>
+<td align="right">101.0</td>
+<td align="right">1.0</td>
 </tr>
 <tr class="even">
 <td align="left">Alder Creek</td>
-<td align="right">50.9</td>
-<td align="right">0.5</td>
+<td align="right">59.8</td>
+<td align="right">0.6</td>
 </tr>
 <tr class="odd">
 <td align="left">Dillonwood</td>
-<td align="right">32.6</td>
+<td align="right">41.6</td>
+<td align="right">0.4</td>
+</tr>
+<tr class="even">
+<td align="left">McIntyre</td>
+<td align="right">33.3</td>
+<td align="right">0.3</td>
+</tr>
+<tr class="odd">
+<td align="left">Redhill</td>
+<td align="right">33.0</td>
 <td align="right">0.3</td>
 </tr>
 <tr class="even">
-<td align="left">Nelder</td>
-<td align="right">21.1</td>
-<td align="right">0.2</td>
-</tr>
-<tr class="odd">
-<td align="left">McIntyre</td>
-<td align="right">19.6</td>
-<td align="right">0.2</td>
-</tr>
-<tr class="even">
-<td align="left">Redhill</td>
-<td align="right">18.0</td>
-<td align="right">0.2</td>
-</tr>
-<tr class="odd">
-<td align="left">Homers Nose</td>
-<td align="right">17.4</td>
-<td align="right">0.2</td>
-</tr>
-<tr class="even">
 <td align="left">Evans</td>
-<td align="right">15.5</td>
+<td align="right">25.5</td>
+<td align="right">0.3</td>
+</tr>
+<tr class="odd">
+<td align="left">Black Mountain</td>
+<td align="right">22.7</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="even">
+<td align="left">Homers Nose</td>
+<td align="right">21.7</td>
 <td align="right">0.2</td>
 </tr>
 <tr class="odd">
+<td align="left">Nelder</td>
+<td align="right">21.5</td>
+<td align="right">0.2</td>
+</tr>
+<tr class="even">
 <td align="left">Board Camp</td>
+<td align="right">15.1</td>
+<td align="right">0.1</td>
+</tr>
+<tr class="odd">
+<td align="left">Packsaddle</td>
 <td align="right">13.4</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="even">
-<td align="left">Converse Mountain</td>
-<td align="right">8.7</td>
-<td align="right">0.1</td>
-</tr>
-<tr class="odd">
-<td align="left">Deer Creek</td>
-<td align="right">7.9</td>
-<td align="right">0.1</td>
-</tr>
-<tr class="even">
-<td align="left">Starvation Creek</td>
-<td align="right">7.3</td>
-<td align="right">0.1</td>
-</tr>
-<tr class="odd">
-<td align="left">Black Mountain</td>
-<td align="right">7.2</td>
-<td align="right">0.1</td>
-</tr>
-<tr class="even">
-<td align="left">Packsaddle</td>
-<td align="right">7.1</td>
+<td align="left">Converse Basin</td>
+<td align="right">12.8</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="odd">
 <td align="left">Long Meadow</td>
-<td align="right">6.4</td>
+<td align="right">12.8</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="even">
-<td align="left">Belknap Camp</td>
-<td align="right">6.0</td>
+<td align="left">Converse Mountain</td>
+<td align="right">11.0</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="odd">
-<td align="left">Converse Basin</td>
-<td align="right">5.4</td>
+<td align="left">Deer Creek</td>
+<td align="right">9.7</td>
 <td align="right">0.1</td>
 </tr>
 <tr class="even">
 <td align="left">Garfield</td>
-<td align="right">4.6</td>
-<td align="right">0.0</td>
+<td align="right">9.0</td>
+<td align="right">0.1</td>
+</tr>
+<tr class="odd">
+<td align="left">Belknap Camp</td>
+<td align="right">8.6</td>
+<td align="right">0.1</td>
+</tr>
+<tr class="even">
+<td align="left">Starvation Creek</td>
+<td align="right">8.5</td>
+<td align="right">0.1</td>
 </tr>
 <tr class="odd">
 <td align="left">Lockwood</td>
-<td align="right">4.2</td>
-<td align="right">0.0</td>
+<td align="right">6.2</td>
+<td align="right">0.1</td>
 </tr>
 <tr class="even">
-<td align="left">Verplank</td>
-<td align="right">3.0</td>
+<td align="left">Peyrone</td>
+<td align="right">4.8</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
 <td align="left">Kennedy</td>
-<td align="right">1.9</td>
+<td align="right">3.6</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Verplank</td>
+<td align="right">3.4</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">General Grant</td>
+<td align="right">2.8</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
 <td align="left">Hoist Ridge</td>
-<td align="right">1.5</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Carr Wilson</td>
-<td align="right">1.5</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">Muir</td>
-<td align="right">1.1</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Peyrone</td>
-<td align="right">1.1</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">General Grant</td>
-<td align="right">1.0</td>
+<td align="right">2.7</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
 <td align="left">Cabin Creek</td>
-<td align="right">0.9</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">Monache Tubs</td>
-<td align="right">0.9</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Castle Creek</td>
-<td align="right">0.7</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">Giant Forest</td>
-<td align="right">0.7</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Atwell</td>
-<td align="right">0.6</td>
+<td align="right">2.4</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
 <td align="left">Suwanee</td>
-<td align="right">0.4</td>
+<td align="right">2.3</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
-<td align="left">Middle Tule</td>
-<td align="right">0.4</td>
+<td align="left">Castle Creek</td>
+<td align="right">2.2</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
-<td align="left">New Oriole Lake</td>
-<td align="right">0.3</td>
+<td align="left">Muir</td>
+<td align="right">2.1</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Atwell</td>
+<td align="right">1.7</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Carr Wilson</td>
+<td align="right">1.7</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
 <td align="left">South Peyrone</td>
-<td align="right">0.3</td>
+<td align="right">1.7</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Monache Tubs</td>
+<td align="right">1.5</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Middle Tule</td>
+<td align="right">1.2</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Giant Forest</td>
+<td align="right">0.8</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">New Oriole Lake</td>
+<td align="right">0.7</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
 <td align="left">Redwood Creek</td>
+<td align="right">0.4</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Skagway</td>
+<td align="right">0.4</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Silver Creek</td>
 <td align="right">0.2</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="odd">
-<td align="left">Squirrel Creek</td>
-<td align="right">0.1</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">Skagway</td>
-<td align="right">0.1</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Silver Creek</td>
-<td align="right">0.1</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
 <td align="left">Agnew</td>
-<td align="right">0.0</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Cherry Gap</td>
-<td align="right">0.0</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="even">
-<td align="left">Oriole Lake</td>
-<td align="right">0.0</td>
-<td align="right">0.0</td>
-</tr>
-<tr class="odd">
-<td align="left">Deer Meadow</td>
-<td align="right">0.0</td>
+<td align="right">0.2</td>
 <td align="right">0.0</td>
 </tr>
 <tr class="even">
 <td align="left">Dillonwood - West</td>
+<td align="right">0.2</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Deer Meadow</td>
+<td align="right">0.2</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Squirrel Creek</td>
+<td align="right">0.1</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Cherry Gap</td>
+<td align="right">0.1</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Oriole Lake</td>
+<td align="right">0.1</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Cedar Flat</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Salt Creek Ridge</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Coffee Pot</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Converse Saddle</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">Forgotten</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="even">
+<td align="left">Pine Ridge</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+</tr>
+<tr class="odd">
+<td align="left">South Fork</td>
 <td align="right">0.0</td>
 <td align="right">0.0</td>
 </tr>
