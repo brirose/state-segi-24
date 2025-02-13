@@ -86,8 +86,11 @@ disturb <- fire_clean %>%
 ```{r buffer}
 
 #reduce disturbance to within (buffered) groves
-dist_groves <- st_intersection(disturb, groves_buffered)%>% 
+dist_groves1 <- st_intersection(disturb, groves_buffered)#%>% 
   # combine where there is buffer overlap and poorly drawn geometries
+
+
+dist_groves <- dist_groves1 %>% 
   summarise(.by = c(dist_year, dist_type, unit_name, grove_name), 
             geometry = st_union(st_combine(geometry))) %>% 
   st_make_valid() %>% 
@@ -176,7 +179,7 @@ dist_order <- dist_hist_long %>%
 ```
 
 ```{r classify}
-#Add time frame (back 10 years)
+#Add time frame based on matrix from kristen by BINS
 #think on ways to actually make this more complex (treatment time + amount in timing)
 
 dist_classified <- dist_order %>%
