@@ -36,12 +36,14 @@ cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
 
 cbi_all$area_ha_total <- as.numeric(st_area(cbi_all))*0.0001
 
-#polygons of SEGI groves, "skinny"
-groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_public.gdb"), layer = "OGS_Groves_2023_97_public") %>%
-  clean_names() %>%
-  st_transform(crs(cbi_all)) %>% #uniform crs
-  st_cast("MULTIPOLYGON") %>% 
+#polygons of SEGI groves
+groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp")) %>%
+  clean_names() %>% 
+  st_transform(crs(cbi_all)) %>%  #uniform crs
   st_make_valid()
+
+cbi_all_24 <- cbi_all %>% 
+  filter(fire_yr == 2024)
 
 ```
 
@@ -105,6 +107,8 @@ by_grove <- cbi_clipped %>%
   mutate(ha_total = ha_1 + ha_2 + ha_3 + ha_4) %>% 
   filter(ha_total > 0.01)
 
+write_csv(by_grove, here("outputs/grove_area_burned.csv"))
+
 grove_count <- by_grove %>% 
   summarize(.by = c(id), grove_count = n())
 
@@ -121,12 +125,9 @@ kable(fire_sev_ha,
 
 kable(by_grove, 
       digits = 1,
-      caption = "Fire severity size for fires that burned SEGI groves 1983-2024 by grove")
+      caption = "Fire severity and size for fires that burned SEGI groves 1983-2024 by grove")
 
 ```
-
-
-
 
 
 ## Prelim Figures for Communications
@@ -148,7 +149,7 @@ recent_fire <- by_grove %>%
 # dataframe of years without fire in groves
 
 fire_yrs <- as.integer(unique(all_fires$year))
-all_yrs <- 1900:2023
+all_yrs <- 1900:2024
 
 no_fire_yrs <- setdiff(all_yrs, fire_yrs)
 
@@ -393,6 +394,8 @@ ggsave(here("outputs/severityFires_annualAcres_facetbar.png"),
        width = 6, height = 6, units = "in", dpi = 600)
 
 ```
+
+
 
 
 

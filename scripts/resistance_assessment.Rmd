@@ -34,8 +34,8 @@ treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_0
   st_transform(crs(fire)) %>% 
   st_make_valid()
 
-#buffered and fixed groves, layer made by Kristen
-groves_buffered <- st_read(here("data/spatial_data/inputs/forest/SoS_Adjusted_SEGI_AnalysisArea/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames.shp")) %>%
+#fixed groves, layer made by Kristen NO BUFFER
+groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
   clean_names() %>% 
   st_transform(crs(fire)) %>%  #uniform crs
   st_make_valid()
@@ -85,8 +85,8 @@ disturb <- fire_clean %>%
 
 ```{r buffer}
 
-#reduce disturbance to within (buffered) groves
-dist_groves1 <- st_intersection(disturb, groves_buffered)#%>% 
+#reduce disturbance to within  groves
+dist_groves1 <- st_intersection(disturb, groves)#%>% 
   # combine where there is buffer overlap and poorly drawn geometries
 
 
@@ -105,11 +105,7 @@ dist_groves_lookup <- dist_groves %>%
 
 ```{r values}
 #total area of groves and buffers 
-total_grovebufferHa <- sum(as.numeric(st_area(groves_buffered)*0.0001))
-
-#total area of groves alone
-#total_groveHa <- sum(as.numeric(st_area(groves)*0.0001)) need skinny jeans for this
-
+total_groveHa <- sum(as.numeric(st_area(groves)*0.0001))
 ```
 
 ```{r dist_hist}
@@ -179,8 +175,6 @@ dist_order <- dist_hist_long %>%
 ```
 
 ```{r classify}
-#Add time frame based on matrix from kristen by BINS
-#think on ways to actually make this more complex (treatment time + amount in timing)
 
 dist_classified <- dist_order %>%
   mutate(TRUES=1) %>% 
@@ -207,7 +201,17 @@ dist_classified <- dist_order %>%
                 highsev_fire > 1 ~ 'Likely persistent type conversion'))
 
 # recombine with info (reminder makes LONGER so duplicated shapes)
-dist_data <- inner_join(dist_order, dist_classified, by = "resist_id")
+dist_data <- inner_join(dist_order, dist_classified, by = "resist_id") %>% 
+  mutate(time_bin = case_when(
+    resist_class == "High resistance" & current_dist_yr<2015 ~ "high_trt_over_10",
+    resist_class == "High resistance" & current_dist_yr>=2015 & current_dist_yr<2020 ~ "high_trt_5_10",
+    resist_class == "High resistance" & current_dist_yr>=2020 ~ "high_trt_less_5",
+    resist_class == "Moderate resistance" & current_dist_yr<2015 ~ "mod_trt_over_10",
+    resist_class == "Moderate resistance" & current_dist_yr>=2015 & current_dist_yr<2020 ~ "mod_trt_5_10",
+    resist_class == "Moderate resistance" & current_dist_yr>=2020 ~ "mod_trt_less_5",
+    resist_class == "Low resistance" & current_dist_yr<2015 ~ "low_trt_over_10",
+    resist_class == "Low resistance" & current_dist_yr>=2015 ~ "low_trt_under_10",
+     T ~ "Loss of mature forest"))
 
 ```
 
@@ -245,23 +249,24 @@ mean_annual_tot <- 300 #mean_annual[[4,2]]
 
 ```{r resist-fig}
 
+
 resist_footprint <- dist_nocleanup %>%
   group_by(resist_id) %>% 
   slice_head() %>% # remove duplicated instances of ID
   ungroup() %>% 
   summarise(.by = resist_class, Hectares = sum(area_ha))
 
+no_resist_ha <- total_groveHa - sum(resist_footprint$Hectares)
 
 resist_footprint_all <- resist_footprint%>% 
   add_row(
     resist_class = "No resistance",
-    Hectares = total_grovebufferHa - sum(na.exclude(resist_footprint$Hectares))
-  ) 
-
+    Hectares = no_resist_ha)
+  
 resist_footprint_all <- resist_footprint_all %>% 
  mutate(
     Hectares = round(Hectares, 0),
-    perc_area = Hectares/total_grovebufferHa*100
+    perc_area = Hectares/total_groveHa*100
   )
 
 ggplot(resist_footprint_all, aes(factor(resist_class, 
@@ -285,7 +290,7 @@ ggplot(resist_footprint_all, aes(factor(resist_class,
         panel.grid.minor = element_blank(), panel.background = element_blank(), 
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) +
-  scale_y_continuous(labels = comma, n.breaks = 6, expand = c(0,0), limits = c(0, 10000))
+  scale_y_continuous(labels = comma, n.breaks = 6, expand = c(0,0), limits = c(0, 7000))
 
 ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
 
@@ -293,17 +298,44 @@ ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
 totals including buffer area
 numbers to output
 
-what do these mean?
-want amount of area for each of these;make table and shapefiles
-number of times treated by smallest polygon
-number of times burned in wildfire by smallest polygon
+
+```{r}
+times_treated <- dist_data %>% 
+  filter(current_dist_type %in% c("rx_pile", "mech_under")) %>% 
+  summarize(.by = resist_id, area_ha = sum(area_ha), times_treated = n()) 
+  
+times_treated_summary <- times_treated %>%
+  summarize(.by = times_treated, area_ha_trt = sum(area_ha)) 
+
+times_fire <- dist_data %>% 
+  filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarize(.by = resist_id, area_ha = sum(area_ha), times_fire = n()) 
+  
+times_fire_summary <- times_fire %>%
+  summarize(.by = times_fire, area_ha_fire = sum(area_ha)) 
+
+times <- times_treated_summary %>% 
+  left_join(times_fire_summary, by = join_by(times_treated == times_fire)) %>% 
+  replace_na(list(area_ha_fire = 0))
+
+write_csv(times, here("outputs/timesburned-trt_area.csv"))
+
+
+times_sf <- dist_hist %>% 
+  left_join(times_treated) %>% 
+  left_join(times_fire) %>% 
+  replace_na(list(times_treated = 0, times_fire = 0))
+```
+
+
+
 
 
 ```{r}
 #filter out older treatment
 
 #total footprint acres treated 1984-2024
-total84_w_buffer_footHa <- sum(resist_footprint$Hectares)
+total84_footHa <- sum(resist_footprint$Hectares)
 #total footprint acres treated 2014-2024
 total14_w_buffer_footHa <- dist_nocleanup %>% 
   filter(current_dist_yr >= 2014) %>% 
@@ -313,12 +345,12 @@ total14_w_buffer_footHa <- dist_nocleanup %>%
   summarize(footprint_ha = sum(area_ha))
 
 #total activity acres treated 1984-2024 
-total84_w_buffer_activity <- dist_nocleanup %>% 
+total84_activity <- dist_nocleanup %>% 
   summarize(.by = current_dist_type, Hectares = sum(area_ha)) %>% 
   adorn_totals()
 
 #total activity acres treated 2014-2024 
-total14_w_buffer_activity <- dist_nocleanup %>% 
+total14_w_activity <- dist_nocleanup %>% 
   filter(current_dist_yr >= 2014) %>% 
   summarize(.by = current_dist_type, Hectares = sum(area_ha)) %>% 
   adorn_totals()
@@ -363,13 +395,15 @@ ggplot(annual_trt_activity, aes(current_dist_yr, area_ha, fill = current_dist_ty
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) 
 
-ggsave(here("outputs/annualtrt_activity.jpg"), width = 4.2, height = 5)
+ggsave(here("outputs/annualtrt_activity.jpg"), width = 7, height = 5)
 ```
 
 
 
 treatments by treatment type for major landowners annually - activity*
 ```{r}
+#REDO USING TRT LAYER
+
 ggplot(annual_trt_activity_ownership, aes(current_dist_yr, area_ha, fill = current_dist_type))+
   facet_wrap(~unit_name)+
   geom_col()+
@@ -388,7 +422,7 @@ ggplot(annual_trt_activity_ownership, aes(current_dist_yr, area_ha, fill = curre
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) 
 
-ggsave(here("outputs/annualtrt_activity_split.jpg"), width = 4.2, height = 5)
+ggsave(here("outputs/annualtrt_activity_split.jpg"), width = 7, height = 5)
 ```
 
 
@@ -429,12 +463,12 @@ ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_t
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) 
 
-ggsave(here("outputs/annualfire_activity.jpg"), width = 4.2, height = 5)
+ggsave(here("outputs/annualfire_activity.jpg"), width = 7, height = 5)
 ```
 
 
 
-treatments by treatment type for major landowners annually - activity*
+fires type for major landowners annually - activity*
 ```{r}
 ggplot(annual_fire_activity_ownership, aes(current_dist_yr, area_ha, fill = current_dist_type))+
   facet_wrap(~unit_name)+
@@ -454,8 +488,65 @@ ggplot(annual_fire_activity_ownership, aes(current_dist_yr, area_ha, fill = curr
         plot.background = element_rect(color = "black", linewidth = 0.5),
         axis.line = element_line(colour = "black")) 
 
-ggsave(here("outputs/annualfire_activity_split.jpg"), width = 4.2, height = 5)
+ggsave(here("outputs/annualfire_activity_split.jpg"), width = 7, height = 5)
 ```
+
+trt class by bin
+```{r}
+
+trt_time_delay <-  dist_nocleanup %>%
+  group_by(resist_id) %>% 
+  slice_head() %>% # remove duplicated instances of ID
+  ungroup() %>% 
+  summarise(.by = c(resist_class, time_bin), Hectares = sum(area_ha)) %>% 
+  add_row(resist_class = "No resistance", Hectares = no_resist_ha, time_bin = "None") %>%   mutate(
+    time_bin = factor(time_bin, levels = c("high_trt_over_10","high_trt_5_10","high_trt_less_5","mod_trt_over_10",  "mod_trt_5_10",  "mod_trt_less_5",  "low_trt_over_10","low_trt_under_10", "Loss of mature forest", "Likely persistent type conversion", "None")),
+    resist_class = factor(resist_class, levels = c("High resistance", "Moderate resistance", "Low resistance", "Loss of mature forest", "Likely persistent type conversion", "No resistance")),
+    acres = Hectares *2.47
+  )
+
+write_csv(time_trt_delay, here("data/outputs/resistance_classes21Feb25.csv"))
+
+
+#rework again to combine type convert with forest loss
+trt_time_delay_plot <- trt_time_delay %>% 
+  mutate(
+    resist_class = case_when(resist_class == "Likely persistent type conversion" ~ "Loss of mature forest",
+                             T ~ resist_class)
+  )
+ color = case_when(
+      time_bin == "high_trt_less_5" ~ "#243e36", 
+      time_bin == "high_trt_5_10" ~ "#687351", 
+      time_bin == "high_trt_over_10" ~ "#9ba17f", 
+      time_bin == "mod_trt_less_5" ~ "#3d405b", 
+      time_bin == "mod_trt_5_10" ~ "#595e85", 
+      time_bin == "mod_trt_over_10" ~ "#767cb0", 
+      time_bin == "low_trt_under_10" ~ "#f9a03f", 
+      time_bin == "low_trt_over_10" ~"#f8dda4",
+      time_bin == "Loss of mature forest" ~ "#813405",
+      time_bin == "None" ~ "#813405" # CHANGE COLOR
+    )
+
+
+colors <- distinct(trt_time_delay_plot, time_bin, color) %>% tibble::deframe()
+
+ggplot(trt_time_delay, aes(resist_class, acres, fill = time_bin))+
+  geom_col()+
+  scale_fill_manual(values = colors)+
+  theme_bw()+
+  coord_flip()+
+  theme(axis.title.y = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+
+
+
+```
+
 
 
 ## Retreatment

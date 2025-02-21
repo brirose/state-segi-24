@@ -26,7 +26,7 @@ This document holds the analysis for regeneration failure areas.
 sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_mostRecent.tif"))
 
 #polygons of SEGI groves, "skinny"
-groves <- vect(here("data/spatial_data/inputs/forest/all_groves_REexported.shp")) %>% 
+groves <- vect(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp")) %>% 
   clean_names() %>% 
   project(sev_rdnbr) #make same CRS
 
