@@ -184,7 +184,6 @@ dist_classified <- dist_order %>%
   arrange(current_dist_type) %>% 
   pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0) %>%
   summarise(.by = resist_id, across(c(highsev_fire:rx_pile), sum)) %>% 
-  inner_join(dist_order, by = join_by("resist_id")) %>%
   summarise(.by = resist_id, resist_class =
               case_when(
                 #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
@@ -218,12 +217,6 @@ dist_data <- inner_join(dist_order, dist_classified, by = "resist_id") %>%
     resist_class == "Low resistance" & current_dist_yr>=2015 ~ "low_trt_under_10",
      T ~ "Loss of mature forest"))
 
-#create resistance shapefile
-resist_shp = dist_hist %>% 
-  inner_join(dist_data, by = join_by(resist_id, area_ha)) %>%
-  group_by(resist_class, time_bin) %>%
-  summarise(hectares = sum(area_ha))
-write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_BriCode.shp")
 
 ```
 
@@ -231,6 +224,14 @@ write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current 
 #I think the fixes below do the trick - run it and if you agree, feel free to clean up dataframe names or combine code etc
 
 ```{r}
+#create resistance shapefile from Bri's code
+resist_shp = dist_hist %>% 
+  inner_join(dist_data, by = join_by(resist_id, area_ha)) %>%
+  group_by(resist_class, time_bin) %>%
+  summarise(hectares = sum(area_ha))
+write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_BriCode.shp")
+
+
 ##this is from you, it still pivots to get the column sums to one row per resist ID
 dist_classified_wide <- dist_order %>%
   mutate(TRUES=1) %>% 
