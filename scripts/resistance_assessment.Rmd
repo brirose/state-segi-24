@@ -35,7 +35,7 @@ treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_0
   st_make_valid()
 
 #fixed groves, layer made by Kristen NO BUFFER
-groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
+groves <- st_read(here("data/spatial_data/inputs/forest/SoS_Adjusted_SEGI_AnalysisArea/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
   clean_names() %>% 
   st_transform(crs(fire)) %>%  #uniform crs
   st_make_valid()
@@ -88,13 +88,14 @@ disturb <- fire_clean %>%
 #reduce disturbance to within  groves
 dist_groves1 <- st_intersection(disturb, groves)#%>% 
   # combine where there is buffer overlap and poorly drawn geometries
-
+write_sf(dist_groves1, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\dist_groves.shp")
 
 dist_groves <- dist_groves1 %>% 
   summarise(.by = c(dist_year, dist_type, unit_name, grove_name), 
             geometry = st_union(st_combine(geometry))) %>% 
   st_make_valid() %>% 
   mutate(dist_id = 1:length(dist_year))
+write_sf(dist_groves, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\dist_groves1.shp")
 
 
 dist_groves_lookup <- dist_groves %>% 
@@ -126,6 +127,7 @@ dist_hist_long <- dist_hist %>%
   rename(dist_id = origins) %>% 
   left_join(dist_groves_lookup, by = join_by(dist_id)) %>% # connect with disturbance attributes
   select(-dist_id)
+
 
 
 ```
@@ -172,6 +174,7 @@ dist_order <- dist_hist_long %>%
   mutate(burn_before_mech = 
          case_when(current_dist_type == "highsev_fire" & next_dist_type %in% c("mech_under","rx_pile") ~TRUE, 
                    TRUE~FALSE))
+
 ```
 
 ```{r classify}
@@ -181,6 +184,7 @@ dist_classified <- dist_order %>%
   arrange(current_dist_type) %>% 
   pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0) %>%
   summarise(.by = resist_id, across(c(highsev_fire:rx_pile), sum)) %>% 
+  inner_join(dist_order, by = join_by("resist_id")) %>%
   summarise(.by = resist_id, resist_class =
               case_when(
                 #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
@@ -196,16 +200,17 @@ dist_classified <- dist_order %>%
                 & mech_under >= 1 
                 & highsev_fire == 0 ~ 'Low resistance',
                 #Loss of mature forest: any high
-                highsev_fire == 1 ~ 'Loss of mature forest',
+                highsev_fire >= 1 ~ 'Loss of mature forest',
                 #Likely persistent type conversion: High-High
-                highsev_fire > 1 ~ 'Likely persistent type conversion'))
+                #highsev_fire > 1 ~ 'Likely persistent type conversion'
+                ))
 
 # recombine with info (reminder makes LONGER so duplicated shapes)
 dist_data <- inner_join(dist_order, dist_classified, by = "resist_id") %>% 
   mutate(time_bin = case_when(
     resist_class == "High resistance" & current_dist_yr<2015 ~ "high_trt_over_10",
-    resist_class == "High resistance" & current_dist_yr>=2015 & current_dist_yr<2020 ~ "high_trt_5_10",
-    resist_class == "High resistance" & current_dist_yr>=2020 ~ "high_trt_less_5",
+    resist_class == "High resistance" & current_dist_yr>=2015 ~ "high_trt_less_10",
+    # resist_class == "High resistance" & current_dist_yr>=2020 ~ "high_trt_less_5",
     resist_class == "Moderate resistance" & current_dist_yr<2015 ~ "mod_trt_over_10",
     resist_class == "Moderate resistance" & current_dist_yr>=2015 & current_dist_yr<2020 ~ "mod_trt_5_10",
     resist_class == "Moderate resistance" & current_dist_yr>=2020 ~ "mod_trt_less_5",
@@ -213,7 +218,84 @@ dist_data <- inner_join(dist_order, dist_classified, by = "resist_id") %>%
     resist_class == "Low resistance" & current_dist_yr>=2015 ~ "low_trt_under_10",
      T ~ "Loss of mature forest"))
 
+#create resistance shapefile
+resist_shp = dist_hist %>% 
+  inner_join(dist_data, by = join_by(resist_id, area_ha)) %>%
+  group_by(resist_class, time_bin) %>%
+  summarise(hectares = sum(area_ha))
+write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_BriCode.shp")
+
 ```
+
+###I think the above code is not appropriately adding time, try writing it out and you should see the discrepancy
+#I think the fixes below do the trick - run it and if you agree, feel free to clean up dataframe names or combine code etc
+
+```{r}
+##this is from you, it still pivots to get the column sums to one row per resist ID
+dist_classified_wide <- dist_order %>%
+  mutate(TRUES=1) %>% 
+  arrange(current_dist_type) %>% 
+  pivot_wider(names_from = current_dist_type, values_from = TRUES, values_fill = 0) %>%
+  summarise(.by = resist_id, across(c(highsev_fire:rx_pile), sum))
+head(dist_classified)
+
+#this gets the last treatment year per resist ID - this is what I think was missing. you could probably do this all in one with some grouping and ungrouping but i did not have patience
+dist_last_trt <- dist_order %>%
+  group_by(resist_id) %>%
+  summarise(last_trt = max(current_dist_yr))
+head(dist_last_trt)
+
+#no change here
+dist_classified_ks = dist_classified_wide %>%
+  inner_join(dist_last_trt, by = "resist_id") %>%
+  mutate(resist_class =
+              case_when(
+                #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
+                (mech_under + rx_pile + modsev_fire + lowsev_fire) >= 2 
+                & (rx_pile + modsev_fire + lowsev_fire)>=1 
+                & highsev_fire == 0 ~ 'High resistance',
+                #Mod resistance: mod or low or rx
+                (rx_pile + modsev_fire + lowsev_fire) == 1 
+                & mech_under == 0 
+                & highsev_fire == 0 ~ 'Moderate resistance',
+                #Low resistance: any mech
+                (rx_pile + modsev_fire + lowsev_fire) == 0 
+                & mech_under >= 1 
+                & highsev_fire == 0 ~ 'Low resistance',
+                #Loss of mature forest: any high
+                highsev_fire >= 1 ~ 'Loss of mature forest',
+                #Likely persistent type conversion: High-High
+                #highsev_fire > 1 ~ 'Likely persistent type conversion'
+              ))
+head(dist_classified_2)
+
+##create resistance shapefile
+#and add time_bin from the last_trt year associated with that resist_id poly 
+resist_shp = dist_hist %>% 
+  inner_join(dist_classified_ks, by = join_by(resist_id)) %>%
+  select(last_trt,resist_class, resist_id, area_ha) %>%
+  mutate(time_bin = case_when(last_trt < 2015 & resist_class == "High resistance" ~ ">10 years",
+                                        last_trt >= 2015 & resist_class == "High resistance" ~ "<10 years",
+                                       last_trt < 2015 & resist_class == "Moderate resistance" ~ ">10 years",
+                                       last_trt >= 2015 & last_trt <2020 & resist_class == "Moderate resistance" ~ "5-10 years",
+                                       last_trt >= 2020 & resist_class == "Moderate resistance" ~ "<5 years",
+                              last_trt < 2015 & resist_class == "Low resistance" ~ ">10 years",
+                              last_trt >= 2015 & resist_class == "Low resistance" ~ "<10 years",
+                              .default = resist_class)) %>%
+  group_by(resist_class, time_bin) %>%
+  summarise(Hectares = sum(area_ha))
+
+#get perimeter to area ratio to help decide what slivers to cut
+library(lwgeom)
+#larger numbers will include more convoluted shapes. for later trimming of slivers that you are calling mapping error, suggest you think about both total area and shape (since super linear and small is more likely to be mapping error). but might need to explode first? let's discuss.
+resist_shp$par = st_perimeter(resist_shp)/st_area(resist_shp)
+head(resist_shp)
+
+#write to check it
+write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_myCode.shp")
+
+```
+
 
 
 ```{r dist_combo}
@@ -271,16 +353,14 @@ resist_footprint_all <- resist_footprint_all %>%
 
 ggplot(resist_footprint_all, aes(factor(resist_class, 
                             levels = c("High resistance","Moderate resistance", "Low resistance",
-                            "No resistance","Loss of mature forest",
-                              "Likely persistent type conversion")), 
+                            "No resistance","Loss of mature forest")), 
                             Hectares, fill = resist_class, width = 0.7)) +
   geom_bar(stat="identity") + theme_bw() + xlab("") + 
   scale_fill_manual(values = c("High resistance" = "#006600", "Moderate resistance" = "#00FF00",
                                "Low resistance" = "palegreen","No resistance" = "orange",
-                               "Loss of mature forest" = "red","Likely persistent type conversion" = "black")) +
+                               "Loss of mature forest" = "red")) +
   scale_x_discrete(labels = c("High\nresistance","Moderate\nresistance","Low\nresistance",
-                              "No\nresistance","Forest\nloss",
-                              "Type\nconversion"), expand = c(0.1,0.1)) +
+                              "No\nresistance","Forest\nloss"), expand = c(0.1,0.1)) +
   theme(axis.text.x = element_text(size =8),
         axis.text.y = element_text(size=8),
         axis.title=element_text(size=8),
@@ -292,7 +372,7 @@ ggplot(resist_footprint_all, aes(factor(resist_class,
         axis.line = element_line(colour = "black")) +
   scale_y_continuous(labels = comma, n.breaks = 6, expand = c(0,0), limits = c(0, 7000))
 
-ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
+# ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
 
 ```
 totals including buffer area
@@ -627,3 +707,65 @@ ggplot(retreat_resist, aes(RetreatmentNeeded, Hectares,
 
 
 pull groves with really different histories; last resistance vs time since last 
+
+Use resistance classes to generate regen classes and pie chart. 
+```{r}
+#this is the total ACRES of mod or high risk of failure from Soderberg
+# 2150+889 = 3039
+#The ACRES of mature forest loss and type conversion is 3751
+#so the part of mature forest loss that is "ok for regen (640-800 RdNBR) is:
+# 3751-3039 = 712
+
+##note - resist_footprint_all is 5.2 acres smaller than the skinny jeans, will eventually need to trouble shoot
+regen_class = resist_footprint_all %>%
+  mutate(Acres = Hectares*2.471) %>%
+  add_row(resist_class = "Loss of mature forest - regen ok", Acres = 712) %>%
+  mutate(rgn_cls = case_when(resist_class == "High resistance" | 
+                             resist_class == "Moderate resistance" |
+                             resist_class == "Loss of mature forest - regen ok" ~ 
+                             "Burned areas with potential for regen", 
+                             resist_class == "Low resistance" ~ 
+                              "Unburned but thinned - demographic bottleneck", 
+                             resist_class == "Loss of mature forest" |
+                             resist_class == "Likely persistent type conversion" ~ 
+                                "Loss of mature forest - total",
+                             resist_class == "No resistance" ~ 
+                                 "Unburned/untreated - demographic bottleneck",
+                             .default = "oops")) %>%
+  group_by(rgn_cls) %>%
+  summarise(Acreage = sum(Acres)) %>%
+  add_row(rgn_cls = "Postfire - mixed potential for failure", Acreage = 889) %>%
+  add_row(rgn_cls = "Postfire - at risk for failure", Acreage = 2150) %>%
+  filter(rgn_cls != "Loss of mature forest - total") %>%
+  mutate(perc_range = round(Acreage/25033.72,2)*100)
+# regen_class
+
+#this code was supposed to make the labels better but not working
+# regen_class <- regen_class %>% 
+#         group_by(rgn_cls) %>% mutate(pos=cumsum(perc_range)-0.5*perc_range)
+
+love.pies = ggplot(regen_class, aes(x="", y=Acreage, fill=factor(rgn_cls, 
+                                  levels = c("Postfire - at risk for failure",
+                                             "Postfire - mixed potential for failure",
+                                             "Unburned/untreated - demographic bottleneck",
+                                             "Unburned but thinned - demographic bottleneck",
+                                             "Burned areas with potential for regen")))) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  scale_fill_manual(values=c("red","orange","darkgrey","olivedrab3","olivedrab")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title = element_blank(), axis.text = element_blank()) +
+  theme(legend.title = element_blank(), 
+          legend.text = element_text(size = 8)) +
+  theme(legend.key.size = unit(0.4, 'cm'), 
+            legend.text = element_text(size=6)) 
+#for adding percent labels, needs trouble shooting
+# +
+#   geom_text(aes(x = "", y = pos, label = paste0(perc_range,"%")))
+love.pies
+ggsave(here("outputs/regen_figures/regen_pie_chart_21Feb2025.png"), width = 4, height = 2)
+
+
+```
+
