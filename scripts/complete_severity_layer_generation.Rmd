@@ -205,41 +205,36 @@ rdnbr_redwood <- rast(here("data/spatial_data/inputs/fire/fires_needed/2023_REDW
   project(crs(cbi_all))
 
 
-breaks4CBI[1,1] = minmax(rdnbr_redwood)[1] #make lowest category include minimum in raster
-breaks4CBI[4,2] = minmax(rdnbr_redwood)[2] #and highest be max in raster
+# breaks4CBI <- breaks4CBI %>% 
+#   add_row(rdnbr_from = 0, rdnbr_to = 52.700, becomes = 0) %>% 
+#   arrange(becomes)
+# 
+# breaks4CBI[1,1] = minmax(rdnbr_redwood)[1] #make lowest category include minimum in raster
+# breaks4CBI[5,2] = minmax(rdnbr_redwood)[2] #and highest be max in raster
+# 
+# 
+# cbi_redwood <- rdnbr_redwood %>% 
+#   classify(breaks4CBI,
+#            right = F, # include "from" value in category
+#            include.lowest = T) %>% #include max value
+#   as.factor() #make factor
+# 
+# cbi_redwood2 <- cbi_redwood %>% 
+# as.polygons() %>% 
+#   st_as_sf() %>% 
+#   rename("burnsev" = "2023_REDWOOD_rdnbr") %>% 
+#   mutate(
+#     burnsev = as.numeric(burnsev),
+#     assss_t = "ravg",
+#     fire_year = "2023",
+#     id = "2023REDWOOD"
+#   ) %>% 
+#   filter(!burnsev == 0)
+# 
+# 
+# cbi_all_022425 <- bind_rows(cbi_all, cbi_redwood2)
 
-
-cbi_redwood <- rdnbr_redwood %>% 
-  classify(breaks4CBI,
-           right = F, # include "from" value in category
-           include.lowest = T) %>% #include max value
-  as.factor() #make factor
-
-x <- levels(cbi_redwood)[[1]] %>% #pull levels of raster
-  rename(ba_category = "2023_REDWOOD_rdnbr") # rename level
-
-x$class <- category_namesCBI #add categories as a level
-x$class <- category_rangesCBI #add categories as a level
-
-levels(cbi_redwood) <- x #save new levels back
-
-cbi_redwood <- cbi_redwood %>% 
-as.polygons() %>% 
-  st_as_sf() %>% 
-  rename("burnsev" = "ba_category") %>% 
-  mutate(
-    burnsev = as.numeric(burnsev),
-    name = "2024redwood",
-    assss_t = "ravg",
-    year = "2024",
-    id = "2024REDWOOD"
-  ) %>% 
-  filter(!burnsev == 0)
-
-
-cbi_all_022425 <- bind_rows(cbi_all, cbi_redwood)
-
-st_write(cbi_all_022425, here("data/spatial_data/outputs/cbi_all_24feb25/cbi_all_24feb25.shp"))
+st_write(cbi_all_022425, here("data/spatial_data/outputs/cbi_all_24feb25/cbi_all_24feb25.shp"), append = F)
 
 ```
 
