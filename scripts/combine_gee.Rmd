@@ -51,6 +51,8 @@ writeRaster(severity_rdnbr, here("data/spatial_data/outputs/rdnbr_mostRecent.tif
 
 #severity_rdnbr <- rast(here("data/spatial_data/inputs/needFires_rdnbr.tif"))
 
+#update sev layer
+
 ```
 
 ```{r}

@@ -25,7 +25,7 @@ options(scipen = 999)
 ```{r input_data}
 
 #fire history in CBI
-fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>% 
+fire <- st_read(here("data/spatial_data/outputs/cbi_all_updated_wRedwoodFire_02Feb25/cbi_all.shp")) #%>% 
   st_make_valid()
  
 
@@ -35,7 +35,7 @@ treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_0
   st_make_valid()
 
 #fixed groves, layer made by Kristen NO BUFFER
-groves <- st_read(here("data/spatial_data/inputs/forest/SoS_Adjusted_SEGI_AnalysisArea/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
+groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
   clean_names() %>% 
   st_transform(crs(fire)) %>%  #uniform crs
   st_make_valid()

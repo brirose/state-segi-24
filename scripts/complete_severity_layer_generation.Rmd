@@ -146,7 +146,7 @@ x$class <- category_rangesCBI #add categories as a level
 
 levels(cbi_windy_missing) <- x #save new levels back
 
-writeRaster(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.tif"))
+#writeRaster(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.tif"))
 
 
 cbi_windy_missing <- cbi_windy_missing %>% 
@@ -154,7 +154,7 @@ cbi_windy_missing <- cbi_windy_missing %>%
   st_as_sf()
 
 #is still making a few little holes
-st_write(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.shp"), append = F)
+#st_write(cbi_windy_missing, here("data/spatial_data/outputs/debug_windy_missing.shp"), append = F)
 
 #CBI for Coffee Pot Fire, raster from ravg
 cbi_coffee <- rast(here("data/spatial_data/inputs/fire/2024_CA_CoffeePot_RAVG/ca3639211876520240803_20240729_20240914_rdnbr_cbi4.tif"))%>% 
@@ -192,7 +192,52 @@ cbi_additional <- bind_rows(cbi_missing, cbi_windy_missing, cbi_coffee) %>%
   summarise(.by = c ("id","name","assss_t", "year","burnsev"), across(geometry, st_union))
 
 #st_write(cbi_additional, here("data/spatial_data/outputs/debug_poly.shp"), append = F)
+
 ```
+
+```{r}
+
+cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp"))
+  
+#same same for REDWOOD 2023
+
+rdnbr_redwood <- rast(here("data/spatial_data/inputs/fire/fires_needed/2023_REDWOOD_rdnbr.tif"))%>% 
+  project(crs(cbi_all))
+
+
+# breaks4CBI <- breaks4CBI %>% 
+#   add_row(rdnbr_from = 0, rdnbr_to = 52.700, becomes = 0) %>% 
+#   arrange(becomes)
+# 
+# breaks4CBI[1,1] = minmax(rdnbr_redwood)[1] #make lowest category include minimum in raster
+# breaks4CBI[5,2] = minmax(rdnbr_redwood)[2] #and highest be max in raster
+# 
+# 
+# cbi_redwood <- rdnbr_redwood %>% 
+#   classify(breaks4CBI,
+#            right = F, # include "from" value in category
+#            include.lowest = T) %>% #include max value
+#   as.factor() #make factor
+# 
+# cbi_redwood2 <- cbi_redwood %>% 
+# as.polygons() %>% 
+#   st_as_sf() %>% 
+#   rename("burnsev" = "2023_REDWOOD_rdnbr") %>% 
+#   mutate(
+#     burnsev = as.numeric(burnsev),
+#     assss_t = "ravg",
+#     fire_year = "2023",
+#     id = "2023REDWOOD"
+#   ) %>% 
+#   filter(!burnsev == 0)
+# 
+# 
+# cbi_all_022425 <- bind_rows(cbi_all, cbi_redwood2)
+
+st_write(cbi_all_022425, here("data/spatial_data/outputs/cbi_all_24feb25/cbi_all_24feb25.shp"), append = F)
+
+```
+
 
 
 
