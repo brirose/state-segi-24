@@ -31,7 +31,7 @@ This document contains code for a mortality assessment based on inputs of observ
 #read in severity data
 
 #four-class CBI severity for all fires that intersect groves, not clipped to groves
-cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>% 
+cbi_all <- st_read(here("data/spatial_data/outputs/cbi_all_24feb25/cbi_all_24feb25.shp")) %>% 
   filter(!str_detect(id, "2024")) #filter out fires that happened after surveys
 
 #inventory of SEGI in SEKI, point data

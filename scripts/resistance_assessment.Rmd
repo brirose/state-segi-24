@@ -25,7 +25,7 @@ options(scipen = 999)
 ```{r input_data}
 
 #fire history in CBI
-fire <- st_read(here("data/spatial_data/outputs/cbi_all/cbi_all.shp")) %>% 
+fire <- st_read(here("data/spatial_data/outputs/cbi_all_24feb25/cbi_all_24feb25.shp")) %>% 
   st_make_valid()
  
 
