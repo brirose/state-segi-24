@@ -88,15 +88,13 @@ disturb <- fire_clean %>%
 #reduce disturbance to within  groves
 dist_groves1 <- st_intersection(disturb, groves)#%>% 
   # combine where there is buffer overlap and poorly drawn geometries
-write_sf(dist_groves1, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\dist_groves.shp")
+
 
 dist_groves <- dist_groves1 %>% 
   summarise(.by = c(dist_year, dist_type, unit_name, grove_name), 
             geometry = st_union(st_combine(geometry))) %>% 
   st_make_valid() %>% 
   mutate(dist_id = 1:length(dist_year))
-write_sf(dist_groves, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\dist_groves1.shp")
-
 
 dist_groves_lookup <- dist_groves %>% 
   st_drop_geometry()
@@ -229,7 +227,7 @@ resist_shp = dist_hist %>%
   inner_join(dist_data, by = join_by(resist_id, area_ha)) %>%
   group_by(resist_class, time_bin) %>%
   summarise(hectares = sum(area_ha))
-write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_BriCode.shp")
+write_sf(resist_shp, here("data/spatial_data/outputs/resist_tests/SoSEGI_resist_map_23Feb25_BriCode.shp"))
 
 
 ##this is from you, it still pivots to get the column sums to one row per resist ID
@@ -276,13 +274,14 @@ resist_shp = dist_hist %>%
   inner_join(dist_classified_ks, by = join_by(resist_id)) %>%
   select(last_trt,resist_class, resist_id, area_ha) %>%
   mutate(time_bin = case_when(last_trt < 2015 & resist_class == "High resistance" ~ ">10 years",
-                                        last_trt >= 2015 & resist_class == "High resistance" ~ "<10 years",
-                                       last_trt < 2015 & resist_class == "Moderate resistance" ~ ">10 years",
-                                       last_trt >= 2015 & last_trt <2020 & resist_class == "Moderate resistance" ~ "5-10 years",
-                                       last_trt >= 2020 & resist_class == "Moderate resistance" ~ "<5 years",
-                              last_trt < 2015 & resist_class == "Low resistance" ~ ">10 years",
-                              last_trt >= 2015 & resist_class == "Low resistance" ~ "<10 years",
-                              .default = resist_class)) %>%
+                         last_trt >= 2015 & resist_class == "High resistance" ~ "<10 years",
+                         last_trt < 2015 & resist_class == "Moderate resistance" ~ ">10 years",
+                         last_trt >= 2015 & last_trt <2020 & 
+                           resist_class == "Moderate resistance" ~ "5-10 years",
+                         last_trt >= 2020 & resist_class == "Moderate resistance" ~ "<5 years",
+                         last_trt < 2015 & resist_class == "Low resistance" ~ ">10 years",
+                         last_trt >= 2015 & resist_class == "Low resistance" ~ "<10 years",
+                         .default = resist_class)) %>%
   group_by(resist_class, time_bin) %>%
   summarise(Hectares = sum(area_ha))
 
@@ -293,7 +292,7 @@ resist_shp$par = st_perimeter(resist_shp)/st_area(resist_shp)
 head(resist_shp)
 
 #write to check it
-write_sf(resist_shp, "C:\\Users\\kshive\\Documents\\UCB\\GIS\\Projects\\Current conditions in giant sequoia\\shape\\bris_code\\SoSEGI_resist_map_23Feb25_myCode.shp")
+write_sf(resist_shp, here("data/spatial_data/outputs/resist_tests/SoSEGI_resist_map_23Feb25_KScode.shp"))
 
 ```
 
