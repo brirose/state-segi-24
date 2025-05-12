@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+
 library(sf)
 library(here)
 library(janitor)
@@ -38,10 +39,10 @@ dat[[8]][["ucb_year"]] <- as.numeric(dat[[8]][["ucb_year"]]) #fix data type
 ## Combine
 
 ```{r combine}
-use_crs <- crs(dat[[1]]) #define single crs
+use_crs <- st_crs(dat[[1]]) #define single crs
 
 dat <- dat %>% lapply(st_transform, use_crs) %>% #make all layers same crs
-  lapply(st_zm, drop = T) %>% 
+  #lapply(st_zm, drop = T) %>% 
   lapply(add_column)
 
 
@@ -59,9 +60,9 @@ trt_combined <- list_rbind(dat, names_to = "source") %>% #combine!
   st_as_sf() %>% 
   st_make_valid()
 
-st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_05feb25.shp"), append = F)
+st_write(trt_combined, here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_12Apr25.shp"), append = F)
 
-plot(trt_combined)
+#plot(trt_combined)
 
 ```
 

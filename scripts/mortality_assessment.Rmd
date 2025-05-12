@@ -375,6 +375,34 @@ tule <- read_excel(here("data/plot_data/TuleGSInventoryTables.xlsx"), sheet = "T
   
 ```
 
+```{r SEKI}
+
+seki_plot <- read_excel(here("data/plot_data/SEKI_meta.xlsx"), "plot locations") %>% 
+  clean_names() %>% 
+  rename(plot_id = plot_no)
+
+seki <- read_excel(here("data/plot_data/SEKI_trees.xlsx"), "Sheet1") %>% 
+  clean_names() %>% 
+  rename(plot_id = macro_plot_name) %>% 
+  left_join(seki_plot, by = join_by(plot_id)) %>% 
+  mutate(
+    id = paste(plot_id, tag_no),
+    survey_year = year(date),
+    source = "SEKI",
+    prefire_status = "unknown",
+    grove = "NA",
+  )%>% 
+  rename(
+    postfire_status = status,
+    dbh_cm = dbh) %>%
+  select(id, grove, survey_year, utme, utmn, postfire_status, prefire_status, source, dbh_cm) %>% 
+  drop_na(utme) %>% 
+  st_as_sf(coords = c("utme", "utmn"), crs = 26911) %>% 
+  st_transform(crs(cbi_all))
+
+```
+
+
 
 
 ```{r combine_inputs}
@@ -386,12 +414,16 @@ monarchs_combined <- meyers_corrected %>%
   bind_rows(ff_usgs) %>% 
   bind_rows(bisbing) %>% 
   bind_rows(whitakers) %>% 
-  bind_rows(tule)
+  bind_rows(tule) %>% 
+  bind_rows(seki)
+
+monarchs_dead <- monarchs_combined %>% 
+  filter(postfire_status %in% c("D", "dead", "Dead", "0"))
 
 ## output shapefile + csv of all monarchs
 #dir.create(here("data/spatial_data/outputs/mortality_monarchs"))
-st_write(monarchs_combined, here("data/spatial_data/outputs/mortality_monarchs/mortality_monarchs_06feb25.shp"), append = F)
-# write_csv(monarchs_combined, here("data/outputs_data/mortality_monarchs_16Jan25.csv"))
+#st_write(monarchs_combined, #here("data/spatial_data/outputs/mortality_monarchs/mortality_monarchs_06feb25.shp"), append = F)
+#write_csv(monarchs_combined, here("data/outputs_data/mortality_monarchs_16Jan25.csv"))
 
 ``` 
 
@@ -468,11 +500,13 @@ monarchs_severity <- monarchs_severity %>%
 mutate(measure_delay = as.numeric(survey_year)-as.numeric(fire_yr)) %>% 
     rename("tree_id" = "id.x",
          "fire_id" = "id.y") %>% 
-   filter(measure_delay <= delay, # remove trees with too long a delay
-         fire_id %in% observation_counts$id.y) %>% # remove when in a fire w/o enough obs
+   # filter(measure_delay <= delay, # remove trees with too long a delay
+   #       fire_id %in% observation_counts$id.y) %>% # remove when in a fire w/o enough obs
   drop_na(burnsev) %>% #remove trees outside burn areas (by location or bc of bad coords)
   select(tree_id, dbh_cm, grove, postfire_status, prefire_status, survey_year, fire_yr, measure_delay, fire_id, burnsev, source)
 
+sev_dead <- monarchs_severity %>% 
+  filter(postfire_status == 0, burnsev == 4)
 
 #dir.create(here("data/spatial_data/outputs/monarchs_severity"))
 #st_write(monarchs_severity, here("data/spatial_data/outputs/monarchs_severity/monarchs_severity_12Dec24.shp"), append = F)
@@ -502,7 +536,7 @@ monarchs_formort <- monarchs_severity %>%
          fire_year = fire_yr) %>% 
   select(id, tree_id, grove_name, survey_year, dbh_cm, prefire_status, postfire_status, measure_delay, fire_id, fire_year, fire_name, cbi, rdnbr, unit_name, source, geometry)
 
-write_csv(monarchs_formort, here("data/outputs_data/monarchs_forMort_06Feb25.csv"))
+write_csv(monarchs_formort, here("data/outputs_data/monarchs_forMort_11March25a.csv"))
 
 ```
 
