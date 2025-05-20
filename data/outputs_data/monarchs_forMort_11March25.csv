@@ -1,0 +1,20 @@
+Dataset compiled by B. Baker for postfire mortality assessment,
+11-Feb-25,
+"Inclues all SEGI trees in burn areas measured in source studies, trees that were unmapped or had erroneous coordinates excluded",
+,
+id,object id
+tree_id,"tree id as assigned by each study, where studies used just a number, prefix appended by source"
+grove_name,grove name pulled from buffered grove layer put togheter by K.Shive
+survey_year,year tree assessed
+dbh_cm,"dbh in cm of tree; in most cases done at time of postfire assessment; in Tule River Tribe dataset, taken from prefire survey (NOTE: this dataset does have DBH for still living trees done postfire"
+prefire_status,"1 -Live, 0 - Dead; status of tree prefire complied from STI for USGS, field notes/data in other studies, where unknown assumed live"
+postfire_status,"1 -Live, 0- Dead; status of tree at postfire assessment"
+measure_delay,time between fire and postfire assessment
+fire_id,year and name of most recent fire experienced by tree
+fire_year,year most recent fire experienced by tree
+fire_name,name most recent fire experienced by tree
+cbi,Composite burn index (CBI) of most recent fire at tree; pulled from polygon CBI layer derived by B. Baker
+rdnbr,Relativized differenced Normalized Burn Ratio (RdNBR) of most recent fire experienced by tree; pulled by pixel from raster layer derived by  B.Baker
+unit_name,unit name/ownership for grove pulled from buffered grove layer put togheter by K.Shive
+source,source study for assessment
+geometry,"approx UTM coodinates of tree; field mapped, for USFS transformed by distance & azimuth recorded in field data; NAD83 (albers), UTM zone 11N; for SEKI and USGS F&F is PLOT LOCATION"
