@@ -1,0 +1,928 @@
+---
+title: "resistance-assessment"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(terra)
+library(sf)
+library(here)
+library(janitor)
+library(scales)
+
+options(scipen = 999)
+
+```
+
+
+#Input and clean treatment data
+
+```{r input_data}
+
+#fire history in CBI
+fire <- st_read(here("data/spatial_data/outputs/cbi_all_updated_wRedwoodFire_02Feb25/cbi_all.shp")) %>% 
+  st_make_valid()
+ 
+
+#full, cleaned treatment layer (will this be the case?)
+treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_05feb25.shp")) %>% 
+  st_transform(crs(fire)) %>% 
+  st_make_valid()
+
+#fixed groves, layer made by Kristen NO BUFFER
+groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp"))%>%
+  clean_names() %>% 
+  st_transform(crs(fire)) %>%  #uniform crs
+  st_make_valid()
+
+```
+
+```{r full_trt_lyr}
+
+trt_clean <- treatment %>% 
+  clean_names() %>%
+  rename(dist_year = year) %>% 
+  # make categories fast to code
+  mutate(
+    dist_type = case_when(
+      treatment == "Fire-related treatment" ~ "rx_pile",
+      treatment == "Mechanical treatment" ~ "mech_under",
+      T ~ "fix"),
+    ) %>% 
+  select(dist_year, dist_type) # select only needed columns
+
+```
+
+
+```{r dist_lyr}
+
+# create clean fire layer
+fire_clean <- fire %>% 
+  clean_names() %>% 
+  #replace burnsev with class names, create cols to combine with trt
+  mutate(
+    dist_type = case_when(
+      burnsev == 1 ~ "undetected_change",
+      burnsev == 2 ~ "lowsev_fire",
+      burnsev == 3 ~ "modsev_fire",
+      burnsev == 4 ~ "highsev_fire"),
+    dist_year = as.numeric(fire_yr)) %>% 
+  # filter(dist_type != "undetected_change") %>% 
+  select(dist_year, dist_type)#only needed columns
+  
+
+#combine to into all disturbance layer
+disturb <- fire_clean %>% 
+  bind_rows(trt_clean)
+
+```
+
+
+```{r}
+# ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+#   geom_col()+
+#   theme_bw()+
+#   scale_fill_manual(
+#     name = "Fire Severity",
+#    # labels = c("Mechanical fuels management", "Fire-related treatment"),
+#     values = c("#cccccc","#969696","#525252"))+
+#   labs(title = "Annual Wildfire Footprint in Sequoia Groves",
+#        y = "Area (Ha)") +
+#   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+#   theme(axis.title.x = element_blank(),
+#         #legend.position = ,
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(), panel.background = element_blank(),
+#         plot.background = element_rect(color = "black", linewidth = 0.5),
+#         axis.line = element_line(colour = "black"))
+#
+# ggsave(here("outputs/annualfire_activity.jpg"), width = 7, height = 5)
+
+#######can read this in as csv for plotting rather than running each time
+# in acres and redoing to retain undewtected change
+fire_groves1 <- st_intersection(fire, groves)#%>%
+  # combine where there is buffer overlap and poorly drawn geometries
+
+fire_groves <- fire_groves1 %>%
+  summarise(.by = c(fire_yr, id, burnsev, unit_name, grove_name),
+            geometry = st_union(st_combine(geometry))) %>%
+  st_make_valid() %>%
+  mutate(dist_id = 1:length(fire_yr))
+
+fire_groves$hectares = as.numeric((st_area(fire_groves)/10000))
+
+fire_groves_lookup <- fire_groves %>%
+  st_drop_geometry()
+
+fire_clean_plot <- fire_groves %>%
+  clean_names() %>%
+  st_drop_geometry() %>%
+  filter(burnsev != 255) %>%
+  #replace burnsev with class names, create cols to combine with trt
+  mutate(
+    dist_type = case_when(
+      burnsev == 1 ~ "undetected_change",
+      burnsev == 2 ~ "lowsev_fire",
+      burnsev == 3 ~ "modsev_fire",
+      burnsev == 4 ~ "highsev_fire"),
+    dist_year = as.numeric(fire_yr)) %>%
+  group_by(dist_year, dist_type) %>% #only needed columns
+  summarise(ha_total = sum(hectares)) %>%
+  ungroup()
+head(fire_clean_plot)
+
+# write.csv(fire_clean_plot, here("outputs/fires_1984_2024_summarised_27March.csv"))
+
+
+```
+
+
+
+```{r buffer}
+
+#reduce disturbance to within  groves
+dist_groves1 <- st_intersection(disturb, groves)#%>% 
+  # combine where there is buffer overlap and poorly drawn geometries
+
+
+dist_groves <- dist_groves1 %>% 
+  summarise(.by = c(dist_year, dist_type, unit_name, grove_name), 
+            geometry = st_union(st_combine(geometry))) %>% 
+  st_make_valid() %>% 
+  mutate(dist_id = 1:length(dist_year))
+
+dist_groves$Hectares = as.numeric(st_area(dist_groves)*0.0001)
+
+dist_groves_lookup <- dist_groves %>% 
+  st_drop_geometry()
+
+write.csv(dist_groves_lookup, here("outputs/fires_treatments_summarised_27March2025.csv"))
+
+
+```
+
+```{r values}
+#total area of groves and buffers 
+total_groveHa <- sum(as.numeric(st_area(groves)*0.0001))
+```
+
+```{r dist_hist}
+
+dist_hist <- st_intersection(dist_groves) %>% 
+  mutate(resist_id = 1:length(origins)) %>% 
+  select(resist_id, origins) %>% 
+  st_collection_extract(type = c("POLYGON"), warn = FALSE) %>% #keep only polys
+  #recombine multipolygons
+  summarise(.by = c(resist_id, origins), geometry = st_combine(geometry)) %>% 
+  mutate(area_ha = as.numeric(st_area(.))*0.0001) %>% 
+  # remove areas less than 1 acre (likely "overlap" due to poorly mapped edges)
+  filter(area_ha >= 0.04) # NOTE: split this out and find hectares represented
+
+dist_hist_long <- dist_hist %>% 
+  st_drop_geometry() %>%  # attributes only
+  unnest(origins) %>%  # make long dataframe
+  rename(dist_id = origins) %>% 
+  left_join(dist_groves_lookup, by = join_by(dist_id)) %>% # connect with disturbance attributes
+  select(-dist_id)
+
+
+
+```
+
+
+Some of the treatments end up with a TON of overlaps; here I output the IDs in the treatment history layer where the components are likely in need of fixing due to mapping errors. Fixing these polygons is easiest in arc and should be done in the full treatment layer.
+
+```{r fix_trt}
+
+#2 or more also small
+
+# multiple treatments recorded in a year
+trt_fix_multiple <- dist_hist_long %>% 
+  filter(dist_type %in% c("rx_pile", "mech_under")) %>% # only treatments
+  summarize(.by = c(resist_id, dist_year, dist_type), count = n()) %>% # count per yr
+  filter(count > 1) %>%  #filter where more than 1
+  summarize(.by = resist_id, count = sum(count)) %>% 
+  mutate(concern = "multiple per year")
+
+
+dist_fix_fire <- dist_hist_long %>% 
+  filter(dist_type %in% c("undetected_fire", "lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarize(.by = c(resist_id, dist_year), count = n()) %>% 
+  filter(count > 1)
+
+
+```
+
+```{r prev_treat}
+dist_order <- dist_hist_long %>% 
+  arrange(dist_year) %>%
+  rename(
+    recent_dist_yr = dist_year,
+    recent_dist_type = dist_type
+  ) %>% 
+  group_by(resist_id) %>%
+  # identify next treatment where relevant
+  # note: use lead if year = character, lag if year = numeric
+  mutate(
+    recent_dist_type = tolower(recent_dist_type),
+    prior1_dist_yr = lag(recent_dist_yr, 1),
+    prior1_dist_type = lag(recent_dist_type, 1)) %>%
+    # prior2_dist_yr = lag(recent_dist_yr, 2),
+    # prior2_dist_type = lag(recent_dist_type, 2)) %>%
+  ungroup() %>%
+  #identify exclusion of burn then thin
+  # mutate(burn_before_mech = 
+  #        case_when(recent_dist_type == "highsev_fire" & prior1_dist_type %in% c("mech_under","rx_pile") ~TRUE, 
+  #                  TRUE~FALSE)) %>%
+  arrange(resist_id)
+
+```
+
+```{r classify}
+#gets last year of treatment for each polygon
+#keeps only polys with at least 1 treatment since 2005, and where THOSE had prior treatments up to 10 yeras prior (1995)
+dist_last_trt = dist_order %>%
+  filter(recent_dist_yr>=1995) %>%
+  select(resist_id, recent_dist_yr,recent_dist_type) %>%
+  slice_max(recent_dist_yr, n= 1, by=resist_id) %>%
+  mutate(last_trt = recent_dist_yr) %>%
+  filter(last_trt >=2005) %>%
+  select(-recent_dist_yr)
+# View(dist_last_trt)
+nrow(dist_last_trt)
+
+dist_twice_10yrs <- dist_order %>%
+  filter(recent_dist_yr>=1995) %>%
+  mutate(prior1_dist_yr_0 = replace_na(prior1_dist_yr, 0)) %>%
+  mutate(time_bin_10yr = case_when(recent_dist_yr>2005 & prior1_dist_yr_0>0 & ((recent_dist_yr - prior1_dist_yr_0) <= 10) ~ "Potential high resistance",
+                                    recent_dist_yr>2005 & prior1_dist_yr_0>0 & ((recent_dist_yr - prior1_dist_yr_0) > 10) ~ "Can't be high resistance",
+                                     prior1_dist_yr_0 == 0 ~ "Can't be high resistance",
+                                   .default = "oopsy"),
+         time.10 = case_when(time_bin_10yr == "Potential high resistance" ~ "T",
+                         time_bin_10yr == "Can't be high resistance" ~ "F",
+                         .default = "oopsy")) %>%
+  filter(recent_dist_yr>=2005) %>%
+  arrange(resist_id, match(time_bin_10yr, c("Potential high resistance", "Can't be high resistance"))) %>% 
+  distinct(resist_id, .keep_all = TRUE) %>%
+  select(resist_id,time_bin_10yr,time.10,area_ha) %>%
+  left_join(dist_last_trt, by = "resist_id")
+# View(dist_twice_10yrs)
+nrow(dist_twice_10yrs)
+
+dist_classified_wide2005 <- dist_order %>%
+  filter(recent_dist_yr>=2005) %>%
+  mutate(TRUES=1) %>% 
+  arrange(recent_dist_type) %>% 
+  pivot_wider(names_from = recent_dist_type, values_from = TRUES, values_fill = 0) %>%
+  summarise(.by = resist_id, across(c(highsev_fire:rx_pile), sum)) %>%
+  left_join(dist_twice_10yrs, by = "resist_id")
+head(dist_classified_wide2005)
+#there are 2275 resist_polys in the dataset
+nrow(dist_classified_wide2005)
+# View(dist_classified_wide2005)
+
+#no change here
+dist_classified_ks = dist_classified_wide2005 %>%
+  mutate(resist_class =
+              case_when(
+                #High resistance: mod or low or rx + any mech, mod or low or rx + mod or low or rx
+                (mech_under + rx_pile + modsev_fire + lowsev_fire) >= 2 
+                & (rx_pile + modsev_fire + lowsev_fire)>=1 
+                & highsev_fire == 0 & time.10 == "T" ~ 'High resistance',
+                #Mod resistance: mod or low or rx
+                (rx_pile + modsev_fire + lowsev_fire) == 1 
+                & mech_under == 0 
+                & highsev_fire == 0 ~ 'Moderate resistance',
+                #this catches areas that had 2 or more treatments, but that were too far 
+                #apart to be high resistance, and where the last treatment is within 2005-2024 and was fire
+                (rx_pile + modsev_fire + lowsev_fire + mech_under) > 1 
+                & time.10 == "F" & (recent_dist_type == "rx_pile" | recent_dist_type == "modsev_fire" |
+                                  recent_dist_type == "lowsev_fire")
+                & highsev_fire == 0 ~ 'Moderate resistance',
+                #Low resistance: any mech
+                (rx_pile + modsev_fire + lowsev_fire) == 0 
+                & mech_under >= 1 
+                & highsev_fire == 0 ~ 'Low resistance',
+                #this catches areas that had 2 or more treatments, but that were too far 
+                #apart to be high resistance, and where the last treatment is within 2005-2024 and was thinning
+                (rx_pile + modsev_fire + lowsev_fire + mech_under) > 1 
+                & time.10 == "F" & recent_dist_type == "mech_under"
+                & highsev_fire == 0 ~ 'Low resistance',
+                #Loss of mature forest: any high
+                highsev_fire == 1 ~ 'Loss of mature forest',
+                #Likely persistent type conversion: High-High
+                highsev_fire > 1 ~ 'Likely persistent type conversion'
+              ))
+head(dist_classified_ks)
+# View(dist_classified_ks)
+
+##create resistance shapefile
+#and add time_bin from the last_trt year associated with that resist_id poly 
+resist_shp1 = dist_hist %>% 
+  inner_join(dist_classified_ks, by = join_by(resist_id,area_ha)) %>%
+  mutate(resist_class = case_when(resist_class == 'Likely persistent type conversion' ~
+                                     'Loss of mature forest',
+                                   .default = resist_class)) %>%
+  select(last_trt,resist_class, resist_id, area_ha, time.10) %>%
+  mutate(time_bin = case_when(last_trt < 2015 & resist_class == "High resistance" ~ "high_trt_over_10",
+                         last_trt >= 2015 & resist_class == "High resistance" ~ "high_trt_less_10",
+                         last_trt < 2015 & resist_class == "Moderate resistance" ~ "mod_trt_over_10",
+                         last_trt >= 2015 & resist_class == "Moderate resistance" ~ "mod_trt_less_10",
+                         last_trt < 2015 & resist_class == "Low resistance" ~ "low_trt_over_10",
+                         last_trt >= 2005 & last_trt >= 2015 & resist_class == "Low resistance" ~ "low_trt_less_10",
+                         .default = resist_class))
+head(resist_shp1)
+
+# write_sf(resist_shp1, "C:/Users/kshive/Documents/UCB/GIS/Projects/Current conditions in giant sequoia/shape/ResistanceMap/2025/resist_class_w_time_2March2025.shp")
+
+#add back in burn before mech for later prep stuff
+dist_nocleanup = resist_shp1 %>%
+  st_drop_geometry()
+
+
+##still working out how to get the remaining unburned/untreated area spatially to add back in and make a final shapefil
+# library(rmapshaper)
+# no.r = ms_erase(groves, resist_shp_classes)
+# no.r.diss = st_union(no.r) 
+# head(no.r)
+# sum(st_area(no.r)/10000)
+# st_join(main, sub, join = st_nearest_feature, left = T)
+# resist_shp = st_union(no.r.diss,resist_shp_classes) 
+# 
+# single_sf <- dplyr::bind_rows(list(no.r.diss,resist_shp_classes))
+# dissolve_sf <- st_union(single_sf)
+# head(dissolve_sf)
+# 
+# 
+# head(resist_shp)
+# #write to check it
+# write_sf(resist_shp, here("data/spatial_data/outputs/resist_tests/SoSEGI_resist_map_23Feb25_KScode.shp"))
+
+
+```
+
+
+```{r dist_combo}
+#we don't need this anymore??
+# dist_nocleanup <- dist_data %>%
+#   filter(burn_before_mech == FALSE)
+
+dist_nocleanup_nofire <- dist_order %>% 
+  filter(!grepl("fire", recent_dist_type))
+
+# calc needed values
+mean_annual_tot <- dist_nocleanup_nofire %>%
+  drop_na() %>% 
+  summarize(.by = recent_dist_yr, area_treated_ha = sum(area_ha)) %>% 
+  summarize(Hectares = mean(area_treated_ha)) %>% 
+  mutate(recent_dist_type = "total")
+
+mean_annual <- dist_nocleanup_nofire %>%  
+  drop_na() %>% 
+  summarize(.by = c(recent_dist_type, recent_dist_yr), area_treated_ha = sum(area_ha)) %>% 
+  summarize(.by = recent_dist_type, Hectares = mean(area_treated_ha)) %>%
+  arrange(recent_dist_type) %>% 
+  bind_rows(mean_annual_tot)
+
+#add calls, needed in fig at end, currently will be wrong values
+mean_annual_comm <- mean_annual[[1,2]]
+mean_annual_mech <- mean_annual[[2,2]]
+mean_annual_rx <- mean_annual[[3,2]]
+mean_annual_rxmech <- mean_annual_mech+mean_annual_rx
+mean_annual_tot <- 300 #mean_annual[[4,2]] 
+```
+
+
+```{r resist-fig}
+
+resist_footprint <- dist_nocleanup %>%
+  group_by(resist_id) %>% 
+  slice_head() %>% # remove duplicated instances of ID
+  ungroup() %>% 
+  summarise(.by = resist_class, Hectares = sum(area_ha))
+
+# write_sf("C:/Users/kshive/Documents/UCB/Projects/Current conditions in giant sequoia/shape/resist_cls")
+
+no_resist_ha <- total_groveHa - sum(resist_footprint$Hectares)
+
+resist_footprint_all <- resist_footprint%>% 
+  add_row(
+    resist_class = "No resistance",
+    Hectares = no_resist_ha)
+  
+resist_footprint_all <- resist_footprint_all %>% 
+ mutate(
+    Hectares = round(Hectares, 0),
+    perc_area = Hectares/total_groveHa*100
+  )
+# resist_footprint_all$acres = resist_footprint_all$Hectares*2.471
+# write.csv(resist_footprint_all,here("outputs/figures_in_acres_for_pres/resistance_classes.csv"))
+write.csv(resist_footprint_all,here("outputs/figures_in_acres_for_pres/resistance_footprint_all.csv"))
+
+ggplot(resist_footprint_all, aes(factor(resist_class, 
+                            levels = c("High resistance","Moderate resistance", "Low resistance",
+                            "No resistance","Loss of mature forest")), 
+                            Hectares, fill = resist_class, width = 0.7)) +
+  geom_bar(stat="identity") + theme_bw() + xlab("") + 
+  scale_fill_manual(values = c("High resistance" = "#006600", "Moderate resistance" = "#00FF00",
+                               "Low resistance" = "palegreen","No resistance" = "orange",
+                               "Loss of mature forest" = "red")) +
+  scale_x_discrete(labels = c("High\nresistance","Moderate\nresistance","Low\nresistance",
+                              "No\nresistance","Forest\nloss"), expand = c(0.1,0.1)) +
+  theme(axis.text.x = element_text(size =8),
+        axis.text.y = element_text(size=8),
+        axis.title=element_text(size=8),
+        strip.text.x = element_text(size = 8),
+        legend.position = "none",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) +
+  scale_y_continuous(labels = comma, n.breaks = 6, expand = c(0,0), limits = c(0, 7000))
+
+# ggsave(here("outputs/ResistanceClasses.jpg"), width = 4.2, height = 5)
+
+```
+totals including buffer area
+numbers to output
+
+
+```{r}
+times_treated <- dist_data %>% 
+  filter(current_dist_type %in% c("rx_pile", "mech_under")) %>% 
+  summarize(.by = resist_id, area_ha = sum(area_ha), times_treated = n()) 
+  
+times_treated_summary <- times_treated %>%
+  summarize(.by = times_treated, area_ha_trt = sum(area_ha)) 
+
+times_fire <- dist_data %>% 
+  filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarize(.by = resist_id, area_ha = sum(area_ha), times_fire = n()) 
+  
+times_fire_summary <- times_fire %>%
+  summarize(.by = times_fire, area_ha_fire = sum(area_ha)) 
+
+times <- times_treated_summary %>% 
+  left_join(times_fire_summary, by = join_by(times_treated == times_fire)) %>% 
+  replace_na(list(area_ha_fire = 0))
+
+write_csv(times, here("outputs/timesburned-trt_area.csv"))
+
+
+times_sf <- dist_hist %>% 
+  left_join(times_treated) %>% 
+  left_join(times_fire) %>% 
+  replace_na(list(times_treated = 0, times_fire = 0))
+```
+
+
+
+
+
+```{r}
+#filter out older treatment
+
+#total footprint acres treated 1984-2024
+total84_footHa <- sum(resist_footprint$Hectares)
+#total footprint acres treated 2014-2024
+total14_w_buffer_footHa <- dist_nocleanup %>% 
+  filter(recent_dist_yr >= 2014) %>% 
+  group_by(resist_id) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  summarize(footprint_ha = sum(area_ha))
+
+#total activity acres treated 1984-2024 
+total84_activity <- dist_nocleanup %>% 
+  summarize(.by = current_dist_type, Hectares = sum(area_ha)) %>% 
+  adorn_totals()
+
+#total activity acres treated 2014-2024 
+total14_w_activity <- dist_nocleanup %>% 
+  filter(current_dist_yr >= 2014) %>% 
+  summarize(.by = current_dist_type, Hectares = sum(area_ha)) %>% 
+  adorn_totals()
+
+```
+
+
+
+ask if the annual summaries should exclude "cleanup" burn_before_mech: answer was see how much difference it makes; currently there is no cleanup included
+```{r annual_area_trt}
+
+annual_trt_activity <- 
+  # dist_nocleanup %>% 
+  dist_order %>%
+  filter(recent_dist_type %in% c("rx_pile", "mech_under")) %>% 
+  summarise(.by = c(recent_dist_yr, recent_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(recent_dist_yr)
+
+annual_trt_activity_ownership <- 
+    # dist_nocleanup %>% 
+  dist_order %>%
+  filter(recent_dist_type %in% c("rx_pile", "mech_under")) %>% 
+  summarise(.by = c(unit_name, recent_dist_yr, recent_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(recent_dist_yr)
+
+```
+do figures!
+
+treatments by treatment type for all entities annually - activity*
+
+```{r}
+
+# ata = annual_trt_activity %>%
+ata.pre.post.2015 = annual_trt_activity %>%
+  mutate(pre.post.2015 = case_when(recent_dist_yr>=2015 ~ "2015-2024",
+                                   .default = "1984-2015")) %>%
+  group_by(recent_dist_type,pre.post.2015) %>%
+  summarise(Acres = sum(area_ha), perc.range = Acres/25032.33)
+ata.pre.post.2015
+
+ggplot(annual_trt_activity, aes(recent_dist_yr, area_ha*2.471, fill = recent_dist_type))+
+  geom_col()+
+  theme_bw()+
+  scale_fill_manual(
+    name = "Treatment Type",
+    labels = c("Mechanical/manual treatment", "Fire-related treatment"),
+    values = c("#999933","#006666"))+
+  labs(
+    # title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area treated (ha)") +
+  scale_x_continuous(expand = c(0.01, 0.01)) +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0,1700)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        # plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.7),
+        text = element_text(size = 14)) 
+
+ggsave(here("outputs/figures_for_manuscript/annualtrt_activity.jpg"), width = 10, height = 5)
+
+
+```
+
+treatment and fire on same graph
+```{r}
+
+fire_clean_plot$broad_type = "Wildfire"
+aat = annual_trt_activity %>%
+  mutate(dist_type = recent_dist_type, dist_year = recent_dist_yr,
+         broad_type = "Active treatment", ha_total = area_ha) %>%
+  select(dist_year,dist_type,ha_total,broad_type)
+fire.trt = rbind(fire_clean_plot,aat)
+fire.trt = fire_clean_plot %>%
+  rbind(aat) %>%
+  filter(dist_year>1983)
+nrow(fire.trt)
+
+ggplot(fire.trt, aes(dist_year, ha_total, fill = factor(dist_type, 
+                                                           levels = c("mech_under","rx_pile","highsev_fire",
+                                                                      "modsev_fire","lowsev_fire","undetected_change")))) +
+   geom_col(stat="identity", width=0.7) + 
+   facet_wrap(~broad_type) +
+   ylab("Hectares") +
+   scale_fill_manual(
+    name = "Treatment and severity classes",
+   labels = c("Mechanical treatment/hand thinning","Fire-related treatment", "High severity","Moderate severity","Low severity","Undetected change"),
+    # values = c("#4499CC","#2288FF","#9944CC","#525252"))+
+    values = c("#999933","#006666","#1199BB","#2244CC","#2288FF","#523252"))+
+    theme_bw() +
+  scale_x_continuous(expand = c(0.01, 0.01)) +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        # plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.7),
+        text = element_text(size = 14)) 
+
+ggsave(here("outputs/figures_for_manuscript/trt_fire_combo.jpg"), width = 14, height = 5)
+
+```
+
+treatments by treatment type for major landowners annually - activity*
+
+```{r}
+#REDO USING TRT LAYER
+
+ggplot(annual_trt_activity_ownership, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+  facet_wrap(~unit_name)+
+  geom_col()+
+  theme_bw()+
+  scale_fill_manual(
+    name = "Treatment Type",
+    labels = c("Mechanical fuels management", "Fire-related treatment"),
+    values = c("#999933","#006666"))+
+  labs(title = "Annual Treatment Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+ggsave(here("outputs/annualtrt_activity_split.jpg"), width = 7, height = 5)
+```
+
+
+
+severity (most recent) by major landowners (figure)
+
+
+```{r annual_area_sev}
+
+annual_fire_activity <- dist_nocleanup %>% 
+  filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarise(.by = c(current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
+
+annual_fire_activity_ownership <- dist_nocleanup %>% 
+filter(current_dist_type %in% c("lowsev_fire", "modsev_fire", "highsev_fire")) %>% 
+  summarise(.by = c(unit_name, current_dist_yr, current_dist_type), area_ha = sum(area_ha)) %>% 
+  arrange(current_dist_yr)
+
+
+```
+
+##I am now doing this up above right after the fire data cleanup so I can include undetected change
+
+```{r}
+# # ggplot(annual_fire_activity, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+# #   geom_col()+
+# #   theme_bw()+
+# #   scale_fill_manual(
+# #     name = "Fire Severity",
+# #    # labels = c("Mechanical fuels management", "Fire-related treatment"),
+# #     values = c("#cccccc","#969696","#525252"))+
+# #   labs(title = "Annual Wildfire Footprint in Sequoia Groves",
+# #        y = "Area (Ha)") +
+# #   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+# #   theme(axis.title.x = element_blank(),
+# #         #legend.position = ,
+# #         panel.grid.major = element_blank(), 
+# #         panel.grid.minor = element_blank(), panel.background = element_blank(), 
+# #         plot.background = element_rect(color = "black", linewidth = 0.5),
+# #         axis.line = element_line(colour = "black")) 
+# # 
+# # ggsave(here("outputs/annualfire_activity.jpg"), width = 7, height = 5)
+# 
+# ## in acres
+# ggplot(annual_fire_activity, aes(current_dist_yr, (area_ha*2.471), fill = factor(current_dist_type,
+#                                                                          levels = c("lowsev_fire","modesev_fire","highsev_fire"))))+
+#   geom_col()+
+#   theme_bw()+
+#   scale_fill_manual(
+#     name = "Fire severity",
+#    labels = c("Low","Moderate","High"),
+#     values = c("#cccccc","#969696","#000000"))+
+#   labs(
+#     # title = "Annual Wildfire Footprint in Sequoia Groves",
+#        y = "Area burned (acres)") +
+#   scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+#   theme(
+#     axis.title.x = element_blank(),
+#         #legend.position = ,
+#         panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(), panel.background = element_blank(), 
+#         plot.background = element_rect(color = "black", linewidth = 0.5),
+#         axis.line = element_line(colour = "black")) 
+# 
+# ggsave(here("outputs/figures_in_acres_for_pres/annualfire_activity_acres.png"), width = 10, height = 5)
+# 
+
+```
+
+
+
+fires type for major landowners annually - activity*
+```{r}
+ggplot(annual_fire_activity_ownership, aes(current_dist_yr, area_ha, fill = current_dist_type))+
+  facet_wrap(~unit_name)+
+  geom_col()+
+  theme_bw()+
+  scale_fill_manual(
+    name = "Fire Severity",
+    #labels = c("Commercial", "Mechanical fuels management", "Fire-related treatment"),
+    values = c("#26547c", "#ef476f", "#ffd166"))+
+  labs(title = "Annual Wildfire Footprint in Sequoia Groves",
+       y = "Area (Ha)") +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  theme(axis.title.x = element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black")) 
+
+ggsave(here("outputs/annualfire_activity_split.jpg"), width = 7, height = 5)
+```
+
+trt class by bin
+```{r}
+
+trt_time_delay <-  dist_nocleanup %>%
+  group_by(resist_id) %>% 
+  slice_head() %>% # remove duplicated instances of ID
+  ungroup() %>% 
+  summarise(.by = c(resist_class, time_bin), Hectares = sum(area_ha)) %>% 
+  add_row(resist_class = "No resistance", Hectares = no_resist_ha, time_bin = "None") %>%   
+  mutate(
+    time_bin = factor(time_bin, levels = c("high_trt_over_10","high_trt_less_10","mod_trt_over_10", "mod_trt_less_10",  "low_trt_over_10","low_trt_less_10", "None", "Loss of mature forest")),
+    resist_class = factor(resist_class, levels = c("High resistance", "Moderate resistance", "Low resistance", "No resistance", "Loss of mature forest")),
+    acres = Hectares *2.47,
+    perc.range = (acres/25022.09)*100
+  )
+
+ttd = trt_time_delay %>%
+  group_by(resist_class) %>%
+  summarise(perc.range = sum(perc.range), acres = sum(acres))
+ttd
+# write_csv(time_trt_delay, here("data/outputs/resistance_classes21Feb25.csv"))
+
+
+#rework again to combine type convert with forest loss
+trt_time_delay_plot <- trt_time_delay %>% 
+  mutate(
+    resist_class = case_when(resist_class == "Likely persistent type conversion" ~ "Loss of mature forest",
+                             T ~ resist_class),
+    color = case_when(
+      time_bin == "high_trt_less_10" ~ "#243e36", 
+      time_bin == "high_trt_over_10" ~ "#9ba17f", 
+      time_bin == "mod_trt_less_10" ~ "#3d405b", 
+      # time_bin == "mod_trt_5_10" ~ "#595e85",
+      time_bin == "mod_trt_over_10" ~ "#767cb0", 
+      time_bin == "low_trt_less_10" ~ "#f9a03f", 
+      time_bin == "low_trt_over_10" ~"#f8dda4",
+      time_bin == "None" ~ "darkgrey", # CHANGE COLOR
+      time_bin == "Loss of mature forest" ~ "#813405"
+      ))
+
+
+colors <- distinct(trt_time_delay_plot, time_bin, color) %>% tibble::deframe()
+
+ggplot(trt_time_delay_plot, aes(x = factor(resist_class, levels = c("High resistance", "Moderate resistance", "Low resistance", "No resistance", "Loss of mature forest")), 
+                                perc.range, 
+                                fill = factor(time_bin, levels = c("high_trt_over_10","high_trt_less_10",
+                                                                   "mod_trt_over_10", "mod_trt_less_10",
+                                                                   "low_trt_over_10","low_trt_less_10", "None",
+                                                                   "Loss of mature forest")))) +
+  geom_col()+
+  scale_fill_manual(
+    labels = c("Last disturbance 2005-2015",
+               "Last disturbance >2015",
+               "Last wildfire/rx 2005-2015", 
+               "Last wildfire/rx >2015",
+               "Last thinning 2005-2015",
+               "Last thinning >2015", 
+               "Loss of mature forest"), 
+    values = colors)+
+  ylab("Percent of range") + xlab("") +
+  theme_bw()+
+  coord_flip()+
+  theme(legend.title=element_blank(),
+        #legend.position = ,
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), panel.background = element_blank(), 
+        # plot.background = element_rect(color = "black", linewidth = 0.5),
+        axis.line = element_line(colour = "black"),
+        axis.text.y = element_text(size = 14)) 
+
+
+ggsave(here("outputs/figures_in_acres_for_pres/resistance_classes_time_acres.jpg"), width = 7, height = 5)
+
+perc = trt_time_delay_plot %>% 
+  group_by(resist_class) %>% 
+  summarise(perc.range = sum(perc.range), acres = sum(acres))
+
+###
+# resist_footprint_time <- dist_nocleanup %>%
+#   group_by(resist_id) %>% 
+#   slice_head() %>% # remove duplicated instances of ID
+#   ungroup() %>% 
+#   summarise(.by = c("resist_class","time_bin"), Hectares = sum(area_ha))
+# 
+# resist_footprint_all_time <- resist_footprint_time %>% 
+#   add_row(
+#     resist_class = "No resistance",
+#     Hectares = no_resist_ha)
+#   
+# resist_footprint_all_time <- resist_footprint_all_time %>% 
+#  mutate(
+#     Hectares = round(Hectares, 0),
+#     perc_area = Hectares/total_groveHa*100
+#   )
+# 
+# ggplot(resist_footprint_all_time, aes(resist_class, (Hectares*2.471), fill = factor(time_bin, levels = c("<5 years", "5-10")))+
+#   geom_col() +
+#   # scale_fill_manual(values = colors)+
+#   theme_bw()+
+#   coord_flip()+
+#   theme(axis.title.y = element_blank(),
+#         #legend.position = ,
+#         panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(), panel.background = element_blank(), 
+#         plot.background = element_rect(color = "black", linewidth = 0.5),
+#         axis.line = element_line(colour = "black")) 
+# 
+
+#get complete cases of resistance thru time, then display by bar plot
+dist_nocleanup_complete = dist_nocleanup %>%
+  complete(resist_class,last_trt)
+f = ggplot(dist_nocleanup_complete, aes(last_trt,area_ha, fill = resist_class)) + geom_bar(stat = "identity", position = "dodge")
+
+```
+
+
+
+## Retreatment
+```{r retreatment}
+
+retreatment <- dist_data %>% 
+  summarise(.by = c(resist_id, resist_class), last_trt = max(current_dist_yr), 
+            yrsSince = (2025 - as.numeric(last_trt)), Hectares = mean(area_ha)) %>% 
+  mutate(RetreatmentNeeded = case_when( 
+            yrsSince == 10 ~ 2025,
+            yrsSince == 9 ~ 2026,
+            yrsSince == 8 ~ 2027,
+            yrsSince == 7 ~ 2028,
+            yrsSince == 6 ~ 2029,
+            yrsSince == 5 ~ 2030,
+            yrsSince == 4 ~ 2031,
+            yrsSince == 3 ~ 2032,
+            yrsSince == 2 ~ 2033,
+            yrsSince == 1 ~ 2034,
+            yrsSince == 0 ~ 2035,
+            T ~ 2025
+  )) %>% 
+  filter(!resist_class %in% c("Loss of mature forest",
+                              "Likely persistent type conversion")) 
+
+
+```
+
+```{r}
+
+retreatment_overall <- retreatment %>% 
+  summarise(.by = RetreatmentNeeded, Hectares = sum(Hectares))
+
+ggplot(retreatment_overall, aes(RetreatmentNeeded, Hectares)) + 
+  geom_col(stat="identity", width=0.5, position = "dodge") + 
+  ylab("Hectares") +
+  scale_fill_manual(values=c("#006600","#00FF00","palegreen")) + #what are colors for? could add ownership
+  theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
+  # scale_x_discrete(expand = c(0, 0)) + 
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
+  ggtitle("Re-treatment needs in Sequoia Groves")
+
+```
+
+
+```{r retreat_resist}
+
+# double check this includes fire (low and moderate)
+retreat_resist <- retreatment %>% 
+  ungroup() %>% 
+  summarise(.by = c(RetreatmentNeeded, resist_class), Hectares = sum(Hectares))
+
+
+ggplot(retreat_resist, aes(RetreatmentNeeded, Hectares, 
+                      fill = factor(resist_class,
+               levels = c("Low resistance","Moderate resistance",
+                          "High resistance")))) +
+  geom_bar(stat = "identity", position = "stack", width = 0.75) + 
+  labs(fill="Resistance classes", title = "Retreatment Needs by Resistance Class in Sequoia Groves") +
+  ylab("Hectares") +
+  scale_fill_manual(values=c("turquoise1","darkturquoise","darkslategrey")) +
+  theme(panel.grid.major = element_blank(), panel.background = element_blank(), 
+        axis.line = element_line(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + 
+  scale_y_continuous(labels = scales::comma) +
+#current mean annual treatment:
+  geom_hline(yintercept=mean_annual_tot, linetype='dashed', col = 'black', linewidth = 0.75) +
+#current mean annual treatment comm:
+  geom_hline(yintercept=mean_annual_comm, linetype='dashed', col = 'red', linewidth = 0.75) +
+#current mean annual treatment rx/mech:
+  geom_hline(yintercept=mean_annual_rxmech, linetype='dotdash', col = 'orange', linewidth = 0.75)+ 
+  scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0), labels = scales::comma)
+```
+
+
+pull groves with really different histories; last resistance vs time since last 
+

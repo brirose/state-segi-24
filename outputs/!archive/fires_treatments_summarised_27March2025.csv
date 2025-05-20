@@ -1,0 +1,792 @@
+"","dist_year","dist_type","unit_name","grove_name","dist_id","Hectares"
+"1",1987,"lowsev_fire","Bureau of Land Management","Case Mountain",1,3.76715481599925
+"2",2022,"rx_pile","Bureau of Land Management","Case Mountain",2,12.9700646121452
+"3",2020,"mech_under","Bureau of Land Management","Case Mountain",3,16.793679031958
+"4",1987,"lowsev_fire","Bureau of Land Management","Coffee Pot",4,0.591954522881028
+"5",2024,"lowsev_fire","Bureau of Land Management","Coffee Pot",5,2.56004672569217
+"6",2024,"modsev_fire","Bureau of Land Management","Coffee Pot",6,0.386986700314096
+"7",2023,"mech_under","Bureau of Land Management","Coffee Pot",7,2.4064624375134
+"8",2020,"mech_under","Bureau of Land Management","Coffee Pot",8,0.616763968739136
+"9",1987,"lowsev_fire","Bureau of Land Management","Ladybug",9,0.55457612770386
+"10",1987,"modsev_fire","Bureau of Land Management","Ladybug",10,0.057296899230541
+"11",2024,"lowsev_fire","Bureau of Land Management","Ladybug",11,0.135040266359519
+"12",2024,"modsev_fire","Bureau of Land Management","Ladybug",12,0.476832707086875
+"13",1987,"lowsev_fire","Bureau of Land Management","Monache Tubs",13,0.657926966832294
+"14",1987,"modsev_fire","Bureau of Land Management","Monache Tubs",14,0.0677763653540518
+"15",2024,"lowsev_fire","Bureau of Land Management","Monache Tubs",15,4.28871295765613
+"16",2024,"modsev_fire","Bureau of Land Management","Monache Tubs",16,2.15152144254311
+"17",2024,"highsev_fire","Bureau of Land Management","Monache Tubs",17,0.0645119777312941
+"18",2023,"mech_under","Bureau of Land Management","Monache Tubs",18,4.54660448553202
+"19",1987,"lowsev_fire","Bureau of Land Management","Nutmeg",19,3.0593865630025
+"20",1987,"modsev_fire","Bureau of Land Management","Nutmeg",20,0.359042658561468
+"21",1987,"highsev_fire","Bureau of Land Management","Nutmeg",21,0.00000858712579315011
+"22",2024,"lowsev_fire","Bureau of Land Management","Nutmeg",22,3.66599584648873
+"23",2024,"modsev_fire","Bureau of Land Management","Nutmeg",23,4.2077412705858
+"24",2024,"highsev_fire","Bureau of Land Management","Nutmeg",24,1.24810262716011
+"25",2023,"mech_under","Bureau of Land Management","Nutmeg",25,7.81332636351692
+"26",2023,"rx_pile","Bureau of Land Management","Nutmeg",26,0.0435751174886947
+"27",2020,"mech_under","Bureau of Land Management","Nutmeg",27,7.84994617152604
+"28",2022,"rx_pile","Calaveras Big Trees State Park","Calaveras North Grove",28,7.50447154609813
+"29",2014,"mech_under","Calaveras Big Trees State Park","Calaveras North Grove",29,7.50447154944287
+"30",2021,"mech_under","Calaveras Big Trees State Park","Calaveras North Grove",30,14.9949638484818
+"31",2023,"rx_pile","Calaveras Big Trees State Park","Calaveras North Grove",31,14.9949638575587
+"32",2024,"rx_pile","Calaveras Big Trees State Park","Calaveras South Grove",32,81.0712409176155
+"33",2015,"modsev_fire","Giant Sequoia National Monument","Abbott",33,3.18210497252595
+"34",2015,"highsev_fire","Giant Sequoia National Monument","Abbott",34,0.0725046172471426
+"35",2018,"mech_under","Giant Sequoia National Monument","Abbott",35,1.09580233096642
+"36",2015,"lowsev_fire","Giant Sequoia National Monument","Agnew",36,0.412513953524409
+"37",2015,"modsev_fire","Giant Sequoia National Monument","Agnew",37,3.34486213069272
+"38",2015,"highsev_fire","Giant Sequoia National Monument","Agnew",38,0.2964338308781
+"39",2020,"lowsev_fire","Giant Sequoia National Monument","Alder Creek",39,2.81061719193441
+"40",2020,"modsev_fire","Giant Sequoia National Monument","Alder Creek",40,5.50551320685916
+"41",2020,"highsev_fire","Giant Sequoia National Monument","Alder Creek",41,37.2291042123463
+"42",2017,"lowsev_fire","Giant Sequoia National Monument","Alder Creek",42,1.79016446221155
+"43",2002,"mech_under","Giant Sequoia National Monument","Alder Creek",43,0.233120980368246
+"44",2022,"mech_under","Giant Sequoia National Monument","Alder Creek",44,0.295035742153176
+"45",2024,"mech_under","Giant Sequoia National Monument","Alder Creek",45,11.4622487897187
+"46",1989,"mech_under","Giant Sequoia National Monument","Alder Creek",46,6.26427688174975
+"47",1981,"mech_under","Giant Sequoia National Monument","Alder Creek",47,0.350597736535012
+"48",2018,"mech_under","Giant Sequoia National Monument","Alder Creek",48,13.9185160825639
+"49",1983,"mech_under","Giant Sequoia National Monument","Bearskin",49,12.1130554356184
+"50",2017,"mech_under","Giant Sequoia National Monument","Bearskin",50,10.260277221594
+"51",2018,"rx_pile","Giant Sequoia National Monument","Bearskin",51,10.20138437895
+"52",2020,"rx_pile","Giant Sequoia National Monument","Bearskin",52,0.0588928426437928
+"53",2019,"rx_pile","Giant Sequoia National Monument","Bearskin",53,0.0588928426437928
+"54",2022,"mech_under","Giant Sequoia National Monument","Bearskin",54,12.1137366001313
+"55",2023,"rx_pile","Giant Sequoia National Monument","Bearskin",55,7.0424265838506
+"56",2020,"lowsev_fire","Giant Sequoia National Monument","Belknap Camp",56,10.6103710843298
+"57",2020,"modsev_fire","Giant Sequoia National Monument","Belknap Camp",57,7.31487680184007
+"58",2020,"highsev_fire","Giant Sequoia National Monument","Belknap Camp",58,11.2188467482185
+"59",2006,"mech_under","Giant Sequoia National Monument","Belknap Camp",59,0.00346000661072903
+"60",2009,"rx_pile","Giant Sequoia National Monument","Belknap Camp",60,0.00346000661072903
+"61",2011,"mech_under","Giant Sequoia National Monument","Belknap Camp",61,0.00346000661072903
+"62",2007,"mech_under","Giant Sequoia National Monument","Belknap Camp",62,0.343551788390616
+"63",2003,"rx_pile","Giant Sequoia National Monument","Belknap Camp",63,0.789212348254733
+"64",2023,"rx_pile","Giant Sequoia National Monument","Belknap Camp",64,25.3368146409575
+"65",2024,"rx_pile","Giant Sequoia National Monument","Big Stump",65,2.7667372260334
+"66",2017,"rx_pile","Giant Sequoia National Monument","Big Stump",66,11.1773595052519
+"67",2021,"mech_under","Giant Sequoia National Monument","Big Stump",67,0.354968819724373
+"68",2016,"mech_under","Giant Sequoia National Monument","Big Stump",68,15.6929101153337
+"69",2002,"rx_pile","Giant Sequoia National Monument","Big Stump",69,0.0777938394943252
+"70",2019,"mech_under","Giant Sequoia National Monument","Big Stump",70,13.7311536230145
+"71",2023,"mech_under","Giant Sequoia National Monument","Big Stump",71,19.9974233514089
+"72",2021,"rx_pile","Giant Sequoia National Monument","Big Stump",72,19.9974233514089
+"73",2023,"rx_pile","Giant Sequoia National Monument","Big Stump",73,32.685160099185
+"74",2018,"mech_under","Giant Sequoia National Monument","Big Stump",74,9.47314614245588
+"75",2022,"rx_pile","Giant Sequoia National Monument","Big Stump",75,11.6871942167556
+"76",2016,"rx_pile","Giant Sequoia National Monument","Big Stump",76,9.59617165360453
+"77",2021,"lowsev_fire","Giant Sequoia National Monument","Black Mountain",77,6.59955431781478
+"78",2021,"modsev_fire","Giant Sequoia National Monument","Black Mountain",78,0.0535292228793194
+"79",2008,"lowsev_fire","Giant Sequoia National Monument","Black Mountain",79,0.5394155245592
+"80",2017,"lowsev_fire","Giant Sequoia National Monument","Black Mountain",80,284.475838787246
+"81",2017,"modsev_fire","Giant Sequoia National Monument","Black Mountain",81,95.9413317315805
+"82",2017,"highsev_fire","Giant Sequoia National Monument","Black Mountain",82,20.3353524794925
+"83",1985,"mech_under","Giant Sequoia National Monument","Black Mountain",83,12.6401734484373
+"84",1986,"mech_under","Giant Sequoia National Monument","Black Mountain",84,15.0058805254497
+"85",1987,"mech_under","Giant Sequoia National Monument","Black Mountain",85,24.5282758714197
+"86",2016,"mech_under","Giant Sequoia National Monument","Black Mountain",86,61.4124404162917
+"87",2017,"mech_under","Giant Sequoia National Monument","Black Mountain",87,0.053370952951043
+"88",2018,"mech_under","Giant Sequoia National Monument","Black Mountain",88,11.9733678413905
+"89",2018,"rx_pile","Giant Sequoia National Monument","Black Mountain",89,11.9733678413905
+"90",2015,"mech_under","Giant Sequoia National Monument","Black Mountain",90,204.364017736659
+"91",2016,"rx_pile","Giant Sequoia National Monument","Black Mountain",91,25.8130793838905
+"92",2017,"rx_pile","Giant Sequoia National Monument","Black Mountain",92,25.8130793838905
+"93",2011,"mech_under","Giant Sequoia National Monument","Black Mountain",93,0.0137077273366362
+"94",2010,"mech_under","Giant Sequoia National Monument","Black Mountain",94,0.0137077273366362
+"95",2011,"rx_pile","Giant Sequoia National Monument","Black Mountain",95,0.0137077273366362
+"96",2010,"rx_pile","Giant Sequoia National Monument","Black Mountain",96,0.0137077273366362
+"97",2007,"mech_under","Giant Sequoia National Monument","Black Mountain",97,3.06271374168641
+"98",2022,"mech_under","Giant Sequoia National Monument","Black Mountain",98,102.502016816034
+"99",2015,"lowsev_fire","Giant Sequoia National Monument","Boulder Creek",99,8.29993489143964
+"100",2015,"modsev_fire","Giant Sequoia National Monument","Boulder Creek",100,1.81245035394348
+"101",1985,"mech_under","Giant Sequoia National Monument","Boulder Creek",101,0.313366572127794
+"102",2009,"rx_pile","Giant Sequoia National Monument","Boulder Creek",102,0.372072383367331
+"103",2018,"lowsev_fire","Giant Sequoia National Monument","Burro Creek",103,9.84265524032185
+"104",2018,"modsev_fire","Giant Sequoia National Monument","Burro Creek",104,0.86835650409728
+"105",2018,"highsev_fire","Giant Sequoia National Monument","Burro Creek",105,0.0283120291327487
+"106",2020,"lowsev_fire","Giant Sequoia National Monument","Burro Creek",106,0.223318828867949
+"107",2015,"lowsev_fire","Giant Sequoia National Monument","Cabin Creek",107,32.2279355670083
+"108",2015,"modsev_fire","Giant Sequoia National Monument","Cabin Creek",108,23.3885875245436
+"109",2015,"highsev_fire","Giant Sequoia National Monument","Cabin Creek",109,4.30115533158882
+"110",2018,"mech_under","Giant Sequoia National Monument","Cabin Creek",110,2.34776456289447
+"111",2020,"lowsev_fire","Giant Sequoia National Monument","Carr Wilson",111,2.38123264920492
+"112",2020,"modsev_fire","Giant Sequoia National Monument","Carr Wilson",112,0.88540322107953
+"113",2020,"highsev_fire","Giant Sequoia National Monument","Carr Wilson",113,1.92328721235896
+"114",2023,"rx_pile","Giant Sequoia National Monument","Carr Wilson",114,4.46398908758613
+"115",2015,"lowsev_fire","Giant Sequoia National Monument","Cherry Gap",115,7.42777846722392
+"116",2015,"modsev_fire","Giant Sequoia National Monument","Cherry Gap",116,16.401533179508
+"117",2015,"highsev_fire","Giant Sequoia National Monument","Cherry Gap",117,0.559250958168164
+"118",2024,"mech_under","Giant Sequoia National Monument","Cherry Gap",118,2.02183086615868
+"119",2018,"mech_under","Giant Sequoia National Monument","Cherry Gap",119,8.51563177091295
+"120",2015,"lowsev_fire","Giant Sequoia National Monument","Converse Basin",120,247.125528464842
+"121",2015,"modsev_fire","Giant Sequoia National Monument","Converse Basin",121,176.968906252454
+"122",2015,"highsev_fire","Giant Sequoia National Monument","Converse Basin",122,31.7436269696518
+"123",2024,"mech_under","Giant Sequoia National Monument","Converse Basin",123,44.3741661068463
+"124",2023,"mech_under","Giant Sequoia National Monument","Converse Basin",124,44.7837359132775
+"125",1986,"mech_under","Giant Sequoia National Monument","Converse Basin",125,34.7389719609075
+"126",1987,"mech_under","Giant Sequoia National Monument","Converse Basin",126,0.0302205493022785
+"127",2018,"mech_under","Giant Sequoia National Monument","Converse Basin",127,80.5292914858581
+"128",2023,"rx_pile","Giant Sequoia National Monument","Converse Basin",128,1.75934587526456
+"129",2022,"rx_pile","Giant Sequoia National Monument","Converse Basin",129,0.48229583233411
+"130",2019,"rx_pile","Giant Sequoia National Monument","Converse Basin",130,35.3121528448436
+"131",2006,"mech_under","Giant Sequoia National Monument","Converse Basin",131,0.96369083192081
+"132",2022,"mech_under","Giant Sequoia National Monument","Converse Basin",132,43.8513632856805
+"133",2024,"rx_pile","Giant Sequoia National Monument","Converse Basin",133,3.79005476112712
+"134",2017,"mech_under","Giant Sequoia National Monument","Converse Basin",134,5.27306350088633
+"135",2015,"modsev_fire","Giant Sequoia National Monument","Converse Mountain",135,0.707887019244412
+"136",2015,"highsev_fire","Giant Sequoia National Monument","Converse Mountain",136,12.76929431743
+"137",2023,"mech_under","Giant Sequoia National Monument","Converse Mountain",137,0.426697558496404
+"138",2020,"mech_under","Giant Sequoia National Monument","Converse Mountain",138,0.151652724591224
+"139",2021,"rx_pile","Giant Sequoia National Monument","Converse Mountain",139,0.151652724591224
+"140",2022,"mech_under","Giant Sequoia National Monument","Converse Mountain",140,0.151652724591224
+"141",2015,"lowsev_fire","Giant Sequoia National Monument","Converse Saddle",141,4.70302172408788
+"142",2015,"modsev_fire","Giant Sequoia National Monument","Converse Saddle",142,4.22817720994214
+"143",2015,"highsev_fire","Giant Sequoia National Monument","Converse Saddle",143,0.436848389540205
+"144",2018,"mech_under","Giant Sequoia National Monument","Converse Saddle",144,2.83429294457461
+"145",2021,"lowsev_fire","Giant Sequoia National Monument","Cunningham",145,1.62514274682587
+"146",2021,"modsev_fire","Giant Sequoia National Monument","Cunningham",146,0.117725241680297
+"147",2016,"lowsev_fire","Giant Sequoia National Monument","Cunningham",147,3.75903715181409
+"148",2016,"modsev_fire","Giant Sequoia National Monument","Cunningham",148,0.326792036936508
+"149",2021,"lowsev_fire","Giant Sequoia National Monument","Deer Creek",149,0.858647312322108
+"150",2021,"modsev_fire","Giant Sequoia National Monument","Deer Creek",150,1.97644237060293
+"151",2021,"highsev_fire","Giant Sequoia National Monument","Deer Creek",151,11.3306324673666
+"152",2015,"lowsev_fire","Giant Sequoia National Monument","Deer Meadow",152,12.5312237802966
+"153",2015,"modsev_fire","Giant Sequoia National Monument","Deer Meadow",153,12.2286018380069
+"154",2015,"highsev_fire","Giant Sequoia National Monument","Deer Meadow",154,0.395643305694168
+"155",2020,"lowsev_fire","Giant Sequoia National Monument","Dennison",155,0.209854021213172
+"156",2020,"lowsev_fire","Giant Sequoia National Monument","Dillonwood",156,19.2110760243399
+"157",2020,"modsev_fire","Giant Sequoia National Monument","Dillonwood",157,6.45489272655095
+"158",2020,"highsev_fire","Giant Sequoia National Monument","Dillonwood",158,38.0275520563883
+"159",2020,"lowsev_fire","Giant Sequoia National Monument","Dillonwood - West",159,0.0437605694387907
+"160",2020,"modsev_fire","Giant Sequoia National Monument","Dillonwood - West",160,0.827219013469256
+"161",2020,"highsev_fire","Giant Sequoia National Monument","Dillonwood - West",161,0.784854142646704
+"162",2015,"lowsev_fire","Giant Sequoia National Monument","Evans",162,155.727904189281
+"163",2015,"modsev_fire","Giant Sequoia National Monument","Evans",163,181.417555583824
+"164",2015,"highsev_fire","Giant Sequoia National Monument","Evans",164,48.436011462979
+"165",1985,"mech_under","Giant Sequoia National Monument","Evans",165,3.60984870194546
+"166",2014,"mech_under","Giant Sequoia National Monument","Evans",166,0.336515256039845
+"167",2020,"lowsev_fire","Giant Sequoia National Monument","Freeman Creek",167,137.22600248534
+"168",2020,"modsev_fire","Giant Sequoia National Monument","Freeman Creek",168,76.3577120415198
+"169",2020,"highsev_fire","Giant Sequoia National Monument","Freeman Creek",169,343.876350974002
+"170",2012,"lowsev_fire","Giant Sequoia National Monument","Freeman Creek",170,0.0308591884386065
+"171",2023,"mech_under","Giant Sequoia National Monument","Freeman Creek",171,5.61130296761949
+"172",2016,"mech_under","Giant Sequoia National Monument","Freeman Creek",172,2.99854320679409
+"173",2014,"mech_under","Giant Sequoia National Monument","Freeman Creek",173,0.585170062855989
+"174",2015,"lowsev_fire","Giant Sequoia National Monument","General Grant",174,6.48057129693952
+"175",2015,"modsev_fire","Giant Sequoia National Monument","General Grant",175,8.43154290672345
+"176",2015,"highsev_fire","Giant Sequoia National Monument","General Grant",176,5.53804034205509
+"177",2023,"mech_under","Giant Sequoia National Monument","General Grant",177,0.0126817517567426
+"178",1992,"rx_pile","Giant Sequoia National Monument","General Grant",178,0.198856462674359
+"179",2018,"mech_under","Giant Sequoia National Monument","General Grant",179,3.25487902883029
+"180",2015,"lowsev_fire","Giant Sequoia National Monument","Hoist Ridge",180,6.50560753950338
+"181",2015,"modsev_fire","Giant Sequoia National Monument","Hoist Ridge",181,8.2811835692963
+"182",2015,"highsev_fire","Giant Sequoia National Monument","Hoist Ridge",182,4.19306126949006
+"183",2024,"mech_under","Giant Sequoia National Monument","Hoist Ridge",183,3.24878530101427
+"184",2023,"mech_under","Giant Sequoia National Monument","Hoist Ridge",184,1.2335345365599
+"185",2018,"mech_under","Giant Sequoia National Monument","Hoist Ridge",185,3.37926052264481
+"186",2022,"rx_pile","Giant Sequoia National Monument","Hoist Ridge",186,3.37926052264481
+"187",2015,"lowsev_fire","Giant Sequoia National Monument","Indian Basin",187,0.394302294376511
+"188",2015,"modsev_fire","Giant Sequoia National Monument","Indian Basin",188,0.135675763127231
+"189",2023,"mech_under","Giant Sequoia National Monument","Indian Basin",189,52.1935326089912
+"190",2019,"mech_under","Giant Sequoia National Monument","Indian Basin",190,16.451983754885
+"191",2020,"mech_under","Giant Sequoia National Monument","Indian Basin",191,3.29932702539466
+"192",2021,"rx_pile","Giant Sequoia National Monument","Indian Basin",192,3.29932702539466
+"193",2022,"mech_under","Giant Sequoia National Monument","Indian Basin",193,17.3514572865916
+"194",2010,"rx_pile","Giant Sequoia National Monument","Indian Basin",194,1.3596336502522
+"195",2024,"rx_pile","Giant Sequoia National Monument","Indian Basin",195,4.43256975670534
+"196",2023,"rx_pile","Giant Sequoia National Monument","Indian Basin",196,14.0521302611966
+"197",2016,"mech_under","Giant Sequoia National Monument","Indian Basin",197,16.451983664605
+"198",2017,"mech_under","Giant Sequoia National Monument","Indian Basin",198,30.1589949976613
+"199",2021,"mech_under","Giant Sequoia National Monument","Indian Basin",199,29.5993871001016
+"200",2022,"rx_pile","Giant Sequoia National Monument","Indian Basin",200,29.5993871001016
+"201",2016,"rx_pile","Giant Sequoia National Monument","Indian Basin",201,13.2459237920717
+"202",2018,"rx_pile","Giant Sequoia National Monument","Indian Basin",202,13.2459237920717
+"203",2015,"lowsev_fire","Giant Sequoia National Monument","Kennedy",203,39.8369387343862
+"204",2015,"modsev_fire","Giant Sequoia National Monument","Kennedy",204,27.2303347826175
+"205",2015,"highsev_fire","Giant Sequoia National Monument","Kennedy",205,6.24344218067188
+"206",1986,"mech_under","Giant Sequoia National Monument","Kennedy",206,0.247372716211446
+"207",2023,"mech_under","Giant Sequoia National Monument","Landslide",207,9.11392105055424
+"208",2022,"mech_under","Giant Sequoia National Monument","Landslide",208,15.2670342269516
+"209",2015,"lowsev_fire","Giant Sequoia National Monument","Little Boulder",209,22.7099487031023
+"210",2015,"modsev_fire","Giant Sequoia National Monument","Little Boulder",210,7.10796801080677
+"211",1983,"mech_under","Giant Sequoia National Monument","Little Boulder",211,0.00272645863926737
+"212",1984,"mech_under","Giant Sequoia National Monument","Little Boulder",212,2.18339567151664
+"213",1985,"mech_under","Giant Sequoia National Monument","Little Boulder",213,6.30159559237761
+"214",1986,"mech_under","Giant Sequoia National Monument","Little Boulder",214,0.749819899822329
+"215",2015,"lowsev_fire","Giant Sequoia National Monument","Lockwood",215,7.97230980263769
+"216",2015,"modsev_fire","Giant Sequoia National Monument","Lockwood",216,8.15736437293228
+"217",2015,"highsev_fire","Giant Sequoia National Monument","Lockwood",217,10.5234847000436
+"218",1985,"mech_under","Giant Sequoia National Monument","Lockwood",218,8.25297752163738
+"219",2011,"lowsev_fire","Giant Sequoia National Monument","Long Meadow",219,3.59506537188847
+"220",2011,"modsev_fire","Giant Sequoia National Monument","Long Meadow",220,0.000514816790136683
+"221",2021,"lowsev_fire","Giant Sequoia National Monument","Long Meadow",221,28.9055309676663
+"222",2021,"modsev_fire","Giant Sequoia National Monument","Long Meadow",222,21.3958429694747
+"223",2021,"highsev_fire","Giant Sequoia National Monument","Long Meadow",223,22.1086882407921
+"224",2016,"lowsev_fire","Giant Sequoia National Monument","Long Meadow",224,2.34019182645662
+"225",2016,"modsev_fire","Giant Sequoia National Monument","Long Meadow",225,0.0719307786645833
+"226",2023,"mech_under","Giant Sequoia National Monument","Long Meadow",226,85.1235680288504
+"227",1985,"mech_under","Giant Sequoia National Monument","Long Meadow",227,1.22775684783942
+"228",1986,"mech_under","Giant Sequoia National Monument","Long Meadow",228,24.4128823405307
+"229",2018,"mech_under","Giant Sequoia National Monument","Long Meadow",229,20.0907354454414
+"230",2007,"mech_under","Giant Sequoia National Monument","Long Meadow",230,0.401218897174192
+"231",2022,"mech_under","Giant Sequoia National Monument","Long Meadow",231,23.4418433574053
+"232",2023,"rx_pile","Giant Sequoia National Monument","Long Meadow",232,23.7569354907914
+"233",2004,"rx_pile","Giant Sequoia National Monument","Long Meadow",233,13.6956460053971
+"234",2016,"mech_under","Giant Sequoia National Monument","Long Meadow",234,13.6956460053971
+"235",2018,"rx_pile","Giant Sequoia National Monument","Long Meadow",235,13.6956460053971
+"236",2021,"rx_pile","Giant Sequoia National Monument","Long Meadow",236,13.6956460053971
+"237",2016,"lowsev_fire","Giant Sequoia National Monument","Maggie Mountain",237,4.05086556819478
+"238",2016,"modsev_fire","Giant Sequoia National Monument","Maggie Mountain",238,0.213538421385358
+"239",2020,"lowsev_fire","Giant Sequoia National Monument","McIntyre",239,24.1118484124825
+"240",2020,"modsev_fire","Giant Sequoia National Monument","McIntyre",240,39.557227791493
+"241",2020,"highsev_fire","Giant Sequoia National Monument","McIntyre",241,48.8085177293006
+"242",2023,"rx_pile","Giant Sequoia National Monument","McIntyre",242,112.905269590724
+"243",2020,"lowsev_fire","Giant Sequoia National Monument","Middle Tule",243,16.3338997027977
+"244",2020,"modsev_fire","Giant Sequoia National Monument","Middle Tule",244,3.94533224078701
+"245",2020,"highsev_fire","Giant Sequoia National Monument","Middle Tule",245,1.92512725155466
+"246",2016,"lowsev_fire","Giant Sequoia National Monument","Middle Tule",246,17.8344147009643
+"247",2016,"modsev_fire","Giant Sequoia National Monument","Middle Tule",247,0.630000173103157
+"248",1992,"mech_under","Giant Sequoia National Monument","Middle Tule",248,0.913760084751915
+"249",2018,"rx_pile","Giant Sequoia National Monument","Middle Tule",249,1.01384306863171
+"250",2010,"lowsev_fire","Giant Sequoia National Monument","Monarch",250,3.03376805473594
+"251",2010,"modsev_fire","Giant Sequoia National Monument","Monarch",251,0.0652944123212365
+"252",2020,"lowsev_fire","Giant Sequoia National Monument","Mountain Home",252,55.4030820658526
+"253",2020,"modsev_fire","Giant Sequoia National Monument","Mountain Home",253,35.5884410433842
+"254",2020,"highsev_fire","Giant Sequoia National Monument","Mountain Home",254,51.9664293099178
+"255",2009,"mech_under","Giant Sequoia National Monument","Mountain Home",255,0.681442668659032
+"256",1960,"mech_under","Giant Sequoia National Monument","Mountain Home",256,0.0309487662470317
+"257",1964,"mech_under","Giant Sequoia National Monument","Mountain Home",257,2.35889180654809
+"258",1965,"mech_under","Giant Sequoia National Monument","Mountain Home",258,1.06826944028003
+"259",1967,"mech_under","Giant Sequoia National Monument","Mountain Home",259,2.57925803508236
+"260",1971,"mech_under","Giant Sequoia National Monument","Mountain Home",260,5.62570214589324
+"261",1987,"mech_under","Giant Sequoia National Monument","Mountain Home",261,0.00107980129293865
+"262",1989,"mech_under","Giant Sequoia National Monument","Mountain Home",262,1.14116857815252
+"263",1994,"mech_under","Giant Sequoia National Monument","Mountain Home",263,0.778126439493716
+"264",1990,"mech_under","Giant Sequoia National Monument","Mountain Home",264,0.871399786143657
+"265",2002,"mech_under","Giant Sequoia National Monument","Mountain Home",265,5.58228987865279
+"266",2018,"mech_under","Giant Sequoia National Monument","Mountain Home",266,0.0000642997349471784
+"267",2016,"rx_pile","Giant Sequoia National Monument","Mountain Home",267,0.284820615279688
+"268",2012,"mech_under","Giant Sequoia National Monument","Mountain Home",268,1.44272130305422
+"269",2013,"mech_under","Giant Sequoia National Monument","Mountain Home",269,2.02818475588489
+"270",1983,"mech_under","Giant Sequoia National Monument","Mountain Home",270,1.87442243343372
+"271",2021,"lowsev_fire","Giant Sequoia National Monument","Packsaddle",271,27.0750337620865
+"272",2021,"modsev_fire","Giant Sequoia National Monument","Packsaddle",272,20.0197290699455
+"273",2021,"highsev_fire","Giant Sequoia National Monument","Packsaddle",273,23.5093408893968
+"274",2024,"mech_under","Giant Sequoia National Monument","Packsaddle",274,69.526976014979
+"275",2007,"mech_under","Giant Sequoia National Monument","Packsaddle",275,0.0293887278912356
+"276",2021,"lowsev_fire","Giant Sequoia National Monument","Peyrone",276,49.0671533183803
+"277",2021,"modsev_fire","Giant Sequoia National Monument","Peyrone",277,27.4527312266937
+"278",2021,"highsev_fire","Giant Sequoia National Monument","Peyrone",278,12.9636383109804
+"279",1987,"mech_under","Giant Sequoia National Monument","Peyrone",279,8.35169570228491
+"280",1986,"mech_under","Giant Sequoia National Monument","Peyrone",280,0.0456691536828963
+"281",1988,"mech_under","Giant Sequoia National Monument","Peyrone",281,12.3044175374835
+"282",2021,"lowsev_fire","Giant Sequoia National Monument","Powderhorn Tree",282,0.148036868693598
+"283",2024,"mech_under","Giant Sequoia National Monument","Powderhorn Tree",283,0.148036868693598
+"284",2021,"lowsev_fire","Giant Sequoia National Monument","Redhill",284,55.0397193561991
+"285",2021,"modsev_fire","Giant Sequoia National Monument","Redhill",285,63.5446210112665
+"286",2021,"highsev_fire","Giant Sequoia National Monument","Redhill",286,53.8807206017499
+"287",1985,"mech_under","Giant Sequoia National Monument","Redhill",287,0.0115085903704166
+"288",2007,"mech_under","Giant Sequoia National Monument","Redhill",288,4.07047095830836
+"289",2021,"lowsev_fire","Giant Sequoia National Monument","Redwood Mountain",289,24.7656096254927
+"290",2021,"modsev_fire","Giant Sequoia National Monument","Redwood Mountain",290,9.59285498320944
+"291",2021,"highsev_fire","Giant Sequoia National Monument","Redwood Mountain",291,36.6769706447735
+"292",1987,"lowsev_fire","Giant Sequoia National Monument","Redwood Mountain",292,7.9536445249796
+"293",1987,"modsev_fire","Giant Sequoia National Monument","Redwood Mountain",293,2.1314699569968
+"294",1987,"highsev_fire","Giant Sequoia National Monument","Redwood Mountain",294,0.039934933955851
+"295",1997,"mech_under","Giant Sequoia National Monument","Redwood Mountain",295,0.245533208238969
+"296",2012,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",296,0.907711750021947
+"297",2009,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",297,0.00605464581599226
+"298",1978,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",298,0.00014431308552339
+"299",1976,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",299,0.178017297873058
+"300",2001,"mech_under","Giant Sequoia National Monument","Redwood Mountain",300,2.3869668887588
+"301",2024,"mech_under","Giant Sequoia National Monument","Redwood Mountain",301,0.220321325622377
+"302",1983,"mech_under","Giant Sequoia National Monument","Redwood Mountain",302,4.85129113590631
+"303",1987,"mech_under","Giant Sequoia National Monument","Redwood Mountain",303,0.0784629253578154
+"304",2010,"mech_under","Giant Sequoia National Monument","Redwood Mountain",304,0.476769517624064
+"305",2016,"mech_under","Giant Sequoia National Monument","Redwood Mountain",305,6.4809037129008
+"306",2011,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",306,0.11376197546405
+"307",2017,"mech_under","Giant Sequoia National Monument","Redwood Mountain",307,8.69002009596848
+"308",2018,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",308,6.4809037129008
+"309",2019,"mech_under","Giant Sequoia National Monument","Redwood Mountain",309,6.4809037129008
+"310",2020,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",310,6.12865913716985
+"311",2018,"mech_under","Giant Sequoia National Monument","Redwood Mountain",311,2.20911638306763
+"312",2024,"rx_pile","Giant Sequoia National Monument","Redwood Mountain",312,0.536619198940181
+"313",2018,"lowsev_fire","Giant Sequoia National Monument","Silver Creek",313,8.2840852500485
+"314",2018,"modsev_fire","Giant Sequoia National Monument","Silver Creek",314,1.56117564502729
+"315",2018,"highsev_fire","Giant Sequoia National Monument","Silver Creek",315,0.18308886061287
+"316",2020,"lowsev_fire","Giant Sequoia National Monument","Silver Creek",316,0.742116682340507
+"317",2020,"modsev_fire","Giant Sequoia National Monument","Silver Creek",317,0.0242110289156679
+"318",2016,"lowsev_fire","Giant Sequoia National Monument","Silver Creek",318,0.0694221764215497
+"319",1994,"mech_under","Giant Sequoia National Monument","Silver Creek",319,3.3107734129655
+"320",1991,"mech_under","Giant Sequoia National Monument","Silver Creek",320,3.27865040437747
+"321",1992,"mech_under","Giant Sequoia National Monument","Silver Creek",321,0.230002169407986
+"322",2022,"mech_under","Giant Sequoia National Monument","Silver Creek",322,5.36542289114364
+"323",2021,"lowsev_fire","Giant Sequoia National Monument","South Peyrone",323,2.90948767635843
+"324",2021,"modsev_fire","Giant Sequoia National Monument","South Peyrone",324,5.54878500534096
+"325",2021,"highsev_fire","Giant Sequoia National Monument","South Peyrone",325,4.46998846736825
+"326",2021,"modsev_fire","Giant Sequoia National Monument","Starvation Creek",326,0.703879035380925
+"327",2021,"highsev_fire","Giant Sequoia National Monument","Starvation Creek",327,9.51084512352655
+"328",1984,"mech_under","Giant Sequoia National Monument","Starvation Creek",328,0.704315573100623
+"329",2020,"lowsev_fire","Giant Sequoia National Monument","Upper Tule",329,1.59130730972871
+"330",2015,"lowsev_fire","Giant Sequoia National Monument","Verplank",330,2.757521720873
+"331",2015,"modsev_fire","Giant Sequoia National Monument","Verplank",331,3.50276418833191
+"332",2015,"highsev_fire","Giant Sequoia National Monument","Verplank",332,4.35700520308886
+"333",2018,"mech_under","Giant Sequoia National Monument","Verplank",333,4.03062591106782
+"334",2022,"rx_pile","Giant Sequoia National Monument","Verplank",334,3.91809370732068
+"335",2020,"lowsev_fire","Giant Sequoia National Monument","Wheel Meadow",335,21.596366425448
+"336",2020,"modsev_fire","Giant Sequoia National Monument","Wheel Meadow",336,38.8923279409238
+"337",2020,"highsev_fire","Giant Sequoia National Monument","Wheel Meadow",337,172.759570461447
+"338",2022,"mech_under","Giant Sequoia National Monument","Wheel Meadow",338,0.245072497351293
+"339",2023,"mech_under","Giant Sequoia National Monument","Wheel Meadow",339,0.245072497351293
+"340",2006,"mech_under","Giant Sequoia National Monument","Wheel Meadow",340,4.77659271796176
+"341",2009,"rx_pile","Giant Sequoia National Monument","Wheel Meadow",341,4.77659271796176
+"342",2011,"mech_under","Giant Sequoia National Monument","Wheel Meadow",342,4.77659271796176
+"343",2007,"mech_under","Giant Sequoia National Monument","Wheel Meadow",343,0.430213330681401
+"344",2023,"rx_pile","Giant Sequoia National Monument","Wheel Meadow",344,126.697802196246
+"345",2018,"lowsev_fire","Giant Sequoia National Monument","Wishon",345,0.0641501228175977
+"346",2020,"lowsev_fire","Giant Sequoia National Monument","Wishon",346,0.512481318088248
+"347",2022,"mech_under","Giant Sequoia National Monument","Wishon",347,5.95066676383543
+"348",2018,"lowsev_fire","Mountain Home Demonstration State Forest","Burro Creek",348,0.000044433361321569
+"349",2018,"lowsev_fire","Mountain Home Demonstration State Forest","Maggie Mountain",349,0.055081049304756
+"350",2016,"lowsev_fire","Mountain Home Demonstration State Forest","Maggie Mountain",350,0.407516807009885
+"351",2016,"modsev_fire","Mountain Home Demonstration State Forest","Maggie Mountain",351,0.0586950695451815
+"352",2018,"lowsev_fire","Mountain Home Demonstration State Forest","Middle Tule",352,0.152027286662311
+"353",2020,"lowsev_fire","Mountain Home Demonstration State Forest","Middle Tule",353,32.3833000348213
+"354",2020,"modsev_fire","Mountain Home Demonstration State Forest","Middle Tule",354,5.94780213248781
+"355",2020,"highsev_fire","Mountain Home Demonstration State Forest","Middle Tule",355,1.45090041488054
+"356",2016,"lowsev_fire","Mountain Home Demonstration State Forest","Middle Tule",356,8.7241649087917
+"357",2016,"modsev_fire","Mountain Home Demonstration State Forest","Middle Tule",357,0.928365798791032
+"358",1961,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",358,4.88003243073545
+"359",1962,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",359,9.05293817281867
+"360",1969,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",360,28.4712334535977
+"361",1973,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",361,13.631592253889
+"362",1993,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",362,4.52422890073748
+"363",1994,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",363,5.1557874667341
+"364",1991,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",364,2.61335873651036
+"365",1992,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",365,10.0900981524952
+"366",2018,"rx_pile","Mountain Home Demonstration State Forest","Middle Tule",366,17.1742019744454
+"367",2017,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",367,4.03001105829247
+"368",2017,"rx_pile","Mountain Home Demonstration State Forest","Middle Tule",368,5.76141439754569
+"369",2012,"mech_under","Mountain Home Demonstration State Forest","Middle Tule",369,6.57013443953554
+"370",2006,"lowsev_fire","Mountain Home Demonstration State Forest","Mountain Home",370,0.289798085041689
+"371",2020,"lowsev_fire","Mountain Home Demonstration State Forest","Mountain Home",371,377.546046542988
+"372",2020,"modsev_fire","Mountain Home Demonstration State Forest","Mountain Home",372,107.698575192631
+"373",2020,"highsev_fire","Mountain Home Demonstration State Forest","Mountain Home",373,108.142129000722
+"374",2009,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",374,0.057651380033046
+"375",2008,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",375,3.11585345265402
+"376",1951,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",376,53.2999592402942
+"377",1952,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",377,71.5862782603057
+"378",1953,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",378,65.5144758071811
+"379",1958,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",379,15.799835816751
+"380",1959,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",380,6.14264047975648
+"381",1960,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",381,34.8288758301812
+"382",1961,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",382,58.7265099604001
+"383",1962,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",383,42.7815511943009
+"384",1964,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",384,37.2636152924141
+"385",1965,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",385,70.9847982653874
+"386",1967,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",386,66.6808809563341
+"387",1969,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",387,1.33301795806089
+"388",1971,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",388,86.624816727755
+"389",1983,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",389,93.5668959993523
+"390",1987,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",390,17.6993102465882
+"391",1989,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",391,123.97884604542
+"392",1993,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",392,36.5532638596558
+"393",1994,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",393,57.3216395944741
+"394",1992,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",394,41.5897455829075
+"395",1990,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",395,54.50105747544
+"396",2002,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",396,123.939400573728
+"397",2018,"rx_pile","Mountain Home Demonstration State Forest","Mountain Home",397,26.189441918174
+"398",2016,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",398,14.0804887649896
+"399",2016,"rx_pile","Mountain Home Demonstration State Forest","Mountain Home",399,23.3911272528764
+"400",2018,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",400,135.022696004596
+"401",2019,"rx_pile","Mountain Home Demonstration State Forest","Mountain Home",401,38.4490609547692
+"402",2013,"rx_pile","Mountain Home Demonstration State Forest","Mountain Home",402,36.814904273851
+"403",2012,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",403,115.554184365889
+"404",2013,"mech_under","Mountain Home Demonstration State Forest","Mountain Home",404,92.9377627010934
+"405",2012,"rx_pile","Mountain Home Demonstration State Forest","Mountain Home",405,76.8327944961786
+"406",2018,"lowsev_fire","Mountain Home Demonstration State Forest","Silver Creek",406,5.96179035018253
+"407",2018,"modsev_fire","Mountain Home Demonstration State Forest","Silver Creek",407,1.22928702416684
+"408",2018,"highsev_fire","Mountain Home Demonstration State Forest","Silver Creek",408,0.328119321679806
+"409",2020,"lowsev_fire","Mountain Home Demonstration State Forest","Silver Creek",409,0.0745602281485698
+"410",2020,"modsev_fire","Mountain Home Demonstration State Forest","Silver Creek",410,0.0525973294782882
+"411",2016,"lowsev_fire","Mountain Home Demonstration State Forest","Silver Creek",411,0.385479618283623
+"412",1994,"mech_under","Mountain Home Demonstration State Forest","Silver Creek",412,0.00213342526268098
+"413",1991,"mech_under","Mountain Home Demonstration State Forest","Silver Creek",413,3.26949657912706
+"414",1992,"mech_under","Mountain Home Demonstration State Forest","Silver Creek",414,2.61223719093634
+"415",2022,"mech_under","Mountain Home Demonstration State Forest","Silver Creek",415,0.185527238617961
+"416",2020,"lowsev_fire","Private","Alder Creek",416,10.2466005268046
+"417",2020,"modsev_fire","Private","Alder Creek",417,4.58976420236504
+"418",2020,"highsev_fire","Private","Alder Creek",418,9.24401037520994
+"419",2022,"mech_under","Private","Alder Creek",419,0.708264131104807
+"420",2023,"mech_under","Private","Alder Creek",420,0.0208486958653215
+"421",2024,"mech_under","Private","Alder Creek",421,0.110582788924171
+"422",2024,"rx_pile","Private","Alder Creek",422,0.0776537759304862
+"423",2018,"mech_under","Private","Alder Creek",423,0.366020190413036
+"424",2020,"highsev_fire","Private","Belknap Camp",424,1.2470211575607
+"425",2007,"mech_under","Private","Belknap Camp",425,0.0672407096213683
+"426",2021,"lowsev_fire","Private","Black Mountain",426,1.92456476876705
+"427",2017,"lowsev_fire","Private","Black Mountain",427,5.11018656154531
+"428",2017,"modsev_fire","Private","Black Mountain",428,4.77300812018074
+"429",2017,"highsev_fire","Private","Black Mountain",429,2.13985866928254
+"430",2016,"mech_under","Private","Black Mountain",430,2.77510121184373
+"431",2015,"mech_under","Private","Black Mountain",431,7.84894307650449
+"432",2016,"rx_pile","Private","Black Mountain",432,0.279910328327477
+"433",2017,"rx_pile","Private","Black Mountain",433,0.279910328327477
+"434",2007,"mech_under","Private","Black Mountain",434,0.341374274320568
+"435",2022,"mech_under","Private","Black Mountain",435,3.74689632860666
+"436",1987,"lowsev_fire","Private","Coffee Pot",436,2.12470341310175
+"437",1987,"modsev_fire","Private","Coffee Pot",437,0.756252806486158
+"438",1987,"highsev_fire","Private","Coffee Pot",438,0.57209353552524
+"439",2024,"lowsev_fire","Private","Coffee Pot",439,8.68701109389423
+"440",2024,"modsev_fire","Private","Coffee Pot",440,0.938078013484441
+"441",2024,"highsev_fire","Private","Coffee Pot",441,0.454349147247485
+"442",2023,"mech_under","Private","Coffee Pot",442,9.10299257400746
+"443",2020,"mech_under","Private","Coffee Pot",443,4.7755386372154
+"444",2020,"lowsev_fire","Private","Freeman Creek",444,0.12409681134884
+"445",2020,"modsev_fire","Private","Freeman Creek",445,0.25903885015836
+"446",2020,"highsev_fire","Private","Freeman Creek",446,3.2778600198845
+"447",1987,"lowsev_fire","Private","Ladybug",447,0.218971767277107
+"448",1987,"modsev_fire","Private","Ladybug",448,0.0538229769063323
+"449",1987,"highsev_fire","Private","Ladybug",449,0.00520991808392892
+"450",2024,"lowsev_fire","Private","Ladybug",450,0.0726241930639764
+"451",2024,"modsev_fire","Private","Ladybug",451,0.205380383855291
+"452",1987,"lowsev_fire","Private","Monache Tubs",452,0.0972486412310485
+"453",1987,"modsev_fire","Private","Monache Tubs",453,0.889565826822031
+"454",1987,"highsev_fire","Private","Monache Tubs",454,2.42663712386363
+"455",2024,"lowsev_fire","Private","Monache Tubs",455,0.293981083402169
+"456",2024,"modsev_fire","Private","Monache Tubs",456,0.744479400431744
+"457",2024,"highsev_fire","Private","Monache Tubs",457,2.55259444971312
+"458",2023,"mech_under","Private","Monache Tubs",458,2.96625411197684
+"459",2020,"lowsev_fire","Private","Mountain Home",459,16.7591553180679
+"460",2020,"modsev_fire","Private","Mountain Home",460,2.97108407153313
+"461",2020,"highsev_fire","Private","Mountain Home",461,0.215179985409035
+"462",2009,"mech_under","Private","Mountain Home",462,29.7797093478909
+"463",2017,"highsev_fire","Private","Nelder",463,3.54157022219268
+"464",1987,"lowsev_fire","Private","Nutmeg",464,8.14733661952337
+"465",1987,"modsev_fire","Private","Nutmeg",465,3.28575908928714
+"466",1987,"highsev_fire","Private","Nutmeg",466,0.553511375064054
+"467",2024,"lowsev_fire","Private","Nutmeg",467,11.6599250581505
+"468",2024,"modsev_fire","Private","Nutmeg",468,4.10810400648194
+"469",2024,"highsev_fire","Private","Nutmeg",469,0.289848600235883
+"470",2023,"mech_under","Private","Nutmeg",470,13.2412169177792
+"471",2020,"mech_under","Private","Nutmeg",471,15.0374464721298
+"472",2021,"lowsev_fire","Private","Redwood Mountain",472,0.711317903364151
+"473",2021,"modsev_fire","Private","Redwood Mountain",473,0.0000591596550966415
+"474",1997,"mech_under","Private","Redwood Mountain",474,1.70223597785961
+"475",1987,"lowsev_fire","Private","Salt Creek Ridge",475,6.22442881395366
+"476",1987,"modsev_fire","Private","Salt Creek Ridge",476,2.23374067079855
+"477",1987,"highsev_fire","Private","Salt Creek Ridge",477,0.906790562960383
+"478",2024,"lowsev_fire","Private","Salt Creek Ridge",478,9.77692188502413
+"479",2024,"modsev_fire","Private","Salt Creek Ridge",479,1.41562612811279
+"480",2023,"mech_under","Private","Salt Creek Ridge",480,4.23576008187469
+"481",2020,"mech_under","Private","Salt Creek Ridge",481,11.6825226834983
+"482",2020,"lowsev_fire","Save the Redwoods League","Alder Creek",482,60.5830870074136
+"483",2020,"modsev_fire","Save the Redwoods League","Alder Creek",483,8.47385815439093
+"484",2020,"highsev_fire","Save the Redwoods League","Alder Creek",484,25.8541451780997
+"485",2002,"mech_under","Save the Redwoods League","Alder Creek",485,72.230461775059
+"486",2022,"mech_under","Save the Redwoods League","Alder Creek",486,28.3693374904647
+"487",2024,"mech_under","Save the Redwoods League","Alder Creek",487,86.2466620235083
+"488",2023,"mech_under","Save the Redwoods League","Alder Creek",488,5.42930455481312
+"489",2024,"rx_pile","Save the Redwoods League","Alder Creek",489,33.8730793312714
+"490",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Atwell",490,74.5847861745362
+"491",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Atwell",491,11.6539873746681
+"492",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Atwell",492,6.81395866213927
+"493",2009,"mech_under","Sequoia and Kings Canyon National Parks","Atwell",493,2.41424690172891
+"494",2008,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",494,13.1828987539798
+"495",2005,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",495,5.93787937157694
+"496",2016,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",496,15.8177429274869
+"497",2016,"mech_under","Sequoia and Kings Canyon National Parks","Atwell",497,15.8177429274869
+"498",2003,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",498,320.505518724874
+"499",2011,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",499,2.41424690172887
+"500",2006,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",500,2.05499652990267
+"501",2010,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",501,2.41424690172977
+"502",2006,"mech_under","Sequoia and Kings Canyon National Parks","Atwell",502,2.05499652990268
+"503",2005,"mech_under","Sequoia and Kings Canyon National Parks","Atwell",503,2.05499652990267
+"504",2004,"mech_under","Sequoia and Kings Canyon National Parks","Atwell",504,2.05499652990267
+"505",2000,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",505,6.32273349721072
+"506",1997,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",506,12.2363568062844
+"507",1994,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",507,1.91808019409322
+"508",1999,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",508,15.7227848210122
+"509",1995,"rx_pile","Sequoia and Kings Canyon National Parks","Atwell",509,289.80919024942
+"510",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Big Springs",510,0.840593907007927
+"511",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Big Springs",511,0.00357378000765457
+"512",2024,"rx_pile","Sequoia and Kings Canyon National Parks","Big Stump",512,1.56202257081972
+"513",2017,"rx_pile","Sequoia and Kings Canyon National Parks","Big Stump",513,2.60466320149869
+"514",2021,"mech_under","Sequoia and Kings Canyon National Parks","Big Stump",514,29.5937839728399
+"515",2016,"mech_under","Sequoia and Kings Canyon National Parks","Big Stump",515,2.84427715141445
+"516",2004,"rx_pile","Sequoia and Kings Canyon National Parks","Big Stump",516,0.000528670833698561
+"517",2003,"mech_under","Sequoia and Kings Canyon National Parks","Big Stump",517,0.000528670833698561
+"518",2002,"rx_pile","Sequoia and Kings Canyon National Parks","Big Stump",518,1.68709488715071
+"519",2019,"mech_under","Sequoia and Kings Canyon National Parks","Big Stump",519,0.23961394984018
+"520",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Board Camp",520,0.865945419150344
+"521",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Board Camp",521,2.33171694444111
+"522",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Board Camp",522,16.3150745108785
+"523",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",523,49.2024299439684
+"524",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",524,27.4329712263308
+"525",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",525,7.50082419614427
+"526",1995,"lowsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",526,46.1312644476386
+"527",1995,"modsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",527,2.6444828140168
+"528",1996,"lowsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",528,7.87680821729488
+"529",1996,"modsev_fire","Sequoia and Kings Canyon National Parks","Castle Creek",529,0.180545681023807
+"530",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Cedar Flat",530,4.48827230572729
+"531",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Cedar Flat",531,0.238810824370719
+"532",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Cedar Flat",532,0.128284801689758
+"533",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Clough Cave",533,0.167219805768887
+"534",2024,"lowsev_fire","Sequoia and Kings Canyon National Parks","Coffeepot Canyon",534,2.21108585855362
+"535",2024,"modsev_fire","Sequoia and Kings Canyon National Parks","Coffeepot Canyon",535,0.0796035791318651
+"536",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Dennison",536,4.80145156939386
+"537",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Devil's Canyon",537,2.77419825190585
+"538",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Dillonwood",538,127.8374740584
+"539",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Dillonwood",539,27.4221235003346
+"540",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Dillonwood",540,19.5065211983942
+"541",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Douglass",541,0.362547208526591
+"542",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Douglass",542,0.0670093765829806
+"543",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","East Fork",543,1.64530020871964
+"544",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","East Fork",544,0.0638442076001563
+"545",1991,"lowsev_fire","Sequoia and Kings Canyon National Parks","East Fork",545,66.9629038505553
+"546",1991,"modsev_fire","Sequoia and Kings Canyon National Parks","East Fork",546,5.52248090144643
+"547",1991,"highsev_fire","Sequoia and Kings Canyon National Parks","East Fork",547,0.179999242264684
+"548",2008,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",548,1.69688630402954
+"549",2016,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",549,0.466247776349786
+"550",2016,"mech_under","Sequoia and Kings Canyon National Parks","East Fork",550,0.466247776349786
+"551",2014,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",551,7.50770847544174
+"552",2006,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",552,0.107502770269697
+"553",2002,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",553,64.1985869043326
+"554",1997,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",554,1.46738876195833
+"555",1999,"rx_pile","Sequoia and Kings Canyon National Parks","East Fork",555,1.76174486549447
+"556",2018,"lowsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",556,39.9272095736843
+"557",2018,"modsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",557,0.515234596871634
+"558",2018,"highsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",558,0.0326686363157467
+"559",2024,"lowsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",559,89.9307968326148
+"560",2024,"modsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",560,8.89831424976946
+"561",2024,"highsev_fire","Sequoia and Kings Canyon National Parks","Eden Creek",561,0.0435742373706074
+"562",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Fenced Tree",562,0.216924066433821
+"563",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Forgotten",563,0.417718500893116
+"564",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Forgotten",564,0.16201511370418
+"565",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Forgotten",565,0.159715553492118
+"566",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Garfield",566,248.851838444692
+"567",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Garfield",567,23.0737597668018
+"568",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Garfield",568,17.5388428769519
+"569",1986,"lowsev_fire","Sequoia and Kings Canyon National Parks","Garfield",569,60.6115989746814
+"570",1986,"modsev_fire","Sequoia and Kings Canyon National Parks","Garfield",570,0.0987785363802315
+"571",1985,"rx_pile","Sequoia and Kings Canyon National Parks","Garfield",571,78.5325613796426
+"572",2015,"lowsev_fire","Sequoia and Kings Canyon National Parks","General Grant",572,10.4562589723266
+"573",2015,"modsev_fire","Sequoia and Kings Canyon National Parks","General Grant",573,9.40133579353228
+"574",2015,"highsev_fire","Sequoia and Kings Canyon National Parks","General Grant",574,1.91306156338479
+"575",2024,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",575,4.14319011982159
+"576",2005,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",576,15.602804909278
+"577",2014,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",577,0.00153097858660622
+"578",2011,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",578,1.6091419296914
+"579",2023,"mech_under","Sequoia and Kings Canyon National Parks","General Grant",579,47.2600460531409
+"580",1992,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",580,12.453382795641
+"581",1980,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",581,4.02175915351413
+"582",1990,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",582,6.94832156111385
+"583",1979,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",583,4.12919684336085
+"584",1981,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",584,0.385293350587977
+"585",1996,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",585,1.69380248483435
+"586",1995,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",586,1.46575318836723
+"587",1982,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",587,1.72862436613154
+"588",1993,"rx_pile","Sequoia and Kings Canyon National Parks","General Grant",588,5.24022238029086
+"589",2018,"mech_under","Sequoia and Kings Canyon National Parks","General Grant",589,0.00579348837656435
+"590",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",590,95.5362195159209
+"591",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",591,12.2372563320606
+"592",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",592,2.14954327757513
+"593",1997,"lowsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",593,0.270000074191066
+"594",1988,"lowsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",594,0.62566665629846
+"595",2003,"lowsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",595,58.2135450554701
+"596",2003,"modsev_fire","Sequoia and Kings Canyon National Parks","Giant Forest",596,0.261329262285493
+"597",2009,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",597,24.0648009382948
+"598",2012,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",598,36.3474112171908
+"599",2003,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",599,122.042876842941
+"600",2014,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",600,60.1080531486731
+"601",2019,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",601,66.0457841059973
+"602",2011,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",602,94.596526684537
+"603",2010,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",603,16.2660075051357
+"604",2007,"mech_under","Sequoia and Kings Canyon National Parks","Giant Forest",604,2.1502104354995
+"605",2015,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",605,6.58083265654831
+"606",2005,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",606,43.4283388270537
+"607",2004,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",607,46.9238792675091
+"608",2022,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",608,166.653199951747
+"609",1998,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",609,43.7279267217545
+"610",1969,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",610,10.9151026138044
+"611",1985,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",611,57.9738872984891
+"612",1984,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",612,29.9522080387593
+"613",1981,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",613,31.8842927182872
+"614",1982,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",614,47.9254847007519
+"615",2002,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",615,47.8114871774773
+"616",1989,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",616,14.0907461663412
+"617",1988,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",617,8.80408774615126
+"618",1979,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",618,19.5763854743532
+"619",1990,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",619,10.9863260758451
+"620",1980,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",620,7.35137049646494
+"621",1999,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",621,64.6639031440826
+"622",1993,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",622,11.6598817600387
+"623",1987,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",623,18.2498607069931
+"624",1997,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",624,40.8523460830909
+"625",1991,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",625,9.26656893870573
+"626",1992,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",626,0.0900198470248688
+"627",2001,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",627,65.8431778476778
+"628",1996,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",628,14.0355454426091
+"629",1995,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",629,19.3136589369976
+"630",1972,"rx_pile","Sequoia and Kings Canyon National Parks","Giant Forest",630,1.19421923386462
+"631",2023,"lowsev_fire","Sequoia and Kings Canyon National Parks","Granite Creek",631,0.347695371559798
+"632",2023,"mech_under","Sequoia and Kings Canyon National Parks","Granite Creek",632,0.573630281676824
+"633",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Homers Nose",633,13.5459031660019
+"634",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","Homers Nose",634,8.34387997388553
+"635",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","Homers Nose",635,26.014380518356
+"636",2023,"lowsev_fire","Sequoia and Kings Canyon National Parks","Little Redwood Meadow",636,2.74677141863252
+"637",2023,"mech_under","Sequoia and Kings Canyon National Parks","Little Redwood Meadow",637,11.3020904402313
+"638",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Lost",638,2.69932116038838
+"639",2017,"mech_under","Sequoia and Kings Canyon National Parks","Lost",639,5.20637143926733
+"640",1986,"lowsev_fire","Sequoia and Kings Canyon National Parks","Muir",640,1.225391178711
+"641",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Muir",641,58.6096813696884
+"642",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Muir",642,8.43053500744296
+"643",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Muir",643,3.84248103437403
+"644",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","New Oriole Lake",644,2.42900437153141
+"645",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","New Oriole Lake",645,1.90895542175379
+"646",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","New Oriole Lake",646,1.62848736241301
+"647",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Oriole Lake",647,41.6952530806299
+"648",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Oriole Lake",648,1.87379538656774
+"649",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Oriole Lake",649,0.21739027450335
+"650",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Pine Ridge",650,13.6314911450094
+"651",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Pine Ridge",651,1.48995565255427
+"652",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Pine Ridge",652,0.125372538709705
+"653",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","Putnam-Francis Tree",653,0.103880402947275
+"654",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Creek",654,12.6298684811279
+"655",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Redwood Creek",655,0.716635576123769
+"656",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Redwood Creek",656,0.749129222237103
+"657",2008,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Creek",657,0.0132121445400175
+"658",2003,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Creek",658,18.4482841596004
+"659",1995,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Creek",659,18.4363858478469
+"660",1996,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Meadow",660,8.78854477554814
+"661",1996,"modsev_fire","Sequoia and Kings Canyon National Parks","Redwood Meadow",661,0.349708520339461
+"662",2023,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Meadow",662,32.5489600775457
+"663",2023,"modsev_fire","Sequoia and Kings Canyon National Parks","Redwood Meadow",663,1.78078837596314
+"664",2023,"mech_under","Sequoia and Kings Canyon National Parks","Redwood Meadow",664,64.2633391072937
+"665",2006,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",665,0.000752786034457859
+"666",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",666,265.23695578085
+"667",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",667,129.174957035069
+"668",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",668,191.789571913943
+"669",1987,"lowsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",669,10.2212494327274
+"670",1987,"modsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",670,3.60646070115166
+"671",1987,"highsev_fire","Sequoia and Kings Canyon National Parks","Redwood Mountain",671,0.406519041786867
+"672",2006,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",672,54.1308753981509
+"673",2016,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",673,167.584287566
+"674",2016,"mech_under","Sequoia and Kings Canyon National Parks","Redwood Mountain",674,167.584287565998
+"675",2012,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",675,159.11638898392
+"676",2011,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",676,113.933686464804
+"677",2004,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",677,19.6168566552558
+"678",2009,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",678,132.016568997089
+"679",1974,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",679,13.2865063680578
+"680",1969,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",680,58.1435556194436
+"681",1970,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",681,17.64673312897
+"682",1972,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",682,40.7273250204185
+"683",1971,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",683,1.76549906470706
+"684",1982,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",684,3.03554460869541
+"685",1977,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",685,163.990428286269
+"686",1978,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",686,10.727058254997
+"687",1981,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",687,20.6141407223553
+"688",1976,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",688,91.2568673630685
+"689",1975,"rx_pile","Sequoia and Kings Canyon National Parks","Redwood Mountain",689,8.46085276463219
+"690",2001,"mech_under","Sequoia and Kings Canyon National Parks","Redwood Mountain",690,1.90154303485524
+"691",2018,"mech_under","Sequoia and Kings Canyon National Parks","Redwood Mountain",691,9.09878267048142
+"692",2017,"mech_under","Sequoia and Kings Canyon National Parks","Redwood Mountain",692,9.09878267048142
+"693",2024,"rx_pile","Sequoia and Kings Canyon National Parks","Sequoia Creek",693,4.20630564519838
+"694",2014,"rx_pile","Sequoia and Kings Canyon National Parks","Sequoia Creek",694,0.475341556737025
+"695",2012,"rx_pile","Sequoia and Kings Canyon National Parks","Sequoia Creek",695,0.301630705999791
+"696",2009,"rx_pile","Sequoia and Kings Canyon National Parks","Sequoia Creek",696,4.97404146087722
+"697",2023,"mech_under","Sequoia and Kings Canyon National Parks","Sequoia Creek",697,6.41901248025974
+"698",1995,"rx_pile","Sequoia and Kings Canyon National Parks","Sequoia Creek",698,4.96825243737012
+"699",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Skagway",699,14.0089630253544
+"700",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Skagway",700,0.588049103720619
+"701",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Skagway",701,0.552944286406064
+"702",2008,"lowsev_fire","Sequoia and Kings Canyon National Parks","Skagway",702,4.08565551043297
+"703",2008,"modsev_fire","Sequoia and Kings Canyon National Parks","Skagway",703,0.34169260210765
+"704",2008,"highsev_fire","Sequoia and Kings Canyon National Parks","Skagway",704,0.0729970066882903
+"705",1969,"rx_pile","Sequoia and Kings Canyon National Parks","Skagway",705,0.891635178852999
+"706",2020,"lowsev_fire","Sequoia and Kings Canyon National Parks","South Fork",706,77.5578724088158
+"707",2020,"modsev_fire","Sequoia and Kings Canyon National Parks","South Fork",707,9.66739265532601
+"708",2020,"highsev_fire","Sequoia and Kings Canyon National Parks","South Fork",708,1.27866954093296
+"709",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Squirrel Creek",709,1.43048941052311
+"710",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Squirrel Creek",710,0.22698981205763
+"711",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Squirrel Creek",711,0.238688912808042
+"712",2024,"lowsev_fire","Sequoia and Kings Canyon National Parks","Surprise",712,4.87712624351919
+"713",2024,"modsev_fire","Sequoia and Kings Canyon National Parks","Surprise",713,3.95434534838203
+"714",2024,"highsev_fire","Sequoia and Kings Canyon National Parks","Surprise",714,0.264850880935675
+"715",2021,"lowsev_fire","Sequoia and Kings Canyon National Parks","Suwanee",715,7.20051648241303
+"716",2021,"modsev_fire","Sequoia and Kings Canyon National Parks","Suwanee",716,14.814826207468
+"717",2021,"highsev_fire","Sequoia and Kings Canyon National Parks","Suwanee",717,5.90981586984312
+"718",1991,"rx_pile","Sequoia and Kings Canyon National Parks","Suwanee",718,14.8232273432451
+"719",1990,"rx_pile","Sequoia and Kings Canyon National Parks","Suwanee",719,0.0899358987527456
+"720",1992,"rx_pile","Sequoia and Kings Canyon National Parks","Suwanee",720,27.2980294427083
+"721",1984,"mech_under","Sierra National Forest","McKinley",721,0.0896107947676122
+"722",1985,"mech_under","Sierra National Forest","McKinley",722,0.129824362313332
+"723",2023,"mech_under","Sierra National Forest","McKinley",723,0.0896107947439043
+"724",2017,"lowsev_fire","Sierra National Forest","Nelder",724,57.6098826895732
+"725",2017,"modsev_fire","Sierra National Forest","Nelder",725,6.30085005459851
+"726",2017,"highsev_fire","Sierra National Forest","Nelder",726,17.5812767750888
+"727",2023,"mech_under","Sierra National Forest","Nelder",727,28.6102733944732
+"728",2024,"mech_under","Sierra National Forest","Nelder",728,10.1014638818954
+"729",2020,"mech_under","Sierra National Forest","Nelder",729,6.72267592301233
+"730",2021,"rx_pile","Sierra National Forest","Nelder",730,2.33197877943372
+"731",2023,"rx_pile","Sierra National Forest","Nelder",731,2.33197877943372
+"732",2015,"mech_under","Sierra National Forest","Nelder",732,15.6537421436073
+"733",2019,"mech_under","Sierra National Forest","Nelder",733,7.33834873820496
+"734",2012,"mech_under","Sierra National Forest","Nelder",734,122.079924313856
+"735",2022,"lowsev_fire","Tahoe National Forest","Placer County Big Trees",735,0.356431930939924
+"736",2014,"mech_under","Tahoe National Forest","Placer County Big Trees",736,1.16592898591398
+"737",2016,"rx_pile","Tahoe National Forest","Placer County Big Trees",737,1.16592434323954
+"738",2017,"rx_pile","Tahoe National Forest","Placer County Big Trees",738,0.00183035006295831
+"739",2020,"lowsev_fire","Tulare County","Mountain Home",739,23.59240229075
+"740",2020,"modsev_fire","Tulare County","Mountain Home",740,0.85058629232319
+"741",2020,"highsev_fire","Tulare County","Mountain Home",741,0.0235319788050845
+"742",1971,"mech_under","Tulare County","Mountain Home",742,2.3891044275341
+"743",1983,"mech_under","Tulare County","Mountain Home",743,0.196255096117902
+"744",2018,"mech_under","Tulare County","Mountain Home",744,2.18180731582829
+"745",2019,"rx_pile","Tulare County","Mountain Home",745,16.1281573191722
+"746",2012,"mech_under","Tulare County","Mountain Home",746,2.1813473862405
+"747",2012,"rx_pile","Tulare County","Mountain Home",747,0.0811376465708629
+"748",2021,"lowsev_fire","Whittaker's Forest","Redwood Mountain",748,35.1310409524016
+"749",2021,"modsev_fire","Whittaker's Forest","Redwood Mountain",749,1.76174678275282
+"750",2021,"highsev_fire","Whittaker's Forest","Redwood Mountain",750,1.23635909999417
+"751",2012,"rx_pile","Whittaker's Forest","Redwood Mountain",751,32.3837127698421
+"752",1972,"rx_pile","Whittaker's Forest","Redwood Mountain",752,1.65969632890303
+"753",2024,"rx_pile","Whittaker's Forest","Redwood Mountain",753,7.17285084508338
+"754",2024,"mech_under","Whittaker's Forest","Redwood Mountain",754,10.6669222856119
+"755",2001,"mech_under","Whittaker's Forest","Redwood Mountain",755,87.7387136317007
+"756",2018,"mech_under","Whittaker's Forest","Redwood Mountain",756,0.254386251265122
+"757",2017,"mech_under","Whittaker's Forest","Redwood Mountain",757,0.254386251265122
+"758",2022,"lowsev_fire","Yosemite National Park","Mariposa",758,1.55530782288657
+"759",2022,"modsev_fire","Yosemite National Park","Mariposa",759,0.349700959514321
+"760",2024,"rx_pile","Yosemite National Park","Mariposa",760,1.75226079339763
+"761",2023,"rx_pile","Yosemite National Park","Mariposa",761,26.238359871765
+"762",1971,"rx_pile","Yosemite National Park","Mariposa",762,17.4359008443567
+"763",1975,"rx_pile","Yosemite National Park","Mariposa",763,6.2207563923945
+"764",1979,"rx_pile","Yosemite National Park","Mariposa",764,15.7404633350556
+"765",1983,"rx_pile","Yosemite National Park","Mariposa",765,10.8157754762517
+"766",1984,"rx_pile","Yosemite National Park","Mariposa",766,22.1424084356521
+"767",1989,"rx_pile","Yosemite National Park","Mariposa",767,13.1514629759838
+"768",1990,"rx_pile","Yosemite National Park","Mariposa",768,3.96715905373956
+"769",1993,"rx_pile","Yosemite National Park","Mariposa",769,8.89865813136975
+"770",1995,"rx_pile","Yosemite National Park","Mariposa",770,11.1894682638453
+"771",1997,"rx_pile","Yosemite National Park","Mariposa",771,5.58634476867274
+"772",1998,"rx_pile","Yosemite National Park","Mariposa",772,0.962040795026929
+"773",1999,"rx_pile","Yosemite National Park","Mariposa",773,17.9155268911411
+"774",2003,"rx_pile","Yosemite National Park","Mariposa",774,18.0533990224983
+"775",2004,"rx_pile","Yosemite National Park","Mariposa",775,12.1139734752223
+"776",2006,"rx_pile","Yosemite National Park","Mariposa",776,17.8755698945297
+"777",2008,"rx_pile","Yosemite National Park","Mariposa",777,13.1043966847336
+"778",2016,"rx_pile","Yosemite National Park","Mariposa",778,30.9049135005508
+"779",2017,"rx_pile","Yosemite National Park","Mariposa",779,10.2965942614682
+"780",2016,"mech_under","Yosemite National Park","Mariposa",780,0.875936953113362
+"781",2023,"mech_under","Yosemite National Park","Mariposa",781,0.408490802656999
+"782",2024,"rx_pile","Yosemite National Park","Merced",782,0.129489435073821
+"783",2024,"mech_under","Yosemite National Park","Merced",783,2.62031796392919
+"784",1976,"rx_pile","Yosemite National Park","Merced",784,2.16155571914691
+"785",1977,"rx_pile","Yosemite National Park","Merced",785,3.1190991754446
+"786",1990,"rx_pile","Yosemite National Park","Merced",786,0.326656226720038
+"787",2018,"rx_pile","Yosemite National Park","Merced",787,6.08618788532678
+"788",2022,"mech_under","Yosemite National Park","Merced",788,4.43336119688597
+"789",2023,"mech_under","Yosemite National Park","Merced",789,5.73305981111815
+"790",2013,"lowsev_fire","Yosemite National Park","Tuolumne",790,0.326412256110839
+"791",2005,"rx_pile","Yosemite National Park","Tuolumne",791,3.67917055951185
