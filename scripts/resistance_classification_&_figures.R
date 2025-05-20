@@ -4,6 +4,7 @@ library(scales)
 library(here)
 library(sf)
 
+options(scipen = 999)
 
 ##dataset by individual polygons with disturbance history as 
 #tallies and last year of treatment and # years between prior treatments
@@ -193,11 +194,23 @@ resist_tbl_all = snapshot.resist.all %>%
   select(last_trt,resist_class, area_ha_all)
 resist_tbl_all
 
+##get some stats
+#ha "lost" per category
+resist_lost = resist_tbl_all %>%
+  filter(resist_class != "Loss of mature forest") %>%
+  # filter(last_trt>=2010&last_trt<2015) %>%
+  filter(last_trt<2010) %>%
+  group_by(resist_class) %>%
+  summarise(area_ha = sum(area_ha_all))
+resist_lost
+sum(resist_lost$area_ha)
+View(resist_lost)
 #get complete cases of resistance thru time since 1966
 all_resist_complete = snapshot.resist.all %>%
   filter(!resist_class %in% c("No resistance","Loss of mature forest")) %>%
   filter(last_trt>=1966) %>%
   complete(last_trt,resist_class)
+
 
 # write.csv(resist_tbl_snapshot,here("outputs/resistance_thru_time_15yrs.csv"))
 
@@ -213,11 +226,11 @@ ggplot(all_resist_complete,
   geom_rect(aes(xmin= -Inf,
                 xmax = 2009.5,
                 ymin = -Inf,
-                ymax = Inf), fill = 'gray75', alpha = 0.02) +
+                ymax = Inf), fill = 'gray65', alpha = 0.02) +
   geom_rect(aes(xmin= 2009.5,
                 xmax = 2015.5,
                 ymin = -Inf,
-                ymax = Inf), fill = 'gray80', alpha = 0.02) +
+                ymax = Inf), fill = 'gray85', alpha = 0.02) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap("resist_class_f", ncol = 1) + 
   scale_fill_manual(
@@ -234,7 +247,7 @@ ggplot(all_resist_complete,
         axis.line = element_line(colour = "black"),
         # axis.text.y = element_text(size = 14)
   )  +
-  scale_y_continuous(limits = c(0,800), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,900), expand = c(0, 0)) +
   scale_x_continuous(expand = c(0.01, 0))
 
 # ggsave(here("outputs/figures_for_manuscript/resistance_classes_thru_time_1970_2024.jpg"),
