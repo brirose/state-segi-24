@@ -86,7 +86,7 @@ groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTI_publi
 ```{r}
 #derived inputs
 
-#fire pereimeters within groves
+#fire perimeters within groves
 perimeters_segi <- st_read(here("data/spatial_data/outputs/perimeters_segi/perimeters_segi.shp"))
 
 #BA that we did not yet have, is missing a little window of Windy Fire, layer made in combine_gee

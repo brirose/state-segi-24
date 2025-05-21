@@ -43,11 +43,11 @@ dat <- rasfiles %>% #read in files
 s <- sprc(dat)
 
 ## merge rasters; NOT GOOD FOR OVERLAPS
-severity_rdnbr <- merge(s, first = F)
+#severity_rdnbr <- merge(s, first = F)
 
 #output new combined raster 
 #dir.create(here("data/spatial_data/outputs/fire/needFires_rdnbr"))
-writeRaster(severity_rdnbr, here("data/spatial_data/outputs/rdnbr_mostRecent.tif"), overwrite = T)
+#writeRaster(severity_rdnbr, here("data/spatial_data/outputs/rdnbr_mostRecent.tif"), overwrite = T)
 
 #severity_rdnbr <- rast(here("data/spatial_data/inputs/needFires_rdnbr.tif"))
 
@@ -242,3 +242,65 @@ dir.create(here("data/spatial_data/outputs/CBI_missing"))
 st_write(CBI_sf, here("data/spatial_data/outputs/CBI_missing/CBI_missing.shp"), append = F)
 
 ```
+
+
+#remake CBI layer with precise classes
+
+Unchanged 0–0.1 <41 <69
+Low 0.1–1.24 41–176 69–315
+Moderate 1.25–2.24 177–366 316–640
+High 2.25–3.0 >=367 >=641
+
+
+
+```{r}
+#make raster with max; is not working, running in Arc for expedience
+
+#maxSev_rdnbr <- max(s)
+
+
+#writeRaster(maxSev_rdnbr, #here("data/spatial_data/outputs/rdnbr_max.tif"), overwrite = T)
+
+maxSev_rdnbr <- rast(here("data/spatial_data/outputs/sos_rdnbr_max_value.tif"))
+```
+
+
+```{r}
+
+useCRS <- crs(maxSev_rdnbr)
+
+betterCBIbreaks <- tibble(
+  rdnbr_from = c(0, 69, 315, 640), #lefthand breaks in rdnbr for CBI
+  rdnbr_to = c(69, 315, 640, 1000), #righthand breaks in rdnbr for CBI
+  becomes =  c(1, 2, 3, 4)) #name of categories
+  
+betterCBIbreaks[1,1] = minmax(maxSev_rdnbr)[1] #make lowest category include minimum in raster
+betterCBIbreaks[4,2] = minmax(maxSev_rdnbr)[2] #and highest be max in raster
+
+#classify rasters in list 
+dat_class <- lapply(dat, classify, rcl = betterCBIbreaks, right = F, include.lowest = T) #include max value 
+
+#make factors
+lapply(dat_class, as.factor)
+
+#convert to multipolygons
+dat_poly <- lapply(dat_class, as.polygons)
+dat_projection <- lapply(dat_poly, project, useCRS)#fix_crs
+dat_sf <- lapply(dat_projection, st_as_sf)
+
+#Combine to single dataframe with name of fire
+dat_sf <- map_df(dat_sf, data.frame, .id = 'name') 
+
+CBI_sf <- dat_sf %>% 
+  rename("burnsev" = "rdnbr") %>% 
+  mutate(assss_t = "GEE",
+         year = str_extract(name, "\\d+"),
+         id = str_to_upper(str_remove(name, "rdnbr_"))
+         )
+
+dir.create(here("data/spatial_data/outputs/CBI_all21May25"))
+st_write(CBI_sf, here("data/spatial_data/outputs/CBI_all21May25/CBI_all_20May25.shp"), append = F)
+```
+
+
+
