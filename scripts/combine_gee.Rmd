@@ -24,7 +24,7 @@ Run fire severity in google earth engine (!https://code.earthengine.google.com/6
 rasfiles <- list.files(path=here("data/spatial_data/inputs/fire/fires_needed"), full.names=T) #define files
 
 rasnames <- rasfiles%>% #define names
- str_replace_all(c("C:/Users/bri.baker/State_SEGI/state-segi-24/data/spatial_data/inputs/fire/fires_needed/" = "", "_rdnbr.tif" = "")) %>% 
+ str_replace_all(c(".+fires_needed/" = "", "_rdnbr.+" = "")) %>% 
   tolower()
 
 rasnames <- paste("rdnbr", rasnames, sep="_")
@@ -292,14 +292,17 @@ dat_sf <- lapply(dat_projection, st_as_sf)
 dat_sf <- map_df(dat_sf, data.frame, .id = 'name') 
 
 CBI_sf <- dat_sf %>% 
-  rename("burnsev" = "rdnbr") %>% 
   mutate(assss_t = "GEE",
          year = str_extract(name, "\\d+"),
          id = str_to_upper(str_remove(name, "rdnbr_"))
-         )
+         ) %>% 
+  replace_na(list(rdnbr = 0, Band_1 = 0, Layer_1 = 0)) %>% 
+  mutate(burnsev = rdnbr+Band_1+Layer_1) %>% 
+  select(-c(rdnbr, Band_1, Layer_1))
 
-dir.create(here("data/spatial_data/outputs/CBI_all21May25"))
-st_write(CBI_sf, here("data/spatial_data/outputs/CBI_all21May25/CBI_all_20May25.shp"), append = F)
+#dir.create(here("data/spatial_data/outputs/CBI_all_recalc"))
+st_write(CBI_sf, here("data/spatial_data/outputs/CBI_all_recalc/CBI_all_recalc.shp"), append = F)
+
 ```
 
 
