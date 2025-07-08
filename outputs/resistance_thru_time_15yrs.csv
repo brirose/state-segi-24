@@ -1,7 +1,135 @@
-"","resist_class","area_ha","perc_area","rank"
-"1","Loss of mature forest",1500.93,14.8160980810235,1
-"2","No resistance",1428.31,14.0992458343205,2
-"3","Faded resistance",817.87,8.07342256969123,3
-"4","Low resistance",299.05,2.95200584379689,4
-"5","Moderate resistance",4093.55,40.4085722182737,5
-"6","High resistance",1990.69,19.6506554528943,6
+"","last_dist_yr","resist_class","area_ha_all"
+"1",1976,"High resistance",0.001680897875992
+"2",1977,"High resistance",0.338743928789079
+"3",1979,"High resistance",0.19691455035887
+"4",1980,"High resistance",0.07771764298885
+"5",1984,"High resistance",0.000169290426793
+"6",1986,"High resistance",0.318348106044583
+"7",1989,"High resistance",0.245842821609657
+"8",1997,"High resistance",5.22566702261311
+"9",1998,"High resistance",0.060023201144618
+"10",1999,"High resistance",5.63709368520993
+"11",2001,"High resistance",0.612060875394574
+"12",2002,"High resistance",2.82872306378462
+"13",2003,"High resistance",171.153250465703
+"14",2004,"High resistance",7.48029197172403
+"15",2005,"High resistance",2.53252637925862
+"16",2006,"High resistance",1.14447395082759
+"17",2008,"High resistance",11.7659592897655
+"18",2009,"High resistance",0.058052439094492
+"19",2010,"High resistance",0.866131185866299
+"20",2011,"High resistance",80.20002425371
+"21",2012,"High resistance",18.1548849890979
+"22",2013,"High resistance",10.237111714643
+"23",2014,"High resistance",48.9106675769478
+"24",2015,"High resistance",2.8754148654337
+"25",2016,"High resistance",78.9924417468551
+"26",2017,"High resistance",172.388777712476
+"27",2018,"High resistance",64.3490529719685
+"28",2019,"High resistance",50.4413504349733
+"29",2020,"High resistance",321.506642855633
+"30",2021,"High resistance",473.915212777767
+"31",2022,"High resistance",192.616040593021
+"32",2023,"High resistance",340.762198527042
+"33",2024,"High resistance",288.896673503054
+"34",1987,"Loss of mature forest",0.335485441201261
+"35",1991,"Loss of mature forest",1.61748687526508
+"36",2015,"Loss of mature forest",146.56624521001
+"37",2016,"Loss of mature forest",0.072742191487898
+"38",2017,"Loss of mature forest",95.0425488075839
+"39",2018,"Loss of mature forest",5.60037172172724
+"40",2019,"Loss of mature forest",7.45544795644399
+"41",2020,"Loss of mature forest",829.338634362238
+"42",2021,"Loss of mature forest",427.492098018057
+"43",2022,"Loss of mature forest",46.7695294900951
+"44",2023,"Loss of mature forest",219.710146981276
+"45",2024,"Loss of mature forest",60.0726867592813
+"46",1952,"Low resistance",0.323159466428864
+"47",1953,"Low resistance",0.811072467764267
+"48",1958,"Low resistance",0.225771401558578
+"49",1960,"Low resistance",3.8667512661162
+"50",1961,"Low resistance",0.54370837456337
+"51",1962,"Low resistance",2.65793389690712
+"52",1964,"Low resistance",0.217402647146606
+"53",1965,"Low resistance",1.08520913622388
+"54",1967,"Low resistance",0.957290004193436
+"55",1969,"Low resistance",4.35599048638727
+"56",1971,"Low resistance",0.74489657638696
+"57",1973,"Low resistance",7.81515484716368
+"58",1983,"Low resistance",4.35866320255602
+"59",1984,"Low resistance",0.088572748393592
+"60",1985,"Low resistance",1.20761036624184
+"61",1986,"Low resistance",1.71731340703164
+"62",1989,"Low resistance",3.28696777292749
+"63",1990,"Low resistance",0.050538380888769
+"64",1991,"Low resistance",0.263629980223318
+"65",1992,"Low resistance",2.50033782394211
+"66",1993,"Low resistance",1.01441987371736
+"67",1994,"Low resistance",0.766526809085399
+"68",1997,"Low resistance",0.239177364676584
+"69",2001,"Low resistance",29.6071382638082
+"70",2002,"Low resistance",4.32005070443818
+"71",2007,"Low resistance",0.541941795947287
+"72",2009,"Low resistance",4.74110236698261
+"73",2012,"Low resistance",8.3974332212504
+"74",2013,"Low resistance",9.96453408742215
+"75",2014,"Low resistance",0.000004644718254
+"76",2015,"Low resistance",0.946520215216794
+"77",2016,"Low resistance",14.1663483279225
+"78",2017,"Low resistance",8.05641373378053
+"79",2018,"Low resistance",18.8605241942426
+"80",2019,"Low resistance",7.40739445053537
+"81",2020,"Low resistance",4.57786981751377
+"82",2021,"Low resistance",29.0067882868549
+"83",2022,"Low resistance",12.6248572611569
+"84",2023,"Low resistance",127.052958372493
+"85",2024,"Low resistance",28.1195286810247
+"86",1969,"Moderate resistance",0.787295271328852
+"87",1971,"Moderate resistance",0.328850283209735
+"88",1972,"Moderate resistance",1.4133011080073
+"89",1975,"Moderate resistance",0.005819879144758
+"90",1977,"Moderate resistance",0.762891685249262
+"91",1979,"Moderate resistance",0.117453766228989
+"92",1980,"Moderate resistance",4.8816314663135
+"93",1981,"Moderate resistance",0.545119448573636
+"94",1982,"Moderate resistance",9.820309356507
+"95",1983,"Moderate resistance",0.529517200732759
+"96",1984,"Moderate resistance",0.087931105726463
+"97",1985,"Moderate resistance",18.6114577834422
+"98",1986,"Moderate resistance",6.53220971541022
+"99",1987,"Moderate resistance",2.47290675960393
+"100",1988,"Moderate resistance",0.190617981652106
+"101",1989,"Moderate resistance",0.54692714957394
+"102",1990,"Moderate resistance",0.16778954781481
+"103",1991,"Moderate resistance",144.922684531738
+"104",1993,"Moderate resistance",0.354067958316086
+"105",1994,"Moderate resistance",0.230975662652323
+"106",1995,"Moderate resistance",0.912527916168177
+"107",1996,"Moderate resistance",6.71692922982385
+"108",1997,"Moderate resistance",1.22405587775105
+"109",1998,"Moderate resistance",0.040042873622428
+"110",1999,"Moderate resistance",37.8485383395385
+"111",2000,"Moderate resistance",0.000558485156181
+"112",2001,"Moderate resistance",2.00206312738138
+"113",2002,"Moderate resistance",62.0467437448475
+"114",2003,"Moderate resistance",23.0608122259366
+"115",2004,"Moderate resistance",7.06744132903435
+"116",2005,"Moderate resistance",49.0352350074082
+"117",2006,"Moderate resistance",2.96500091864623
+"118",2008,"Moderate resistance",8.73094244248259
+"119",2009,"Moderate resistance",16.5673236395971
+"120",2010,"Moderate resistance",8.19352299907508
+"121",2011,"Moderate resistance",12.618307958102
+"122",2012,"Moderate resistance",146.078170624389
+"123",2013,"Moderate resistance",5.24089561084608
+"124",2014,"Moderate resistance",8.98314901260573
+"125",2015,"Moderate resistance",812.901801874006
+"126",2016,"Moderate resistance",54.753139734188
+"127",2017,"Moderate resistance",221.876085160135
+"128",2018,"Moderate resistance",84.9307385388231
+"129",2019,"Moderate resistance",67.5261669116612
+"130",2020,"Moderate resistance",1670.61961080129
+"131",2021,"Moderate resistance",892.417132012894
+"132",2022,"Moderate resistance",170.029420299427
+"133",2023,"Moderate resistance",29.7694485665198
+"134",2024,"Moderate resistance",147.951235721537

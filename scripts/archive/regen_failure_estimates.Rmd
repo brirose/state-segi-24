@@ -1,0 +1,249 @@
+---
+title: "Regen Failure"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, error = F, message = F)
+
+library(here)
+library(tidyverse)
+library(janitor)
+library(sf)
+library(terra)
+library(kableExtra)
+
+```
+
+This document holds the analysis for regeneration failure areas.
+
+```{r import_data}
+
+#polygons of SEGI groves, "skinny"
+groves <- vect(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp")) %>% 
+  clean_names()
+
+######################################
+###Note: likely because of the coffee pot at different resolution, the 
+#regen classes were not matching the footprint of high severity/forest loss
+#So no longer using the max value raster
+
+# rdnbr fires that have had high sev and are in groves 1984-2024 
+# double check this layer (looking for reburn area) -- will need to see spatially + temporally 
+sev_rdnbr2 <- rast(here("data/spatial_data/inputs/sos_rdnbr_max_value_r_compiled.tif"))  %>%
+  project(groves) #make same CRS
+sev_rdnbr = sev_rdnbr2 %>%
+  as.int()
+# sev_rdnbr <- rast(here("data/spatial_data/outputs/rdnbr_mostRecent.tif"))
+
+
+groves_sf <- groves %>% st_as_sf()
+
+groves$hectares <- expanse(groves, unit = "ha")
+grove_ha <- sum(groves$hectares)
+
+```
+
+We will consider areas that fall into the highest burn severity category as having the potential for inadequate regeneration. The layer I am starting from contains rdnbr for fires from 1984-2023 that both burned at high severity and burned sequoia groves.
+
+
+```{r immediate}
+
+#select  rdnbr 801-1100 mod risk and >1101 high risk
+reclass_matrix <- tibble(
+  from = c(-32768, 640, 800, 1100),
+  to = c(641, 801, 1101, 9992),
+  becomes = c(5, 6, 7, 8)
+)
+
+immediate_regen_failure_clp <- sev_rdnbr %>% 
+  classify(reclass_matrix) %>%
+# ,
+#            right = F, # include "from" value in category
+#            include.lowest = T) %>% #include max value
+  as.polygons()%>% 
+  intersect(groves)
+plot(immediate_regen_failure)
+
+immediate_regen_failure = immediate_regen_failure_clp %>% 
+  st_as_sf() 
+plot(imf)
+
+imf = immediate_regen_failure %>% 
+#   st_intersection(groves)
+# %>% 
+  rename(sev_class = rdnbr) %>% 
+  # filter(sev_class != 1) %>% 
+  mutate(area_ha = round(as.numeric(st_area(.))*0.0001,1),
+         immediate_failure = case_when(
+           sev_class == 5 ~ "regen_likely",
+           sev_class == 6 ~ "low_end_high_regen_likely",
+           sev_class == 7 ~ "moderate_immediate_risk",
+           sev_class == 8 ~ "high_immediate_risk"),
+         perc = round(area_ha/hectares*100,3)
+         ) %>% 
+  select(immediate_failure, grove_name, area_ha, perc) %>%
+  group_by(immediate_failure, grove_name) %>%
+  summarise(area_ha = sum(area_ha))
+
+imf_summary = imf %>%
+  filter(immediate_failure %in% c("low_end_high_regen_likely",
+                        "moderate_immediate_risk","high_immediate_risk")) %>%
+  group_by(immediate_failure) %>%
+  summarise(area_ha = sum(area_ha))
+imf_summary
+sum(imf_summary$area_ha)
+# dir.create(here("data/spatial_data/outputs/immediate_failure"))
+st_write(imf, here("data/spatial_data/outputs/immediate_failure/immediate_failure_25May2025.shp"), append = F)
+
+#summarize immediate regen failure
+# immediate_failure_summary <- st_drop_geometry(immediate_regen_failure) %>% 
+#   summarise(.by = immediate_failure, area_ha = sum(area_ha)) %>%  #add failure in each category
+#   mutate(perc = area_ha/grove_ha*100 ) #include percentage
+
+# calculate totals
+total_ha <- sum(immediate_failure_summary$area_ha)
+total_perc <- total_ha/grove_ha*100
+
+#add totals
+# immediate_failure_summary <- immediate_failure_summary %>% 
+#   add_row(.before = 1, area_ha = total_ha, immediate_failure = "total", perc = total_perc) %>%
+#   mutate(grove_name = "All") %>% 
+#   pivot_wider(names_from = immediate_failure, values_from = c(area_ha, perc))
+
+##even with adjusted names for new cols this isn't running for for me
+# create tidy dataframe of all groves
+immediate_failure_groves <- st_drop_geometry(immediate_regen_failure) %>% 
+  pivot_wider(names_from = immediate_failure, values_from = area_ha) #%>%
+#   replace_na(list(area_ha_moderate_immediate_risk = 0, area_ha_high_immediate_risk = 0,
+#                   area_ha_regen_likely = 0, area_ha_low_end_high_regen_likely = 0
+#                   # ,
+#                   # perc_moderate_immediate_risk = 0, perc_low_end_high_regen_likely = 0,
+#                   # perc_regen_likely = 0, perc_high_immediate_risk = 0
+#                   )) %>%
+#   # calc totals in groves as sums
+#   mutate(
+#     area_ha_total = area_ha_moderate_immediate_risk + area_ha_high_immediate_risk +
+#                   area_ha_regen_likely + area_ha_low_end_high_regen_likely,
+#     perc_total = perc_moderate_immediate_risk + perc_low_end_high_regen_likely +
+#                   perc_regen_likely + perc_high_immediate_risk
+#       ) %>%
+  # bind_rows(immediate_failure_summary)
+
+```
+
+```{r}
+
+immediate_failure_counts <- immediate_regen_failure %>% 
+  st_drop_geometry() %>% 
+  summarise(.by = immediate_failure, count = n()) %>% 
+  mutate(perc= count/97)
+
+```
+
+
+```{r}
+#output table of all immediate failure
+kable(immediate_failure_groves,
+      digits = 1,
+      caption = "Area at risk to immediate natural regeneration failure by grove")
+```
+
+Lower severity classes can act as seed source into gaps. Per Clark's seed dispersal model 95% of seeds fall within 36.8m of a tree, so we can assume that seed dispersal into gaps created by high severity fire will most likely occur in this zone and we will want to buffer this out when trying to ascertain where regen failure is likely. 
+
+Here, I make a layer that represents seed source (grove area that has not experienced rdnbr 640 or higher fire). Then I use this to find areas where dispersal is likely by adding a 36.8m buffer.
+
+```{r seed_source}
+
+# make classification that breaks at 640
+reclass_matrix2 <- tibble(
+  from = c(-10498, 640),
+  to = c(640, 9992),
+  becomes = c(1, 2)
+)
+
+# make layer that represents the "high severity" areas over 640 that will need seed source
+
+high_sev <- sev_rdnbr %>% 
+  classify(reclass_matrix2,
+           right = F, # include "from" value in category
+           include.lowest = T) %>% #include max value
+  as.polygons() %>% 
+  st_as_sf() %>% 
+  rename(sev_class = sos_rdnbr_max_value) %>% 
+  summarise(.by = sev_class, geometry = st_combine(geometry)) %>% 
+  filter(sev_class == 2) %>% 
+  vect()
+
+# high_sev_grvs = crop(high_sev, groves, ext=FALSE)
+
+##put both in sf??
+high_sev_sf = st_as_sf(high_sev)
+high_sev_grvs = high_sev_sf %>%
+  st_intersection(groves_sf) %>%
+  mutate(area_ha = round(as.numeric(st_area(.)*0.0001),3)) %>%
+  group_by(unit_name, grove_name) %>%
+  summarise(long_term_risk = sum(area_ha))
+# %>%
+#   st_drop_geometry()
+
+dispersal_area <- erase(groves, high_sev_grvs) %>% #take high severity area out of groves
+  buffer(width = 36.8) #buffer by 36.8m 
+
+##need to get total area that is high sev in last fire
+# high_sev$area_ha <- expanse(high_sev, unit = "ha") #calculate area affected
+
+# high_sev$area_ha = as.numeric(st_area(high_sev)*0.0001)
+
+disbursal_area <- erase(groves, high_sev) %>% #take high severity area out of groves
+  buffer(width = 36.8) #buffer by 36.8m 
+
+high_sev_grvs
+
+```
+
+Once we know where dispersal is likely, we can difference the disbursal area from groves to determine where regeneration failure is highly likely.
+
+```{r regen-failure}
+#start with high sev area
+regen_fail <- erase(groves, disbursal_area) %>%  #erase areas where disbursal happens
+  subset(select = c("grove_name", "acres"), NSE = T) #select only grove name
+
+regen_fail$area_ha <- expanse(regen_fail, unit = "ha") #calculate area affected
+
+#dir.create(here("data/spatial_data/outputs/longterm_failure"))
+
+#writeVector(regen_fail, here("data/spatial_data/outputs/longterm_failure/longterm_failure13feb25.shp"), overwrite = T)
+
+```
+
+```{r outputs}
+
+regen_fail_sf <- st_as_sf(regen_fail) %>% 
+ st_drop_geometry() %>% 
+  mutate(failure_perc = area_ha/grove_ha*100) %>% 
+  select(grove_name, area_ha, failure_perc) %>% 
+  arrange(-area_ha)
+
+total_ha <- sum(regen_fail$area_ha)
+total_perc <- total_ha/grove_ha*100
+
+longterm_fail <- regen_fail_sf %>% 
+  add_row(.before = 1, grove_name = "All", 
+        area_ha = total_ha, failure_perc = total_perc) %>% 
+  rename(area_ha_longterm = area_ha,
+         perc_longterm = failure_perc)
+
+total_failure <- immediate_failure_groves %>% 
+  left_join(longterm_fail)
+
+write_csv(total_failure, here("outputs/failure_bygrove13feb25.csv"))
+
+kable(longterm_fail,
+      digits = 1,
+      caption = "Area at risk to long-term natural regeneration failure by grove")
+
+```
+
