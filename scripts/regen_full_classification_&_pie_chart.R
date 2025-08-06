@@ -5,72 +5,59 @@ library(ggplot2)
 #####need to fix the high severity classification to match resistance
 
 ##bring in the overall resistance classes
-resist_cls = read.csv("C:/Users/kshive/Documents/UCB/Projects/In Progress/State of the SEGI/2024/GIT-state-segi-24/outputs/resistance_snapshot_last_15yrs.csv")
+resist_cls1 = read.csv("C:/Users/kshive/Documents/UCB/Projects/In Progress/State of the SEGI/2024/GIT-state-segi-24/outputs/resistance_thru_time_15yrs.csv")
+resist_cls = resist_cls1 %>%
+  group_by(resist_class) %>%
+  summarise(area_ha_all = sum(area_ha_all))
 resist_cls
-sum(resist_cls$area_ha_all)
 
-imm = read.csv(here("outputs/immediate_failure_bygrove13feb25.csv"))
-imm
-long = read.csv(here("outputs/longterm_failure_bygrove13feb25.csv"))
-long
+fail = read.csv(here("outputs/regen_failure_by_grove_ownership_30May2025.csv"))
+fail.summary = fail %>%
+  group_by(regen_status, timeframe) %>%
+  summarise(area_ha_all = sum(area_ha))
 
-#pull out the high/mod immediate risk
-imm.dat = imm %>%
-  filter(grove_name == "All") %>%
-  rename(imm_risk_mod_area_ha = area_ha_moderate, 
-         imm_risk_high_area_ha = area_ha_high) %>%
-  mutate(area = "rangewide") %>%
-  select(area, imm_risk_mod_area_ha, 
-         imm_risk_high_area_ha)
-imm.dat
+fail.imm = fail.summary %>%
+  filter(timeframe == "immediate")
+fail.imm
 
-#pull out total long term risk
-long.dat = long %>%
-  filter((grove_name == "Total")) %>%
-  rename(long_term_risk = area_ha) %>%
-  mutate(area = "rangewide") %>%
-  select(area, long_term_risk)
-long.dat
+###get area that is thinned vs no resistance at all
+# combo resistance data where low resistance is ever thinned and no resistance is kept
+total_groveHa <- 10130.4
+total_distHa = sum(resist_cls$area_ha_all)
 
-###get total area of high severity (forest loss) minus the area
-###that is RdNBR >640, which is the total area of mod/high imm risk
-#first pivot resist classes and join tables
-regen_cls_all = resist_cls %>%
-  select(resist_class, area_ha_all) %>%
-  pivot_wider(names_from = resist_class, values_from = area_ha_all) %>%
-  clean_names() %>%
-  mutate(area = "rangewide") %>%
-  left_join(long.dat) %>%
-  left_join(imm.dat) %>%
-  mutate(all_imm = (imm_risk_mod_area_ha+imm_risk_high_area_ha),
-    high_sev_ok = loss_of_mature_forest - all_imm,
-         some_burn_ok = high_resistance + moderate_resistance,
-         no_burn_but_thin = low_resistance, no_burn_no_thin = no_resistance,
-         total_hopefully = high_sev_ok + some_burn_ok + no_burn_no_thin + no_burn_but_thin + 
-                                 imm_risk_mod_area_ha + imm_risk_high_area_ha) %>%
-  select(area, total_hopefully, high_sev_ok,some_burn_ok,no_burn_no_thin,
-           imm_risk_mod_area_ha,imm_risk_high_area_ha,
-           long_term_risk,no_burn_but_thin) %>%
-  relocate(area, .before = 1) %>%
-  relocate(total_hopefully, .before = 2) %>%
-  pivot_longer(2:9, names_to = "class", values_to = "ha")
-regen_cls_all
-sum(regen_cls_all$ha)
+all_regen_classes = resist_cls %>%
+    filter(resist_class != "Loss of mature forest") %>%
+    mutate(regen_status = case_when(
+    resist_class %in% c("High resistance", "Moderate resistance") ~ "Some fire history (low and mod sev)",
+    resist_class == "Low resistance" ~ "No fire history, thinning treatments only"
+  )) %>%
+  bind_rows(fail.imm) %>% 
+  mutate(regen_status_lumped = case_when(
+    regen_status == "Some fire history (low and mod sev)" ~ "Some wildfire/rx history",
+    regen_status == "Immediate: Low end of high severity - likely ok" ~ "Some wildfire/rx history",
+    .default = regen_status
+  )) %>%
+  group_by(regen_status_lumped) %>%
+  summarise(area_ha = sum(area_ha_all)) %>%
+  add_row(regen_status_lumped = "No fire/treatment history",
+          area_ha = total_groveHa-total_distHa) %>%
+  mutate(timeframe = "immediate") %>%
+  mutate(perc_area = area_ha/total_groveHa)
+all_regen_classes
 
-regen_cls_names = regen_cls_all %>%
-  filter(!class %in% c("total_hopefully","long_term_risk")) %>%
+
+regen_cls_names = all_regen_classes %>%
   mutate(better.names = case_when(
-    class == "high_sev_ok" ~ "Burned areas with potential for regeneration",
-    class == "some_burn_ok" ~ "Burned areas with potential for regeneration",
-    class == "no_burn_no_thin" ~ "Unburned/untreated - high potential for demographic bottleneck",
-    class == "imm_risk_mod_area_ha" ~ "Postfire - moderate risk of inadequate regeneration",
-    class == "imm_risk_high_area_ha" ~ "Postfire - high risk of inadequate regeneration",
-    class == "no_burn_but_thin" ~ "Unburned but thinned - moderate potential for demographic bottleneck"
+    regen_status_lumped == "Some wildfire/rx history" ~ "Burned areas with potential for regeneration",
+    regen_status_lumped == "No fire/treatment history" ~ "Unburned/untreated - high potential for demographic bottleneck",
+    regen_status_lumped == "Immediate: Moderate risk" ~ "Immediately postfire - moderate risk of inadequate regeneration",
+    regen_status_lumped == "Immediate: High risk" ~ "Immediately postfire - high risk of inadequate regeneration",
+    regen_status_lumped == "No fire history, thinning treatments only" ~ "Unburned but thinned - moderate potential for demographic bottleneck"
 ))
 
-love.pies = ggplot(regen_cls_names, aes(x="", y=ha, fill=factor(better.names, 
-                              levels = c("Postfire - high risk of inadequate regeneration",
-                              "Postfire - moderate risk of inadequate regeneration",
+love.pies = ggplot(regen_cls_names, aes(x="", y=area_ha, fill=factor(better.names, 
+                              levels = c("Immediately postfire - high risk of inadequate regeneration",
+                              "Immediately postfire - moderate risk of inadequate regeneration",
                               "Unburned/untreated - high potential for demographic bottleneck",
                               "Unburned but thinned - moderate potential for demographic bottleneck",
                                "Burned areas with potential for regeneration")))) +
@@ -84,12 +71,95 @@ love.pies = ggplot(regen_cls_names, aes(x="", y=ha, fill=factor(better.names,
   theme(legend.title = element_blank(), 
         legend.text = element_text(size = 8)) +
   theme(legend.key.size = unit(0.4, 'cm'), 
-        legend.text = element_text(size=6)) 
+        legend.text = element_text(size=4)) 
 #for adding percent labels, needs trouble shooting
 # +
 #   geom_text(aes(x = "", y = pos, label = paste0(perc_range,"%")))
 love.pies
 
-ggsave(here("outputs/regen_figures/regen_pie_chart_21Feb2025.png"), width = 4, height = 2)
+# ggsave(here("outputs/figures_for_manuscript/regen_pie_chart_30May2025.png"), width = 4, height = 4)
+##for legend text size
+# ggsave(here("outputs/figures_for_manuscript/regen_pie_chart_30May2025_legend.png"), width = 4, height = 4)
+
+###########################
+##try one with the long term overlapped
+all_regen_classes_wLong = all_regen_classes %>%
+  add_row(regen_status_lumped = "Moderate immediate risk of inadequate regeneration with long term limitation",
+          area_ha = 373) %>%
+  add_row(regen_status_lumped = "High immediate risk of inadequate regeneration with long term limitation",
+          area_ha = 222) %>%
+  add_row(regen_status_lumped = "Moderate immediate risk of inadequate regeneration with no limits on long term",
+          area_ha = 502) %>%
+  add_row(regen_status_lumped = "High immediate risk of inadequate regeneration with no limits on long term",
+          area_ha = 134) %>%
+  filter(!regen_status_lumped %in% c("Immediate: High risk","Immediate: Moderate risk")) %>%
+  mutate(regen_status_wLong = regen_status_lumped,
+         perc_area = area_ha/10129.04) %>%
+  select(-regen_status_lumped,-timeframe)
+all_regen_classes_wLong
+222/356
+373/875
+regen_cls_names_wLong = all_regen_classes_wLong %>%
+  mutate(better.names = case_when(
+    regen_status_wLong == "Some wildfire/rx history" ~ "Burned areas with potential for regeneration",
+    regen_status_wLong == "No fire/treatment history" ~ "Unburned/untreated - high potential for demographic bottleneck",
+    regen_status_wLong == "No fire history, thinning treatments only" ~ "Unburned but thinned - moderate potential for demographic bottleneck",
+    .default = regen_status_wLong
+  ))
+
+
+long.love.pies = ggplot(regen_cls_names_wLong, aes(x="", y=area_ha, fill=factor(better.names, 
+                              levels = c("High immediate risk of inadequate regeneration with no limits on long term",
+                                         "High immediate risk of inadequate regeneration with long term limitation",
+                                         "Moderate immediate risk of inadequate regeneration with long term limitation",
+                                          "Moderate immediate risk of inadequate regeneration with no limits on long term",
+                                         "Unburned/untreated - high potential for demographic bottleneck",
+                              "Unburned but thinned - moderate potential for demographic bottleneck",
+                               "Burned areas with potential for regeneration")))) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  # scale_fill_manual(values=c("#999933","#006666","#1199BB","#2244CC","#523252")) +
+  scale_fill_manual(values=c("#999988","#999966","#226677","#226666","#5599BB","#1166BB","#523252")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title = element_blank(), axis.text = element_blank()) +
+  theme(legend.title = element_blank(), 
+        legend.text = element_text(size = 8)) +
+  theme(legend.key.size = unit(0.4, 'cm'), 
+        legend.text = element_text(size=4)) 
+#for adding percent labels, needs trouble shooting
+# +
+#   geom_text(aes(x = "", y = pos, label = paste0(perc_range,"%")))
+long.love.pies
+
+# ggsave(here("outputs/figures_for_manuscript/regen_pie_chart_30May2025.png"), width = 4, height = 4)
+
+
+
+
+love.pies = ggplot(regen_cls_names, aes(x="", y=area_ha, fill=factor(better.names, 
+                                                                     levels = c("Immediately postfire - high risk of inadequate regeneration",
+                                                                                "Immediately postfire - moderate risk of inadequate regeneration",
+                                                                                "Unburned/untreated - high potential for demographic bottleneck",
+                                                                                "Unburned but thinned - moderate potential for demographic bottleneck",
+                                                                                "Burned areas with potential for regeneration")))) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  # scale_fill_manual(values=c("#999933","#006666","#1199BB","#2244CC","#523252")) +
+  scale_fill_manual(values=c("#999966","#226666","#5599BB","#1166BB","#523252")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title = element_blank(), axis.text = element_blank()) +
+  theme(legend.title = element_blank(), 
+        legend.text = element_text(size = 8)) +
+  theme(legend.key.size = unit(0.4, 'cm'), 
+        legend.text = element_text(size=4)) 
+#for adding percent labels, needs trouble shooting
+# +
+#   geom_text(aes(x = "", y = pos, label = paste0(perc_range,"%")))
+love.pies
+
+ggsave(here("outputs/figures_for_manuscript/regen_pie_chart_30May2025.png"), width = 4, height = 4)
+
 
 
