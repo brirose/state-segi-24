@@ -1,248 +1,132 @@
-regen_status,area_ha,unit_name,grove_name,timeframe,perc_area_imm
-Longterm regeneration risk,24.71,Giant Sequoia National Monument,Alder Creek,longterm,NA
-Longterm regeneration risk,1.17,Giant Sequoia National Monument,Belknap Camp,longterm,NA
-Longterm regeneration risk,6.61,Giant Sequoia National Monument,Black Mountain,longterm,NA
-Longterm regeneration risk,1.65,Giant Sequoia National Monument,Cabin Creek,longterm,NA
-Longterm regeneration risk,4.3,Giant Sequoia National Monument,Converse Basin,longterm,NA
-Longterm regeneration risk,1.32,Giant Sequoia National Monument,Converse Mountain,longterm,NA
-Longterm regeneration risk,4.91,Giant Sequoia National Monument,Deer Creek,longterm,NA
-Longterm regeneration risk,19.49,Giant Sequoia National Monument,Dillonwood,longterm,NA
-Longterm regeneration risk,12.32,Giant Sequoia National Monument,Evans,longterm,NA
-Longterm regeneration risk,207.3,Giant Sequoia National Monument,Freeman Creek,longterm,NA
-Longterm regeneration risk,0.51,Giant Sequoia National Monument,General Grant,longterm,NA
-Longterm regeneration risk,1,Giant Sequoia National Monument,Hoist Ridge,longterm,NA
-Longterm regeneration risk,0.15,Giant Sequoia National Monument,Kennedy,longterm,NA
-Longterm regeneration risk,0.85,Giant Sequoia National Monument,Lockwood,longterm,NA
-Longterm regeneration risk,4.76,Giant Sequoia National Monument,Long Meadow,longterm,NA
-Longterm regeneration risk,12.9,Giant Sequoia National Monument,McIntyre,longterm,NA
-Longterm regeneration risk,0.01,Giant Sequoia National Monument,Middle Tule,longterm,NA
-Longterm regeneration risk,17.5,Giant Sequoia National Monument,Mountain Home,longterm,NA
-Longterm regeneration risk,3.11,Giant Sequoia National Monument,Packsaddle,longterm,NA
-Longterm regeneration risk,1.87,Giant Sequoia National Monument,Peyrone,longterm,NA
-Longterm regeneration risk,16.85,Giant Sequoia National Monument,Redhill,longterm,NA
-Longterm regeneration risk,11.82,Giant Sequoia National Monument,Redwood Mountain,longterm,NA
-Longterm regeneration risk,0.46,Giant Sequoia National Monument,South Peyrone,longterm,NA
-Longterm regeneration risk,1.24,Giant Sequoia National Monument,Starvation Creek,longterm,NA
-Longterm regeneration risk,0.71,Giant Sequoia National Monument,Verplank,longterm,NA
-Longterm regeneration risk,98.16,Giant Sequoia National Monument,Wheel Meadow,longterm,NA
-Longterm regeneration risk,30.89,Mountain Home Demonstration State Forest,Mountain Home,longterm,NA
-Longterm regeneration risk,5.77,Private,Alder Creek,longterm,NA
-Longterm regeneration risk,0.04,Private,Black Mountain,longterm,NA
-Longterm regeneration risk,2.86,Private,Freeman Creek,longterm,NA
-Longterm regeneration risk,0.1,Private,Monache Tubs,longterm,NA
-Longterm regeneration risk,0.68,Private,Nelder,longterm,NA
-Longterm regeneration risk,14.38,Save the Redwoods League,Alder Creek,longterm,NA
-Longterm regeneration risk,0.27,Sequoia and Kings Canyon National Parks,Atwell,longterm,NA
-Longterm regeneration risk,7.39,Sequoia and Kings Canyon National Parks,Board Camp,longterm,NA
-Longterm regeneration risk,0.01,Sequoia and Kings Canyon National Parks,Castle Creek,longterm,NA
-Longterm regeneration risk,0.74,Sequoia and Kings Canyon National Parks,Dillonwood,longterm,NA
-Longterm regeneration risk,5.82,Sequoia and Kings Canyon National Parks,Garfield,longterm,NA
-Longterm regeneration risk,0.54,Sequoia and Kings Canyon National Parks,General Grant,longterm,NA
-Longterm regeneration risk,9.7,Sequoia and Kings Canyon National Parks,Homers Nose,longterm,NA
-Longterm regeneration risk,0.62,Sequoia and Kings Canyon National Parks,Muir,longterm,NA
-Longterm regeneration risk,89.4,Sequoia and Kings Canyon National Parks,Redwood Mountain,longterm,NA
-Longterm regeneration risk,0.09,Sequoia and Kings Canyon National Parks,Suwanee,longterm,NA
-Longterm regeneration risk,6.68,Sierra National Forest,Nelder,longterm,NA
-Longterm regeneration risk,0,Whittaker's Forest,Redwood Mountain,longterm,NA
-Immediate: Low end of high severity - likely ok,0.01,Bureau of Land Management,Coffee Pot,immediate,5.998381149504514
-Immediate: Low end of high severity - likely ok,0.06,Bureau of Land Management,Ladybug,immediate,5.998381149504514
-Immediate: Low end of high severity - likely ok,0.24,Bureau of Land Management,Monache Tubs,immediate,5.998381149504514
-Immediate: Moderate risk,0.01,Bureau of Land Management,Monache Tubs,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,1.38,Bureau of Land Management,Nutmeg,immediate,5.998381149504514
-Immediate: Moderate risk,0.78,Bureau of Land Management,Nutmeg,immediate,8.63845460906246
-Immediate: Moderate risk,0.03,Giant Sequoia National Monument,Abbott,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.6,Giant Sequoia National Monument,Agnew,immediate,5.998381149504514
-Immediate: Moderate risk,0.27,Giant Sequoia National Monument,Agnew,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,6.27,Giant Sequoia National Monument,Alder Creek,immediate,5.998381149504514
-Immediate: Moderate risk,25.35,Giant Sequoia National Monument,Alder Creek,immediate,8.63845460906246
-Immediate: High risk,7.82,Giant Sequoia National Monument,Alder Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,4.52,Giant Sequoia National Monument,Belknap Camp,immediate,5.998381149504514
-Immediate: Moderate risk,6.43,Giant Sequoia National Monument,Belknap Camp,immediate,8.63845460906246
-Immediate: High risk,2.03,Giant Sequoia National Monument,Belknap Camp,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,53.87,Giant Sequoia National Monument,Black Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,29.06,Giant Sequoia National Monument,Black Mountain,immediate,8.63845460906246
-Immediate: High risk,2.84,Giant Sequoia National Monument,Black Mountain,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.11,Giant Sequoia National Monument,Burro Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.03,Giant Sequoia National Monument,Burro Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,3.31,Giant Sequoia National Monument,Cabin Creek,immediate,5.998381149504514
-Immediate: Moderate risk,2.73,Giant Sequoia National Monument,Cabin Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.47,Giant Sequoia National Monument,Carr Wilson,immediate,5.998381149504514
-Immediate: Moderate risk,1.08,Giant Sequoia National Monument,Carr Wilson,immediate,8.63845460906246
-Immediate: High risk,0.58,Giant Sequoia National Monument,Carr Wilson,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.82,Giant Sequoia National Monument,Cherry Gap,immediate,5.998381149504514
-Immediate: Moderate risk,0.24,Giant Sequoia National Monument,Cherry Gap,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,35.34,Giant Sequoia National Monument,Converse Basin,immediate,5.998381149504514
-Immediate: Moderate risk,18.29,Giant Sequoia National Monument,Converse Basin,immediate,8.63845460906246
-Immediate: High risk,2.23,Giant Sequoia National Monument,Converse Basin,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,2.34,Giant Sequoia National Monument,Converse Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,7.68,Giant Sequoia National Monument,Converse Mountain,immediate,8.63845460906246
-Immediate: High risk,2.86,Giant Sequoia National Monument,Converse Mountain,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.42,Giant Sequoia National Monument,Converse Saddle,immediate,5.998381149504514
-Immediate: Moderate risk,0.08,Giant Sequoia National Monument,Converse Saddle,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,3.06,Giant Sequoia National Monument,Deer Creek,immediate,5.998381149504514
-Immediate: Moderate risk,8.13,Giant Sequoia National Monument,Deer Creek,immediate,8.63845460906246
-Immediate: High risk,0.9,Giant Sequoia National Monument,Deer Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.3,Giant Sequoia National Monument,Deer Meadow,immediate,5.998381149504514
-Immediate: Moderate risk,0.21,Giant Sequoia National Monument,Deer Meadow,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,8.98,Giant Sequoia National Monument,Dillonwood,immediate,5.998381149504514
-Immediate: Moderate risk,22.28,Giant Sequoia National Monument,Dillonwood,immediate,8.63845460906246
-Immediate: High risk,8.98,Giant Sequoia National Monument,Dillonwood,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.44,Giant Sequoia National Monument,Dillonwood - West,immediate,5.998381149504514
-Immediate: Moderate risk,0.44,Giant Sequoia National Monument,Dillonwood - West,immediate,8.63845460906246
-Immediate: High risk,0.01,Giant Sequoia National Monument,Dillonwood - West,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,29.69,Giant Sequoia National Monument,Evans,immediate,5.998381149504514
-Immediate: Moderate risk,24.67,Giant Sequoia National Monument,Evans,immediate,8.63845460906246
-Immediate: High risk,7.99,Giant Sequoia National Monument,Evans,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,46.55,Giant Sequoia National Monument,Freeman Creek,immediate,5.998381149504514
-Immediate: Moderate risk,135.27,Giant Sequoia National Monument,Freeman Creek,immediate,8.63845460906246
-Immediate: High risk,181.84,Giant Sequoia National Monument,Freeman Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.92,Giant Sequoia National Monument,General Grant,immediate,5.998381149504514
-Immediate: Moderate risk,3.87,Giant Sequoia National Monument,General Grant,immediate,8.63845460906246
-Immediate: High risk,0.35,Giant Sequoia National Monument,General Grant,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,2.79,Giant Sequoia National Monument,Hoist Ridge,immediate,5.998381149504514
-Immediate: Moderate risk,2.85,Giant Sequoia National Monument,Hoist Ridge,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,7.43,Giant Sequoia National Monument,Kennedy,immediate,5.998381149504514
-Immediate: Moderate risk,3.02,Giant Sequoia National Monument,Kennedy,immediate,8.63845460906246
-Immediate: High risk,0.36,Giant Sequoia National Monument,Kennedy,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.2,Giant Sequoia National Monument,Little Boulder,immediate,5.998381149504514
-Immediate: Low end of high severity - likely ok,5.08,Giant Sequoia National Monument,Lockwood,immediate,5.998381149504514
-Immediate: Moderate risk,5.74,Giant Sequoia National Monument,Lockwood,immediate,8.63845460906246
-Immediate: High risk,0.03,Giant Sequoia National Monument,Lockwood,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,11.66,Giant Sequoia National Monument,Long Meadow,immediate,5.998381149504514
-Immediate: Moderate risk,14.48,Giant Sequoia National Monument,Long Meadow,immediate,8.63845460906246
-Immediate: High risk,1.55,Giant Sequoia National Monument,Long Meadow,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,22.64,Giant Sequoia National Monument,McIntyre,immediate,5.998381149504514
-Immediate: Moderate risk,30.88,Giant Sequoia National Monument,McIntyre,immediate,8.63845460906246
-Immediate: High risk,6.27,Giant Sequoia National Monument,McIntyre,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.15,Giant Sequoia National Monument,Middle Tule,immediate,5.998381149504514
-Immediate: Moderate risk,1.17,Giant Sequoia National Monument,Middle Tule,immediate,8.63845460906246
-Immediate: High risk,0.18,Giant Sequoia National Monument,Middle Tule,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,21.4,Giant Sequoia National Monument,Mountain Home,immediate,5.998381149504514
-Immediate: Moderate risk,34.42,Giant Sequoia National Monument,Mountain Home,immediate,8.63845460906246
-Immediate: High risk,5.36,Giant Sequoia National Monument,Mountain Home,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,12.13,Giant Sequoia National Monument,Packsaddle,immediate,5.998381149504514
-Immediate: Moderate risk,15.74,Giant Sequoia National Monument,Packsaddle,immediate,8.63845460906246
-Immediate: High risk,1.04,Giant Sequoia National Monument,Packsaddle,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,11.26,Giant Sequoia National Monument,Peyrone,immediate,5.998381149504514
-Immediate: Moderate risk,7.18,Giant Sequoia National Monument,Peyrone,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,32.78,Giant Sequoia National Monument,Redhill,immediate,5.998381149504514
-Immediate: Moderate risk,29.53,Giant Sequoia National Monument,Redhill,immediate,8.63845460906246
-Immediate: High risk,7.1,Giant Sequoia National Monument,Redhill,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,9.05,Giant Sequoia National Monument,Redwood Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,25.55,Giant Sequoia National Monument,Redwood Mountain,immediate,8.63845460906246
-Immediate: High risk,4.11,Giant Sequoia National Monument,Redwood Mountain,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.33,Giant Sequoia National Monument,Silver Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.12,Giant Sequoia National Monument,Silver Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,3.68,Giant Sequoia National Monument,South Peyrone,immediate,5.998381149504514
-Immediate: Moderate risk,2.13,Giant Sequoia National Monument,South Peyrone,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,1.73,Giant Sequoia National Monument,Starvation Creek,immediate,5.998381149504514
-Immediate: Moderate risk,7.53,Giant Sequoia National Monument,Starvation Creek,immediate,8.63845460906246
-Immediate: High risk,0.61,Giant Sequoia National Monument,Starvation Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.78,Giant Sequoia National Monument,Verplank,immediate,5.998381149504514
-Immediate: Moderate risk,2.05,Giant Sequoia National Monument,Verplank,immediate,8.63845460906246
-Immediate: High risk,1.32,Giant Sequoia National Monument,Verplank,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,35.35,Giant Sequoia National Monument,Wheel Meadow,immediate,5.998381149504514
-Immediate: Moderate risk,113.53,Giant Sequoia National Monument,Wheel Meadow,immediate,8.63845460906246
-Immediate: High risk,37.02,Giant Sequoia National Monument,Wheel Meadow,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.19,Mountain Home Demonstration State Forest,Middle Tule,immediate,5.998381149504514
-Immediate: Moderate risk,0.98,Mountain Home Demonstration State Forest,Middle Tule,immediate,8.63845460906246
-Immediate: High risk,0.17,Mountain Home Demonstration State Forest,Middle Tule,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,60.56,Mountain Home Demonstration State Forest,Mountain Home,immediate,5.998381149504514
-Immediate: Moderate risk,66.36,Mountain Home Demonstration State Forest,Mountain Home,immediate,8.63845460906246
-Immediate: High risk,7.53,Mountain Home Demonstration State Forest,Mountain Home,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.59,Mountain Home Demonstration State Forest,Silver Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.19,Mountain Home Demonstration State Forest,Silver Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,3.56,Private,Alder Creek,immediate,5.998381149504514
-Immediate: Moderate risk,4.88,Private,Alder Creek,immediate,8.63845460906246
-Immediate: High risk,2.23,Private,Alder Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.08,Private,Belknap Camp,immediate,5.998381149504514
-Immediate: Moderate risk,0.65,Private,Belknap Camp,immediate,8.63845460906246
-Immediate: High risk,0.52,Private,Belknap Camp,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.98,Private,Black Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,2.29,Private,Black Mountain,immediate,8.63845460906246
-Immediate: High risk,0.18,Private,Black Mountain,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.65,Private,Coffee Pot,immediate,5.998381149504514
-Immediate: Moderate risk,0.29,Private,Coffee Pot,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.29,Private,Freeman Creek,immediate,5.998381149504514
-Immediate: Moderate risk,1.86,Private,Freeman Creek,immediate,8.63845460906246
-Immediate: High risk,1.31,Private,Freeman Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.01,Private,Ladybug,immediate,5.998381149504514
-Immediate: Low end of high severity - likely ok,0.58,Private,Monache Tubs,immediate,5.998381149504514
-Immediate: Moderate risk,2.6,Private,Monache Tubs,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.45,Private,Mountain Home,immediate,5.998381149504514
-Immediate: Moderate risk,0.06,Private,Mountain Home,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.03,Private,Nelder,immediate,5.998381149504514
-Immediate: Moderate risk,1.91,Private,Nelder,immediate,8.63845460906246
-Immediate: High risk,1.6,Private,Nelder,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.16,Private,Nutmeg,immediate,5.998381149504514
-Immediate: Moderate risk,0.25,Private,Nutmeg,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0,Private,Redwood Mountain,immediate,5.998381149504514
-Immediate: Low end of high severity - likely ok,1.41,Private,Salt Creek Ridge,immediate,5.998381149504514
-Immediate: Moderate risk,0.28,Private,Salt Creek Ridge,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,6.89,Save the Redwoods League,Alder Creek,immediate,5.998381149504514
-Immediate: Moderate risk,21.11,Save the Redwoods League,Alder Creek,immediate,8.63845460906246
-Immediate: High risk,0.72,Save the Redwoods League,Alder Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,6.5,Sequoia and Kings Canyon National Parks,Atwell,immediate,5.998381149504514
-Immediate: Moderate risk,3.31,Sequoia and Kings Canyon National Parks,Atwell,immediate,8.63845460906246
-Immediate: High risk,0.17,Sequoia and Kings Canyon National Parks,Atwell,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,3.09,Sequoia and Kings Canyon National Parks,Board Camp,immediate,5.998381149504514
-Immediate: Moderate risk,8.68,Sequoia and Kings Canyon National Parks,Board Camp,immediate,8.63845460906246
-Immediate: High risk,6.02,Sequoia and Kings Canyon National Parks,Board Camp,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,10.27,Sequoia and Kings Canyon National Parks,Castle Creek,immediate,5.998381149504514
-Immediate: Moderate risk,2.97,Sequoia and Kings Canyon National Parks,Castle Creek,immediate,8.63845460906246
-Immediate: High risk,0.14,Sequoia and Kings Canyon National Parks,Castle Creek,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.12,Sequoia and Kings Canyon National Parks,Cedar Flat,immediate,5.998381149504514
-Immediate: Moderate risk,0.05,Sequoia and Kings Canyon National Parks,Cedar Flat,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,13.56,Sequoia and Kings Canyon National Parks,Dillonwood,immediate,5.998381149504514
-Immediate: Moderate risk,11.35,Sequoia and Kings Canyon National Parks,Dillonwood,immediate,8.63845460906246
-Immediate: High risk,0.62,Sequoia and Kings Canyon National Parks,Dillonwood,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.97,Sequoia and Kings Canyon National Parks,East Fork,immediate,5.998381149504514
-Immediate: Moderate risk,0.65,Sequoia and Kings Canyon National Parks,East Fork,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.32,Sequoia and Kings Canyon National Parks,Eden Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.1,Sequoia and Kings Canyon National Parks,Eden Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.14,Sequoia and Kings Canyon National Parks,Forgotten,immediate,5.998381149504514
-Immediate: Moderate risk,0.02,Sequoia and Kings Canyon National Parks,Forgotten,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,6.63,Sequoia and Kings Canyon National Parks,Garfield,immediate,5.998381149504514
-Immediate: Moderate risk,10.58,Sequoia and Kings Canyon National Parks,Garfield,immediate,8.63845460906246
-Immediate: High risk,4.58,Sequoia and Kings Canyon National Parks,Garfield,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,1.94,Sequoia and Kings Canyon National Parks,General Grant,immediate,5.998381149504514
-Immediate: Moderate risk,1.06,Sequoia and Kings Canyon National Parks,General Grant,immediate,8.63845460906246
-Immediate: High risk,0.07,Sequoia and Kings Canyon National Parks,General Grant,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,3.14,Sequoia and Kings Canyon National Parks,Giant Forest,immediate,5.998381149504514
-Immediate: Moderate risk,0.98,Sequoia and Kings Canyon National Parks,Giant Forest,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,5.07,Sequoia and Kings Canyon National Parks,Homers Nose,immediate,5.998381149504514
-Immediate: Moderate risk,16.3,Sequoia and Kings Canyon National Parks,Homers Nose,immediate,8.63845460906246
-Immediate: High risk,6.82,Sequoia and Kings Canyon National Parks,Homers Nose,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,3.02,Sequoia and Kings Canyon National Parks,Muir,immediate,5.998381149504514
-Immediate: Moderate risk,1.8,Sequoia and Kings Canyon National Parks,Muir,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.95,Sequoia and Kings Canyon National Parks,New Oriole Lake,immediate,5.998381149504514
-Immediate: Moderate risk,1.01,Sequoia and Kings Canyon National Parks,New Oriole Lake,immediate,8.63845460906246
-Immediate: High risk,0.11,Sequoia and Kings Canyon National Parks,New Oriole Lake,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.42,Sequoia and Kings Canyon National Parks,Oriole Lake,immediate,5.998381149504514
-Immediate: Moderate risk,0.13,Sequoia and Kings Canyon National Parks,Oriole Lake,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.11,Sequoia and Kings Canyon National Parks,Pine Ridge,immediate,5.998381149504514
-Immediate: Moderate risk,0.03,Sequoia and Kings Canyon National Parks,Pine Ridge,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.62,Sequoia and Kings Canyon National Parks,Redwood Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.22,Sequoia and Kings Canyon National Parks,Redwood Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,77.58,Sequoia and Kings Canyon National Parks,Redwood Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,110.14,Sequoia and Kings Canyon National Parks,Redwood Mountain,immediate,8.63845460906246
-Immediate: High risk,36.37,Sequoia and Kings Canyon National Parks,Redwood Mountain,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.2,Sequoia and Kings Canyon National Parks,Skagway,immediate,5.998381149504514
-Immediate: Moderate risk,0.55,Sequoia and Kings Canyon National Parks,Skagway,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,2.5,Sequoia and Kings Canyon National Parks,South Fork,immediate,5.998381149504514
-Immediate: Moderate risk,0.02,Sequoia and Kings Canyon National Parks,South Fork,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.23,Sequoia and Kings Canyon National Parks,Squirrel Creek,immediate,5.998381149504514
-Immediate: Moderate risk,0.04,Sequoia and Kings Canyon National Parks,Squirrel Creek,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.7,Sequoia and Kings Canyon National Parks,Surprise,immediate,5.998381149504514
-Immediate: Moderate risk,0.29,Sequoia and Kings Canyon National Parks,Surprise,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,4.65,Sequoia and Kings Canyon National Parks,Suwanee,immediate,5.998381149504514
-Immediate: Moderate risk,3.68,Sequoia and Kings Canyon National Parks,Suwanee,immediate,8.63845460906246
-Immediate: High risk,0.02,Sequoia and Kings Canyon National Parks,Suwanee,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,3.16,Sierra National Forest,Nelder,immediate,5.998381149504514
-Immediate: Moderate risk,14.13,Sierra National Forest,Nelder,immediate,8.63845460906246
-Immediate: High risk,3.58,Sierra National Forest,Nelder,immediate,3.5152610195669496
-Immediate: Low end of high severity - likely ok,0.17,Tulare County,Mountain Home,immediate,5.998381149504514
-Immediate: Moderate risk,0,Tulare County,Mountain Home,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,1.05,Whittaker's Forest,Redwood Mountain,immediate,5.998381149504514
-Immediate: Moderate risk,0.5,Whittaker's Forest,Redwood Mountain,immediate,8.63845460906246
-Immediate: Low end of high severity - likely ok,0.03,Yosemite National Park,Mariposa,immediate,5.998381149504514
+regen_status,area_ha,orig_fid,grove_name,grove_grou,land_stewa,land_ste_1,grove_elem,comments,shape_leng,shape_area,timeframe,perc_area_imm
+Longterm regeneration risk,47,3,Alder Creek,NA,3,"USFS SQF GSNM, Save the Redwoods League, Private",5,Peripheral OTI Only,11052.9384233,2253403.03338,longterm,NA
+Longterm regeneration risk,0.42,4,Atwell,NA,2,"NPS SEKI, Private",8,STI & OTI; highest elevation SEGI NW021730-O1,36338.5010525,3704025.67404,longterm,NA
+Longterm regeneration risk,102.64,6,Wheel Meadow,Belknap Complex,1,USFS SQF GSNM,2,OTI,20878.0790893,2332426.71451,longterm,NA
+Longterm regeneration risk,8.6,9,Black Mountain,NA,3,"USFS SQF GSNM, TRIR, Private",16,Peripheral OTI Only,42247.8573615,5284304.68141,longterm,NA
+Longterm regeneration risk,7.99,10,Board Camp,NA,1,NPS SEKI,1,STI & OTI,3535.54128487,195127.370044,longterm,NA
+Longterm regeneration risk,0.04,17,Nutmeg,Case Mountain,2,"Private, DOI BLM",2,OTI,4599.47130464,265791.302568,longterm,NA
+Longterm regeneration risk,0.02,18,Castle Creek,NA,1,NPS SEKI,5,STI & OTI,16157.2586912,885128.291166,longterm,NA
+Longterm regeneration risk,1,23,Hoist Ridge,Converse Basin,1,USFS SQF GSNM,1,Peripheral OTI Only; 1955 McGee Fire 2nd Growth,6880.45617674,202727.251365,longterm,NA
+Longterm regeneration risk,5.42,24,Converse Basin,Converse Basin,1,USFS SNF & SQF GSNM,6,Peripheral OTI Only,32922.1214222,6246940.29948,longterm,NA
+Longterm regeneration risk,1.79,26,Cabin Creek,Converse Basin,1,USFS SNF & SQF GSNM,2,Peripheral OTI Only,7320.88120636,605881.894859,longterm,NA
+Longterm regeneration risk,4.91,28,Deer Creek,NA,1,USFS SQF GSNM,2,OTI; Southern-most grove,2684.89432218,141657.221503,longterm,NA
+Longterm regeneration risk,20.8,32,Dillonwood,NA,2,"NPS SEKI, USFS SQF GSNM",9,OTI,63571.7921963,4208560.75091,longterm,NA
+Longterm regeneration risk,13.35,36,Evans,Evans,1,USFS SQF GSNM,7,Peripheral OTI Only,33872.8615157,3878237.96481,longterm,NA
+Longterm regeneration risk,219.13,38,Freeman Creek,NA,1,USFS SQF GSNM,9,Peripheral OTI Only,43215.7860743,5718214.3105,longterm,NA
+Longterm regeneration risk,6.15,39,Garfield,NA,1,NPS SEKI,12,STI & OTI,37371.5616026,4989544.04462,longterm,NA
+Longterm regeneration risk,10.02,42,Homers Nose,NA,1,NPS SEKI,1,STI & OTI,9366.18839075,481078.874528,longterm,NA
+Longterm regeneration risk,5.27,47,Long Meadow,NA,1,USFS SQF GSNM,1,Peripheral OTI Only,11583.6117413,866862.954903,longterm,NA
+Longterm regeneration risk,0.01,53,Middle Tule,NA,2,"Cal-Fire, USFS SQF GSNM",2,"Peripheral OTI, Partial OTI",26052.139177,1944748.80275,longterm,NA
+Longterm regeneration risk,0.63,56,Muir,NA,1,NPS SEKI,2,STI & OTI,7875.33071429,991461.754736,longterm,NA
+Longterm regeneration risk,7.37,57,Nelder,NA,2,"USFS SNF, Private",5,Peripheral OTI Only; some GNSS data,16886.5260174,1338741.64736,longterm,NA
+Longterm regeneration risk,3.61,60,Packsaddle,NA,1,USFS SQF GSNM,2,Peripheral OTI,11601.0661172,707495.505896,longterm,NA
+Longterm regeneration risk,2.51,61,Peyrone,NA,2,"USFS SQF GSNM, TRIR",8,Peripheral OTI,15241.7040627,917231.922259,longterm,NA
+Longterm regeneration risk,19.19,64,Redhill,NA,3,"USFS SQF GSNM, Save the Redwoods League, TRIR",3,Peripheral OTI; StRL tree data available,11721.0828756,1736114.75599,longterm,NA
+Longterm regeneration risk,0.46,71,South Peyrone,NA,2,"USFS SQF GSNM, TRIR",1,OTI,2440.92548541,130928.797837,longterm,NA
+Longterm regeneration risk,1.36,73,Starvation Creek,NA,1,USFS SQF GSNM,4,OTI,3594.43419272,102147.241589,longterm,NA
+Longterm regeneration risk,0.17,75,Suwanee,NA,1,NPS SEKI,1,STI & OTI,4404.85124573,279251.526445,longterm,NA
+Longterm regeneration risk,112.35,79,Redwood Mountain,NA,4,"NPS SEKI, UC Berekeley, USFS SQF GSNM, Private",9,STI & Peripheral OTI,78407.6666652,10588863.6229,longterm,NA
+Longterm regeneration risk,0.71,85,Verplank,Converse Basin,1,USFS SQF GSNM,1,OTI,3267.85428328,106172.911123,longterm,NA
+Longterm regeneration risk,2.22,86,Converse Mountain,Converse Basin,1,USFS SNF & SQF GSNM,2,OTI,4133.40375616,134771.813367,longterm,NA
+Longterm regeneration risk,0.98,87,Lockwood,Evans,1,USFS SQF GSNM,5,OTI,5472.71748695,266533.070012,longterm,NA
+Longterm regeneration risk,0.18,89,Kennedy,Evans,1,USFS SQF GSNM,3,Peripheral OTI Only,11219.9664875,733107.156977,longterm,NA
+Longterm regeneration risk,14.73,91,McIntyre,Belknap Complex,1,USFS SQF GSNM,2,OTI,13388.6890499,1128996.56412,longterm,NA
+Longterm regeneration risk,1.17,93,Belknap Camp,Belknap Complex,2,"USFS SQF GSNM, Private",3,OTI,12861.6917338,405147.282635,longterm,NA
+Longterm regeneration risk,1.49,94,General Grant,NA,2,"NPS SEKI, USFS SQF GSNM",6,STI & Partial OTI,9481.41328348,677651.957603,longterm,NA
+Longterm regeneration risk,52.97,55,Mountain Home,NA,4,"Cal-Fire, USFS SQF GSNM, Tulare County, Private",18,Peripheral OTI Only,56454.9276075,11336944.8171,longterm,NA
+Longterm regeneration risk,0.11,15,Monache Tubs,Case Mountain,2,"Private, DOI BLM",2,OTI,3037.02118398,101992.438285,longterm,NA
+Immediate: Low end of high severity - likely ok,0.03,1,Abbott,NA,1,USFS SQF GSNM,1,OTI,953.885464821,32546.0958977,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.87,2,Agnew,NA,1,USFS SQF GSNM,2,OTI,1242.60234143,40538.099151,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,69.77,3,Alder Creek,NA,3,"USFS SQF GSNM, Save the Redwoods League, Private",5,Peripheral OTI Only,11052.9384233,2253403.03338,immediate,14.876780032182799
+Immediate postfire regen risk,9.02,3,Alder Creek,NA,3,"USFS SQF GSNM, Save the Redwoods League, Private",5,Peripheral OTI Only,11052.9384233,2253403.03338,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,9.88,4,Atwell,NA,2,"NPS SEKI, Private",8,STI & OTI; highest elevation SEGI NW021730-O1,36338.5010525,3704025.67404,immediate,14.876780032182799
+Immediate postfire regen risk,0.1,4,Atwell,NA,2,"NPS SEKI, Private",8,STI & OTI; highest elevation SEGI NW021730-O1,36338.5010525,3704025.67404,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,153.05,6,Wheel Meadow,Belknap Complex,1,USFS SQF GSNM,2,OTI,20878.0790893,2332426.71451,immediate,14.876780032182799
+Immediate postfire regen risk,32.51,6,Wheel Meadow,Belknap Complex,1,USFS SQF GSNM,2,OTI,20878.0790893,2332426.71451,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,88.03,9,Black Mountain,NA,3,"USFS SQF GSNM, TRIR, Private",16,Peripheral OTI Only,42247.8573615,5284304.68141,immediate,14.876780032182799
+Immediate postfire regen risk,2.58,9,Black Mountain,NA,3,"USFS SQF GSNM, TRIR, Private",16,Peripheral OTI Only,42247.8573615,5284304.68141,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,11.99,10,Board Camp,NA,1,NPS SEKI,1,STI & OTI,3535.54128487,195127.370044,immediate,14.876780032182799
+Immediate postfire regen risk,5.8,10,Board Camp,NA,1,NPS SEKI,1,STI & OTI,3535.54128487,195127.370044,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.14,11,Burro Creek,NA,2,"USFS SQF GSNM, Cal-Fire",2,Peripheral OTI Only,9692.89056083,459067.184161,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,2.71,17,Nutmeg,Case Mountain,2,"Private, DOI BLM",2,OTI,4599.47130464,265791.302568,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,13.26,18,Castle Creek,NA,1,NPS SEKI,5,STI & OTI,16157.2586912,885128.291166,immediate,14.876780032182799
+Immediate postfire regen risk,0.05,18,Castle Creek,NA,1,NPS SEKI,5,STI & OTI,16157.2586912,885128.291166,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.16,19,Cedar Flat,NA,1,NPS SEKI,2,STI & OTI,3031.72770557,61563.9796164,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,2.06,20,Cherry Gap,NA,1,USFS SQF GSNM,4,Peripheral OTI Only,3593.97229208,257386.662694,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,5.64,23,Hoist Ridge,Converse Basin,1,USFS SQF GSNM,1,Peripheral OTI Only; 1955 McGee Fire 2nd Growth,6880.45617674,202727.251365,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,53.8,24,Converse Basin,Converse Basin,1,USFS SNF & SQF GSNM,6,Peripheral OTI Only,32922.1214222,6246940.29948,immediate,14.876780032182799
+Immediate postfire regen risk,2.06,24,Converse Basin,Converse Basin,1,USFS SNF & SQF GSNM,6,Peripheral OTI Only,32922.1214222,6246940.29948,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.5,25,Converse Saddle,Converse Basin,1,USFS SNF & SQF GSNM,1,Peripheral OTI Only; Boole Tree SE051328-E18,1813.65879663,93680.4732359,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,6.04,26,Cabin Creek,Converse Basin,1,USFS SNF & SQF GSNM,2,Peripheral OTI Only,7320.88120636,605881.894859,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,11.65,28,Deer Creek,NA,1,USFS SQF GSNM,2,OTI; Southern-most grove,2684.89432218,141657.221503,immediate,14.876780032182799
+Immediate postfire regen risk,0.44,28,Deer Creek,NA,1,USFS SQF GSNM,2,OTI; Southern-most grove,2684.89432218,141657.221503,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,1.52,29,Deer Meadow,NA,1,USFS SQF GSNM,5,OTI,3645.63868114,251876.871885,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,55.85,32,Dillonwood,NA,2,"NPS SEKI, USFS SQF GSNM",9,OTI,63571.7921963,4208560.75091,immediate,14.876780032182799
+Immediate postfire regen risk,8.31,32,Dillonwood,NA,2,"NPS SEKI, USFS SQF GSNM",9,OTI,63571.7921963,4208560.75091,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,1.62,34,East Fork,NA,2,"NPS SEKI, Private",6,STI & OTI,22441.6706451,3003075.25876,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.39,35,Eden Creek,NA,1,NPS SEKI,6,STI & OTI,19696.0264405,1760455.57536,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,55.52,36,Evans,Evans,1,USFS SQF GSNM,7,Peripheral OTI Only,33872.8615157,3878237.96481,immediate,14.876780032182799
+Immediate postfire regen risk,6.83,36,Evans,Evans,1,USFS SQF GSNM,7,Peripheral OTI Only,33872.8615157,3878237.96481,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.17,37,Forgotten,NA,1,NPS SEKI,1,OTI,460.126423792,7394.491681,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,192.21,38,Freeman Creek,NA,1,USFS SQF GSNM,9,Peripheral OTI Only,43215.7860743,5718214.3105,immediate,14.876780032182799
+Immediate postfire regen risk,174.91,38,Freeman Creek,NA,1,USFS SQF GSNM,9,Peripheral OTI Only,43215.7860743,5718214.3105,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,19.17,39,Garfield,NA,1,NPS SEKI,12,STI & OTI,37371.5616026,4989544.04462,immediate,14.876780032182799
+Immediate postfire regen risk,4.22,39,Garfield,NA,1,NPS SEKI,12,STI & OTI,37371.5616026,4989544.04462,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,4.12,40,Giant Forest,NA,1,NPS SEKI,4,STI & OTI,42047.2091894,8526487.4845,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,22.17,42,Homers Nose,NA,1,NPS SEKI,1,STI & OTI,9366.18839075,481078.874528,immediate,14.876780032182799
+Immediate postfire regen risk,6.02,42,Homers Nose,NA,1,NPS SEKI,1,STI & OTI,9366.18839075,481078.874528,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,26.63,47,Long Meadow,NA,1,USFS SQF GSNM,1,Peripheral OTI Only,11583.6117413,866862.954903,immediate,14.876780032182799
+Immediate postfire regen risk,1.06,47,Long Meadow,NA,1,USFS SQF GSNM,1,Peripheral OTI Only,11583.6117413,866862.954903,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.03,50,Mariposa,NA,1,NPS Yosemite,5,Peripheral OTI Only; NPS GNSS Data,11377.0048403,1094124.6667,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,4.65,53,Middle Tule,NA,2,"Cal-Fire, USFS SQF GSNM",2,"Peripheral OTI, Partial OTI",26052.139177,1944748.80275,immediate,14.876780032182799
+Immediate postfire regen risk,0.19,53,Middle Tule,NA,2,"Cal-Fire, USFS SQF GSNM",2,"Peripheral OTI, Partial OTI",26052.139177,1944748.80275,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,4.81,56,Muir,NA,1,NPS SEKI,2,STI & OTI,7875.33071429,991461.754736,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,19.76,57,Nelder,NA,2,"USFS SNF, Private",5,Peripheral OTI Only; some GNSS data,16886.5260174,1338741.64736,immediate,14.876780032182799
+Immediate postfire regen risk,4.66,57,Nelder,NA,2,"USFS SNF, Private",5,Peripheral OTI Only; some GNSS data,16886.5260174,1338741.64736,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,2.05,58,New Oriole Lake,NA,1,NPS SEKI,1,STI & OTI,2629.4702784,59664.5271316,immediate,14.876780032182799
+Immediate postfire regen risk,0.02,58,New Oriole Lake,NA,1,NPS SEKI,1,STI & OTI,2629.4702784,59664.5271316,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.56,59,Oriole Lake,NA,1,NPS SEKI,4,STI & OTI,8841.11109279,594844.87339,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,28.16,60,Packsaddle,NA,1,USFS SQF GSNM,2,Peripheral OTI,11601.0661172,707495.505896,immediate,14.876780032182799
+Immediate postfire regen risk,0.74,60,Packsaddle,NA,1,USFS SQF GSNM,2,Peripheral OTI,11601.0661172,707495.505896,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,18.44,61,Peyrone,NA,2,"USFS SQF GSNM, TRIR",8,Peripheral OTI,15241.7040627,917231.922259,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.14,62,Pine Ridge,NA,1,NPS SEKI,4,STI & OTI,5301.09444182,177407.07184,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,63,64,Redhill,NA,3,"USFS SQF GSNM, Save the Redwoods League, TRIR",3,Peripheral OTI; StRL tree data available,11721.0828756,1736114.75599,immediate,14.876780032182799
+Immediate postfire regen risk,6.74,64,Redhill,NA,3,"USFS SQF GSNM, Save the Redwoods League, TRIR",3,Peripheral OTI; StRL tree data available,11721.0828756,1736114.75599,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.84,65,Redwood Creek,NA,1,NPS SEKI,3,STI & OTI,5210.05359665,193167.03757,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,1.23,68,Silver Creek,NA,1,"USFS SQF GSNM, Cal-Fire",4,Peripheral OTI,7446.38729182,251395.541457,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.74,69,Skagway,NA,1,NPS SEKI,2,STI & OTI,4767.62957587,246727.887371,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,2.52,70,South Fork,NA,1,NPS SEKI,1,STI & OTI,15018.6107756,976668.342806,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,5.95,71,South Peyrone,NA,2,"USFS SQF GSNM, TRIR",1,OTI,2440.92548541,130928.797837,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.27,72,Squirrel Creek,NA,1,NPS SEKI,4,STI & OTI,1736.79432301,28288.8288466,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,9.34,73,Starvation Creek,NA,1,USFS SQF GSNM,4,OTI,3594.43419272,102147.241589,immediate,14.876780032182799
+Immediate postfire regen risk,0.52,73,Starvation Creek,NA,1,USFS SQF GSNM,4,OTI,3594.43419272,102147.241589,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.99,74,Surprise,NA,1,NPS SEKI,3,STI & OTI,3784.92784345,90964.6306447,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,8.33,75,Suwanee,NA,1,NPS SEKI,1,STI & OTI,4404.85124573,279251.526445,immediate,14.876780032182799
+Immediate postfire regen risk,0.02,75,Suwanee,NA,1,NPS SEKI,1,STI & OTI,4404.85124573,279251.526445,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,228.33,79,Redwood Mountain,NA,4,"NPS SEKI, UC Berekeley, USFS SQF GSNM, Private",9,STI & Peripheral OTI,78407.6666652,10588863.6229,immediate,14.876780032182799
+Immediate postfire regen risk,37.23,79,Redwood Mountain,NA,4,"NPS SEKI, UC Berekeley, USFS SQF GSNM, Private",9,STI & Peripheral OTI,78407.6666652,10588863.6229,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.88,81,Dillonwood - West,NA,1,USFS SQF GSNM,1,OTI,595.545793542,16558.3398592,immediate,14.876780032182799
+Immediate postfire regen risk,0.01,81,Dillonwood - West,NA,1,USFS SQF GSNM,1,OTI,595.545793542,16558.3398592,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,3.01,85,Verplank,Converse Basin,1,USFS SQF GSNM,1,OTI,3267.85428328,106172.911123,immediate,14.876780032182799
+Immediate postfire regen risk,1.14,85,Verplank,Converse Basin,1,USFS SQF GSNM,1,OTI,3267.85428328,106172.911123,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,10.22,86,Converse Mountain,Converse Basin,1,USFS SNF & SQF GSNM,2,OTI,4133.40375616,134771.813367,immediate,14.876780032182799
+Immediate postfire regen risk,2.65,86,Converse Mountain,Converse Basin,1,USFS SNF & SQF GSNM,2,OTI,4133.40375616,134771.813367,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,10.81,87,Lockwood,Evans,1,USFS SQF GSNM,5,OTI,5472.71748695,266533.070012,immediate,14.876780032182799
+Immediate postfire regen risk,0.03,87,Lockwood,Evans,1,USFS SQF GSNM,5,OTI,5472.71748695,266533.070012,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.2,88,Little Boulder,Evans,1,USFS SQF GSNM,2,Peripheral OTI Only,4357.06160344,305627.629409,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,10.51,89,Kennedy,Evans,1,USFS SQF GSNM,3,Peripheral OTI Only,11219.9664875,733107.156977,immediate,14.876780032182799
+Immediate postfire regen risk,0.3,89,Kennedy,Evans,1,USFS SQF GSNM,3,Peripheral OTI Only,11219.9664875,733107.156977,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,54.46,91,McIntyre,Belknap Complex,1,USFS SQF GSNM,2,OTI,13388.6890499,1128996.56412,immediate,14.876780032182799
+Immediate postfire regen risk,5.33,91,McIntyre,Belknap Complex,1,USFS SQF GSNM,2,OTI,13388.6890499,1128996.56412,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,1.62,92,Carr Wilson,Belknap Complex,1,USFS SQF GSNM,4,OTI,4858.91886506,53648.7980315,immediate,14.876780032182799
+Immediate postfire regen risk,0.5,92,Carr Wilson,Belknap Complex,1,USFS SQF GSNM,4,OTI,4858.91886506,53648.7980315,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,12.2,93,Belknap Camp,Belknap Complex,2,"USFS SQF GSNM, Private",3,OTI,12861.6917338,405147.282635,immediate,14.876780032182799
+Immediate postfire regen risk,2.36,93,Belknap Camp,Belknap Complex,2,"USFS SQF GSNM, Private",3,OTI,12861.6917338,405147.282635,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,7.82,94,General Grant,NA,2,"NPS SEKI, USFS SQF GSNM",6,STI & Partial OTI,9481.41328348,677651.957603,immediate,14.876780032182799
+Immediate postfire regen risk,0.39,94,General Grant,NA,2,"NPS SEKI, USFS SQF GSNM",6,STI & Partial OTI,9481.41328348,677651.957603,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,182.58,55,Mountain Home,NA,4,"Cal-Fire, USFS SQF GSNM, Tulare County, Private",18,Peripheral OTI Only,56454.9276075,11336944.8171,immediate,14.876780032182799
+Immediate postfire regen risk,11.61,55,Mountain Home,NA,4,"Cal-Fire, USFS SQF GSNM, Tulare County, Private",18,Peripheral OTI Only,56454.9276075,11336944.8171,immediate,3.2405204984307336
+Immediate: Low end of high severity - likely ok,0.69,15,Coffee Pot,Case Mountain,2,"Private, DOI BLM",1,OTI,2271.62052195,147059.56399,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,3.3,15,Monache Tubs,Case Mountain,2,"Private, DOI BLM",2,OTI,3037.02118398,101992.438285,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.06,15,Ladybug,Case Mountain,2,"Private, DOI BLM",1,OTI,568.372173181,8898.77503527,immediate,14.876780032182799
+Immediate: Low end of high severity - likely ok,0.01,15,Salt Creek Ridge,Case Mountain,2,"Private, DOI BLM",1,OTI,3196.20191037,117203.217705,immediate,14.876780032182799
