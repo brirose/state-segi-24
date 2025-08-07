@@ -66,6 +66,29 @@ area_ha_2024 = sum(grove_area_2024$area_ha)
 
 ```
 
+```{r}
+#highsev grove area 2020 +2021 in SEKI
+
+cbi_all_20_21 <- cbi_all %>%
+  filter(fire_yr %in% c(2020, 2021),
+         burnsev == 4) %>%
+  st_union()
+
+grove_area_20_21 = groves %>%
+    st_intersection(cbi_all_20_21) %>%
+  st_cast("MULTIPOLYGON")
+grove_area_20_21$area_ha = st_area(grove_area_20_21)*0.0001
+
+grove_area_20_21sum = grove_area_20_21  %>%
+  st_drop_geometry() %>%
+  group_by(unit_name) %>%
+  summarise(totalarea_ha = as.numeric(sum(area_ha)))
+
+highsevarea_ha_20_21 = sum(grove_area_2024$area_ha)
+
+```
+
+
 ```{r grove_clip}
 
 #CBI severity for fires that intersect groves, clipped to groves

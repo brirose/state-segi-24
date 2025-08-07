@@ -1,0 +1,47 @@
+---
+title: "gee_prep"
+author: "Shive Lab (B. Baker)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(sf)
+library(here)
+library(janitor)
+
+```
+
+```{r}
+rx_perims <- st_read(here("data/spatial_data/inputs/fire/NPS_BroadcastBurns_1984_2024/NPS_BroadcastBurns_1984_2024.shp")) %>% 
+  clean_names()
+
+```
+Set up layer for use in GEE script
+// Import shapefile with fire polygons. The shapefile must have the following attributes with these exact names:
+//       NAME           DESCRIPTION
+//       Fire_ID        unique identifier for each fire 
+//       Fire_Year      year of fire
+//       Start_Day      start day of fire season in julian days, e.g. June 15 = 166
+//       End_Day        end day of fire season in julian days
+
+
+```{r}
+rx_perims_named <- rx_perims %>% 
+  rowid_to_column() %>% 
+  filter(ucb_year > 1984) %>% 
+  mutate(
+    Fire_ID = rowid,
+    Fire_Year = ucb_year,
+    Start_Day = 152,
+    End_Day = 258
+  ) %>% 
+  select(Fire_ID, Fire_Year, Start_Day, End_Day)
+
+st_write(rx_perims_named, here("data/spatial_data/outputs/try_rx_sev/rx_sev_06Aug25.shp"), append = F)
+
+```
+
