@@ -12,6 +12,7 @@ library(tidyverse)
 library(sf)
 library(here)
 library(janitor)
+library(lubridate)
 
 ```
 
@@ -33,15 +34,16 @@ Set up layer for use in GEE script
 rx_perims_named <- rx_perims %>% 
   rowid_to_column() %>% 
   filter(ucb_year > 1984) %>% 
+  rename(Fire_Year = ucb_year) %>% 
   mutate(
     Fire_ID = rowid,
-    Fire_Year = ucb_year,
     Start_Day = 152,
-    End_Day = 258
+    End_Day = 258,
+    Fire_Year = as.integer(Fire_Year)
   ) %>% 
   select(Fire_ID, Fire_Year, Start_Day, End_Day)
 
-st_write(rx_perims_named, here("data/spatial_data/outputs/try_rx_sev/rx_sev_06Aug25.shp"), append = F)
+st_write(rx_perims_named, here("data/spatial_data/outputs/try_rx_sev/rx_sev4_06Aug25.shp"), append = F)
 
 ```
 
