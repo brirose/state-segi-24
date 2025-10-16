@@ -6,7 +6,7 @@ library(tidyverse)
 
 #bring in all raster in a list
 groves <- st_read(here("data/spatial_data/inputs/forest/2023_GS_Groves_OTS_public.shp")) %>%
-  # clean_names() %>% 
+  clean_names() %>%
   st_make_valid() %>%
   st_cast("MULTIPOLYGON") %>% 
   st_cast("POLYGON")
@@ -28,8 +28,8 @@ for(i in 1:length(rast.list)) {
 ##creating cbi layer with high severity extra split
 #classify and turn each raster into polys
 reclass_matrix <- tibble(
-  from = c(-32769, 69, 315, 640, 800, 1110),
-  to = c(69, 315, 640, 800, 1110, 9992),
+  from = c(-32769, 69, 315, 640, 800, 1100),
+  to = c(69, 315, 640, 800, 1100, 9992),
   becomes = c(1, 2, 3, 4,5,6)
 )
 
@@ -40,7 +40,7 @@ for(i in 1:length(rast.list)){
   imf <- rast.1 %>% 
     classify(reclass_matrix,
              right = T) # include "from" value in category
-  writeRaster(imf, here(paste("data/spatial_data/inputs/fires_needed_rdnbr/classified_rasters_r/",gsub('.{10}$', '', as.character(rast.list.names[i])),"_CBI5_r.tif",sep = '')), overwrite = T)
+  writeRaster(imf, here(paste("data/spatial_data/inputs/fires_needed_rdnbr/classified_rasters_r/",gsub('.{10}$', '', as.character(rast.list.names[i])),"_CBI6_r.tif",sep = '')), overwrite = T)
   
 }
 

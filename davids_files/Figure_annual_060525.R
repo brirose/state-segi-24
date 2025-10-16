@@ -28,7 +28,7 @@ mort_df <- read.csv("mortest_Year5_06052025.csv", header = T)
 ### MAKE PLOT
 
 # tiff("sequoia_mortality_annual_071525.tiff", width = 10, height = 7, units = "in", res = 300, compression = "lzw")
-png("sequoia_mortality_annual_071525.png", width = 10, height = 7, units = "in", res = 600)
+png(here("outputs/figures_for_manuscript/sequoia_mortality_annual_081025.png"), width = 10, height = 7, units = "in", res = 600)
 
 
 # Ensure 'year' column is numeric
@@ -53,7 +53,7 @@ plot(mort_df$year - 0.5, mort_df$cum_mort_est_50,
      cex.axis = 1)
 
 mtext("Year", side = 1, line = 4, cex = 1.2)
-mtext("Number of large sequoia", side = 2, line = 4, cex = 1.3)
+mtext("Number of fire-killed large sequoias", side = 2, line = 4, cex = 1.3)
 
 ##fix left axis to have commas
 left_ticks_lbl <- c("0", "2,000", "4,000", "6,000", "8,000", "10,000", "12,000", "14,000")
@@ -117,9 +117,9 @@ abline(h = 70186 * 0.0, lty = 1, col = "black", lwd = 1.2)
 
 # Add legend
 legend("topleft", 
-       legend = c("Mean estimate", 
-                  "90% Credible interval", 
-                  "Large sequioa mortality"),
+       legend = c("Cumulative large sequoia mortality (mean estimate)", 
+                  "90% Credible interval for cumulative mortality", 
+                  "Annual large sequioa mortality"),
        col = c("black", "darkgrey", "black"),
        pt.bg = c(NA, NA, "red"),
        pt.cex = c(NA,NA,2),

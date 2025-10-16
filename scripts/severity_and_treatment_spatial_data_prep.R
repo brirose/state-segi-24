@@ -21,25 +21,18 @@ perimeters <- st_read("data/spatial_data/inputs/fire/fire23_1.gdb", layer = "fir
   st_cast("MULTIPOLYGON")
 
 #fire history in CBI - from KS with the 6 classes for regen too
-fire <- st_read(here("data/spatial_data/inputs/fires_needed_rdnbr/cbi_all_r_ks.shp")) %>% 
+fire <- st_read(here("data/spatial_data/inputs/fires_needed_rdnbr/cbi_all_r_6class.shp")) %>% 
   st_transform(crs(groves)) %>%  #uniform crs
   st_make_valid() %>%
   mutate(id = fireyr)
 head(fire)
 
-#Bri version
-# fire <- st_read(here("data/spatial_data/outputs/cbi_all_recalc.shp")) %>% 
-#   st_transform(crs(groves)) %>%  #uniform crs
-#   st_make_valid()
-
-
-#full, cleaned treatment layer (will this be the case?)
+#full, cleaned treatment layer
 treatment <- st_read(here("data/spatial_data/outputs/SEGI_Trtdata/SEGI_Trtdata_12Apr25c.shp")) %>% 
   st_transform(crs(groves)) %>% 
   st_make_valid() %>%
   mutate(area_ha = round(as.numeric(st_area(.)*0.0001)))
 sum(treatment$area_ha)
-
 
 ##change landowner names
 trt_owners = treatment %>%
@@ -78,7 +71,6 @@ trt_clean_groves = trt_clean %>%
 trt_clean_groves_tbl = trt_clean_groves %>%
   st_drop_geometry()
 head(trt_clean_groves_tbl)
-tapply(trt_clean_groves_tbl$hectares,trt_clean_groves_tbl$year,)
 
 trt_clean_groves_tbl_sum = trt_clean_groves_tbl %>%
   group_by(dist_year,dist_type) %>%
@@ -131,33 +123,20 @@ groves = groves %>%
     unit_name == "Tulare County" ~ "County",
     .default = unit_name))
 
-fire_groves1 <- st_intersection(fire, groves)#%>%
-# combine where there is buffer overlap and poorly drawn geometries
+fire_groves1 <- st_intersection(fire, groves)
 
 fire_groves <- fire_groves1 %>%
-  summarise(.by = c(year, id, burnsev, unit_name, grove_name),
+  summarise(.by = c(year, id, burnsev, landowner, unit_name, grove_name),
             geometry = st_union(st_combine(geometry))) %>%
   st_make_valid() %>%
   mutate(dist_id = 1:length(year))
 
 fire_groves$hectares = round(as.numeric((st_area(fire_groves)/10000)),1)
 head(fire_groves)
+
 fire_groves_lookup <- fire_groves %>%
   st_drop_geometry()
 
-fire_groves = fire_groves %>%
-  mutate(landowner = case_when(
-    unit_name %in% c("Sequoia and Kings Canyon National Parks",
-                     "Yosemite National Park")
-    ~ "National Park Service",
-    unit_name == "Save the Redwoods League" ~ "Nonprofit",
-    unit_name == "Whittaker's Forest" ~ "UC Berkeley Center for Forestry",
-    unit_name %in% c("Giant Sequoia National Monument",
-                     "Sierra National Forest","Tahoe National Forest")
-    ~ "US Forest Service",
-    unit_name == "Tulare County" ~ "County",
-    .default = unit_name))
-#for later processing
 fire_clean_groves <- fire_groves %>%
   clean_names() %>%
   st_drop_geometry() %>%

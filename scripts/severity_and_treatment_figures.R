@@ -10,6 +10,7 @@ options(scipen = 999)
 #grove boundaries
 groves <- st_read(here("data/spatial_data/inputs/forest/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff/FINAL_SEGI_AnalysisArea_wOwnerships_GroveNames_noBuff.shp")) %>%
   clean_names()
+
 groves$hectares = round(as.numeric(st_area(groves)*0.0001),1)
 groves_tbl = st_drop_geometry(groves) %>%
   select(-acres) %>%
@@ -30,7 +31,7 @@ groves_tbl = st_drop_geometry(groves) %>%
                                                 "Mountain Home Demonstration State Forest") ~ "State",
                            .default = mnging.agency))
 
-write.csv(groves_tbl, here("outputs/groves_with_owners_full.csv"))
+# write.csv(groves_tbl, here("outputs/groves_with_owners_full.csv"))
 
 #calfire perims 1910-2024
 perims = read.csv(here("outputs/calfire_perims_area_burned_by_fire_1910_2024.csv"))
@@ -57,7 +58,8 @@ perims_timeframes = perims %>%
   summarise(num.fires = length(fireid), area_ha_sum = sum(area_ha), med.area_ha = median(area_ha), 
             mn.area_ha = mean(area_ha), min.area_ha = min(area_ha), 
             max.area_ha = max(area_ha)) %>%
-  mutate(percent.burned.area = area_ha_sum/all_burned_area)
+  mutate(percent.burned.area = area_ha_sum/all_burned_area,
+         percent.grove.area = area_ha_sum/10130.5)
 perims_timeframes
 
 #get zero years for perims
@@ -68,11 +70,16 @@ perims_complete = perims %>%
 perims_complete
 
 #create total area burned through time figure
-ggplot(perims_complete, aes(factor(year),area_ha)) +
+permis_plot = ggplot(perims_complete, aes(factor(year),area_ha)) +
   geom_bar(stat="identity",fill="darkblue",width = 0.8) +
   scale_x_discrete(expand = c(0.01, 0.01),
                    breaks=c(seq(1910,2025,5),2024)) +
-  scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0,4000)) +
+  scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0,4000),
+                     sec.axis = sec_axis(
+                       trans = ~ (. / 10130) * 100, # Transformation to percentage
+                       # trans = ~ . / sum(df$value) * 100, # Transformation to percentage
+                       name = "Percent of range (%)", # Secondary axis label
+                       labels = scales::percent_format(scale = 1, accuracy = 1, expand = c(0, 0)))) +
   ylab("Wildfire area burned (ha)") +
   # scale_fill_discrete("#006666") +
   theme(axis.title.x = element_blank(),
@@ -80,9 +87,9 @@ ggplot(perims_complete, aes(factor(year),area_ha)) +
         panel.grid.minor = element_blank(), panel.background = element_blank(), 
         axis.line = element_line(colour = "black"),
         axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=0.9),
-        text = element_text(size = 20)) 
-
-# ggsave(here("outputs/figures_for_manuscript/wildfire_area_burned_1910_2024.jpg"), width = 14, height = 5)
+        text = element_text(size = 18)) 
+permis_plot
+ggsave(here("outputs/figures_for_manuscript/wildfire_area_burned_1910_2024.jpg"), width = 14, height = 5)
 
 
 #########################################################
@@ -104,13 +111,12 @@ tapply(annual_fire_comp$area_ha,annual_fire_comp$dist_type,sum)
 
 #get some grove level stats on high severity
 grv.area1 = groves %>%
-  group_by(GroveName) %>%
-  summarise(acres.sum = sum(Acres))
+  group_by(grove_name) %>%
+  summarise(acres.sum = sum(acres))
 grv.area1$grove_area_ha = round(as.numeric(st_area(grv.area1)*0.0001),2)
 
 grv.area = grv.area1 %>%
   st_drop_geometry() %>%
-  mutate(grove_name = GroveName) %>%
   select(grove_name, grove_area_ha)
 
 high_grv_2020_2021 <- sev_trt %>%
@@ -157,7 +163,8 @@ ggplot(acs_wildfire, aes(factor(dist_year), area_ha, fill = factor(dist_type,
     name = "Fire severity",
     labels = c("High severity","Moderate severity","Low severity","Undetected change"),
     # values = c("#4499CC","#2288FF","#9944CC","#525252"))+
-    values = c("#1199BB","#2244CC","#2288FF","#523252"))+
+    # values = c("#1199BB","#2244CC","#2288FF","#523252"))+
+    values = c("#1199BB","grey44","orange","black"))+
   theme_bw() +
 
     scale_x_discrete(expand = c(0.01, 0.01),
@@ -172,7 +179,7 @@ ggplot(acs_wildfire, aes(factor(dist_year), area_ha, fill = factor(dist_type,
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
         text = element_text(size = 12))
 
-ggsave(here("outputs/figures_for_manuscript/fire_severity_1984_2024.jpg"), width = 7, height = 5)
+ggsave(here("outputs/figures_for_manuscript/fire_severity_1984_2024_new_cols.jpg"), width = 7, height = 5)
 
 # #plot severity and treatment
 # ggplot(annual_comp_subset, aes(factor(dist_year), area_ha, fill = factor(dist_type, 
@@ -207,7 +214,7 @@ ggsave(here("outputs/figures_for_manuscript/fire_severity_1984_2024.jpg"), width
 ###Treatment only
 
 annual_activity <- sev_trt %>%
-  filter(dist_year>=1970) %>%
+  filter(dist_year>=1969) %>%
   summarise(.by = c(dist_group, dist_year, dist_type), area_ha = sum(hectares))
 
 #total area treated entire time
@@ -243,13 +250,13 @@ ggplot(annual_trt_subset, aes(factor(dist_year), area_ha, fill = dist_type))+
         axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.7),
         text = element_text(size = 12)) 
 
-ggsave(here("outputs/figures_for_manuscript/trt_annual_1970_2024.jpg"), width = 8, height = 5)
+ggsave(here("outputs/figures_for_manuscript/trt_annual_1969_2024.jpg"), width = 8, height = 5)
 
 
 ##treatment through time by landowner, just showing 1970-2024
 annual_trt_activity_ownership <- trt %>%
   summarise(.by = c(landowner, dist_year, dist_type), area_ha = sum(hectares)) %>%
-  filter(dist_year > 1969)
+  filter(dist_year >= 1969)
 
 tapply(annual_trt_activity_ownership$area_ha,annual_trt_activity_ownership$landowner,sum)  
 tapply(annual_trt_activity_ownership$dist_year,annual_trt_activity_ownership$landowner,summary)
@@ -262,7 +269,7 @@ annual_trt_activity_ownership_top3 <- annual_trt_activity_ownership %>%
   )) %>%
   filter(landowner %in% c("Mountain Home Demonstration State Forest",
                           "National Park Service","US Forest Service")) %>%
-  select(landowner.init,dist_type,dist_year,area_ha) %>%
+  # select(landowner.init,dist_type,dist_year,area_ha) %>%
   complete(dist_year = 1969:2024,dist_type, landowner.init, 
            fill = list(area_ha = 0)) 
 annual_trt_activity_ownership_top3
